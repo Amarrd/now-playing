@@ -128,21 +128,22 @@ function updateSong() {
 
 				arrayBuffer = fileReader.result;
 
-				var audioData = {
-					sampleRate: 44100,
-					channelData: [
-					  new Float32Array(buffer)
-					]
-				  };
-
-				WavEncoder.encode(audioData).then(function(bufferWav) {
-
-					var blob = new Blob([bufferWav], {type: "audio/wav"});
-					var url = URL.createObjectURL(blob);
-					var link = document.createElement("a");
-					link.href = url;
-					link.download = "test.wav";
-					link.click();
+				// Create an audio context
+				let audioContext = new AudioContext();
+				// Decode the array buffer into an audio buffer
+				audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+					// Do something with the audio buffer
+					var audioEncoder = require('audio-encoder');
+					// Assume you have an AudioBuffer instance called audioBuffer
+					audioEncoder(audioBuffer, 'WAV', function(progress) {
+					  // Do something with the progress value (0 to 1)
+					}, function(blob) {
+					  // Do something with the blob (a wav file)
+					  var url = URL.createObjectURL(blob);
+					  var link = document.createElement("a");
+					  link.href = url;
+					  link.download = "test.wav";
+					  link.click();
 
 					// identify_v2(bufferWav, defaultOptions, function (err, httpResponse, body) {
 					// 	if (err) console .log(err);
