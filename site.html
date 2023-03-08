@@ -2,11 +2,28 @@
 <html>
 <head>
 	<title>Currently Playing</title>
+	<style>
+		body {
+			background-color: black;
+			color: white;
+			font-size: 24px;
+			text-align: left;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			margin: 0;
+			padding: 20px;
+		}
+		button {
+			background-color: black;
+			color:white;
+		}
+	</style>
 </head>
 <body>
-	<h1>Currently Playing:</h1>
+	<script src="bundle.js"></script>
+	<h2>Now Playing:</h2>
 	<div id="current-song"></div>
-	<button onclick="updateSong()">Update Song</button>
-	<script src="script.js"></script>
+	<button onclick="myBundle.updateSong()">Update Song</button>
 </body>
 </html>

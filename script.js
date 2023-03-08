@@ -4,8 +4,9 @@ var crypto = require('crypto');
 var request = require('request');
 var buffer = require('buffer');
 var FormData = require('form-data');
-var WavEncoder = require('wav-encoder');
+var audioEncoder = require('audio-encoder');
 
+const testResponse = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 
 var defaultOptions = {
 	host: 'identify-eu-west-1.acrcloud.com',
@@ -16,7 +17,6 @@ var defaultOptions = {
 	access_key: 'a5aa8a35f41a9bd996a355421abd87e9',
 	access_secret: 'qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7'
 };
-
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
 	return [method, uri, accessKey, dataType, signatureVersion, timestamp].join('\n');
@@ -58,54 +58,40 @@ function identify_v2(data, options, cb) {
 	.catch((err) => {cb(null, err)});
 }
 
-/**
-* Identifies a sample of bytes
-*/
-function identify(data, options, cb) {
 
-	var current_data = new Date();
-	var timestamp = current_data.getTime()/1000;
-
-	var stringToSign = buildStringToSign('POST',
-		options.endpoint,
-		options.access_key,
-		options.data_type,
-		options.signature_version,
-		timestamp);
-
-	var signature = sign(stringToSign, options.access_secret);
-
-	var formData = {
-		sample: data,
-		access_key:options.access_key,
-		data_type:options.data_type,
-		signature_version:options.signature_version,
-		signature:signature,
-		sample_bytes:data.length,
-		timestamp:timestamp,
+function updateHtml(response) {
+	var jsonObject = JSON.parse(response);
+	var artist = jsonObject.metadata.music[0].artists[0].name;
+	var title = jsonObject.metadata.music[0].title;
+	console.log(artist + ': ' + title);
+	var currentSong = document.getElementById('current-song');
+	var details = document.createElement('p');
+	details.textContent = artist + ' - ' + title;
+	if (currentSong.childNodes.length > 0 ) {
+		currentSong.removeChild(currentSong.childNodes[0])
+		currentSong.appendChild(details);
+	} else {
+		currentSong.appendChild(details);
 	}
-	request.post({
-		url: "http://"+options.host + options.endpoint,
-		method: 'POST',
-		formData: formData
-	}, cb);
 }
 
 function updateSong() {
+	if (testResponse) {
+		console.log('Using test response');
+		updateHtml(testResponse);
+		
+		return;
+	}
+
 	console.log('Request access to microphone');
+
 	navigator.mediaDevices.getUserMedia({ audio: true })
 	.then(stream => {
-	// Create an instance of MediaRecorder
+
 		const mediaRecorder = new MediaRecorder(stream);
-
-	// Create an array to store the recorded data
 		const chunks = [];
-
 		console.log('Started recording')
-
 		mediaRecorder.start();
-
-	// Stop recording after 10 seconds
 		setTimeout(() => {
 			mediaRecorder.stop();
 		}, 5000);
@@ -123,32 +109,24 @@ function updateSong() {
 		// convert blob to buffer
 			let fileReader = new FileReader();
 			let arrayBuffer;
-
 			fileReader.onloadend = () => {
 
 				arrayBuffer = fileReader.result;
-
-				// Create an audio context
+				// Create an audio context and decode the array buffer into an audio buffer
 				let audioContext = new AudioContext();
-				// Decode the array buffer into an audio buffer
 				audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-					// Do something with the audio buffer
 					var audioEncoder = require('audio-encoder');
-					// Assume you have an AudioBuffer instance called audioBuffer
-					audioEncoder(audioBuffer, 'WAV', function(progress) {
-					  // Do something with the progress value (0 to 1)
-					}, function(blob) {
-					  // Do something with the blob (a wav file)
-					  var url = URL.createObjectURL(blob);
-					  var link = document.createElement("a");
-					  link.href = url;
-					  link.download = "test.wav";
-					  link.click();
+					audioEncoder(audioBuffer, 'WAV', 
+					function(progress) {}, 
+					function(encodedAudio) {
+					// Identify track
+					identify_v2(encodedAudio, defaultOptions, function (err, httpResponse, body) {
+						if (err) console .log(err);
+						console.log(body);
+						updateHtml(body)
 
-					// identify_v2(bufferWav, defaultOptions, function (err, httpResponse, body) {
-					// 	if (err) console .log(err);
-					// 	console.log(body);
-					// });
+					});
+					});
 				});
 			}
 
