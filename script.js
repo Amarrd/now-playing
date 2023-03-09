@@ -14,7 +14,7 @@ var defaultOptions = {
 	host: 'identify-eu-west-1.acrcloud.com',
 	endpoint: '/v1/identify',
 	signature_version: '1',
-	data_type:'audio',
+	data_type: 'audio',
 	secure: true,
 	access_key: 'a5aa8a35f41a9bd996a355421abd87e9',
 	access_secret: 'qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7'
@@ -26,14 +26,14 @@ function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, t
 
 function sign(signString, accessSecret) {
 	return crypto.createHmac('sha1', accessSecret)
-	.update(Buffer.from(signString, 'utf-8'))
-	.digest().toString('base64');
+		.update(Buffer.from(signString, 'utf-8'))
+		.digest().toString('base64');
 }
 
 function identify_v2(data, options, cb) {
 
 	var current_data = new Date();
-	var timestamp = current_data.getTime()/1000;
+	var timestamp = current_data.getTime() / 1000;
 
 	var stringToSign = buildStringToSign('POST',
 		options.endpoint,
@@ -53,45 +53,11 @@ function identify_v2(data, options, cb) {
 	form.append('signature', signature);
 	form.append('timestamp', timestamp);
 
-	fetch("http://"+options.host + options.endpoint, 
-		{method: 'POST', body: form })
-	.then((res) => {return res.text()})
-	.then((res) => {cb(res, null)})
-	.catch((err) => {cb(null, err)});
-}
-
-
-function addResultToHtml(response) {
-	var jsonObject = JSON.parse(response);
-	var currentSong = document.getElementById('current-song');
-	var details = document.createElement('p');
-	if (jsonObject.status.code === 1001) {
-		details.textContent = 'Not Found'
-		
-	} else {
-		var artist = jsonObject.metadata.music[0].artists[0].name;
-		var title = jsonObject.metadata.music[0].title;
-		details.textContent = artist + ' - ' + title;
-	}
-	
-	if (currentSong.childNodes.length > 0 ) {
-		currentSong.removeChild(currentSong.childNodes[0])
-		currentSong.appendChild(details);
-	} else {
-		currentSong.appendChild(details);
-	}
-}
-
-function addInProgressToHtml() {
-	var currentSong = document.getElementById('current-song');
-	var details = document.createElement('p');
-	details.textContent = 'Identifying Song'
-	if (currentSong.childNodes.length > 0 ) {
-		currentSong.removeChild(currentSong.childNodes[0])
-		currentSong.appendChild(details);
-	} else {
-		currentSong.appendChild(details);
-	}
+	fetch("http://" + options.host + options.endpoint,
+		{ method: 'POST', body: form })
+		.then((res) => { return res.text() })
+		.then((res) => { cb(res, null) })
+		.catch((err) => { cb(null, err) });
 }
 
 function updateSong() {
@@ -106,73 +72,102 @@ function updateSong() {
 
 	//navigator.mediaDevices.getUserMedia({ audio: true }).then(
 	audioPromise.then(
-	stream => {
+		stream => {
 
-		const mediaRecorder = new MediaRecorder(stream);
-		const chunks = [];
-		console.log('Started recording')
-		mediaRecorder.start();
-		setTimeout(() => {
-			mediaRecorder.stop();
-		}, 5000);
+			const mediaRecorder = new MediaRecorder(stream);
+			const chunks = [];
+			console.log('Started recording')
+			mediaRecorder.start();
+			setTimeout(() => {
+				mediaRecorder.stop();
+			}, 5000);
 
-	// Listen for data available event and store the data in chunks
-		mediaRecorder.addEventListener('dataavailable', event => {
-			chunks.push(event.data);
-		});
+			// Listen for data available event and store the data in chunks
+			mediaRecorder.addEventListener('dataavailable', event => {
+				chunks.push(event.data);
+			});
 
-	// Listen for stop event and create a new audio blob from the recorded data
-		mediaRecorder.addEventListener('stop', () => {
-			console.log('Stopped recording')
-			const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+			// Listen for stop event and create a new audio blob from the recorded data
+			mediaRecorder.addEventListener('stop', () => {
+				console.log('Stopped recording')
+				const audioBlob = new Blob(chunks, { type: 'audio/webm' });
 
-		// convert blob to buffer
-			let fileReader = new FileReader();
-			let arrayBuffer;
-			fileReader.onloadend = () => {
+				// convert blob to buffer
+				let fileReader = new FileReader();
+				let arrayBuffer;
+				fileReader.onloadend = () => {
 
-				arrayBuffer = fileReader.result;
-				// Create an audio context and decode the array buffer into an audio buffer
-				let audioContext = new AudioContext();
-				audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-					var audioEncoder = require('audio-encoder');
-					audioEncoder(audioBuffer, 'WAV', 
-					function(progress) {}, 
-					function(encodedAudio) {
-					// Identify track
-					console.log('Identifying recording')
-					identify_v2(encodedAudio, defaultOptions, function (err, httpResponse, body) {
-						if (err) {
-							console.log(err);
-							addResultToHtml(err);
-							return;
-						}
-						console.log(body);
-						addResultToHtml(body)
+					arrayBuffer = fileReader.result;
+					// Create an audio context and decode the array buffer into an audio buffer
+					let audioContext = new AudioContext();
+					audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+						var audioEncoder = require('audio-encoder');
+						audioEncoder(audioBuffer, 'WAV',
+							function (progress) { },
+							function (encodedAudio) {
+								// Identify track
+								console.log('Identifying recording')
+								identify_v2(encodedAudio, defaultOptions, function (err, httpResponse, body) {
+									if (err) {
+										console.log(err);
+										addResultToHtml(err);
+										return;
+									}
+									console.log(body);
+									addResultToHtml(body)
 
+								});
+							});
 					});
-					});
-				});
-			}
-
-			fileReader.readAsArrayBuffer(audioBlob)
-			
-
+				}
+				fileReader.readAsArrayBuffer(audioBlob)
+			});
+		})
+		.catch(error => {
+			console.error(error);
 		});
-	})
-	.catch(error => {
-		console.error(error);
-	});
+}
 
+function addResultToHtml(response) {
+	var jsonObject = JSON.parse(response);
+	var currentSong = document.getElementById('current-song');
+	var details = document.createElement('p');
+	if (jsonObject.status.code === 1001) {
+		details.textContent = 'Not Found'
+
+	} else {
+		var artist = jsonObject.metadata.music[0].artists[0].name;
+		var title = jsonObject.metadata.music[0].title;
+		details.textContent = artist + ' - ' + title;
+	}
+
+	if (currentSong.childNodes.length > 0) {
+		currentSong.removeChild(currentSong.childNodes[0])
+		currentSong.appendChild(details);
+	} else {
+		currentSong.appendChild(details);
+	}
+}
+
+function addInProgressToHtml() {
+	var currentSong = document.getElementById('current-song');
+	var details = document.createElement('p');
+	details.textContent = 'Identifying Song'
+	if (currentSong.childNodes.length > 0) {
+		currentSong.removeChild(currentSong.childNodes[0])
+		currentSong.appendChild(details);
+	} else {
+		currentSong.appendChild(details);
+	}
 }
 
 navigator.mediaDevices.enumerateDevices()
-.then(deviceInfos => {
+	.then(deviceInfos => {
 
-	for (var i = deviceInfos.length - 1; i >= 0; i--) {
-		console.log(deviceInfos[i]);
-	}
+		for (var i = deviceInfos.length - 1; i >= 0; i--) {
+			console.log(deviceInfos[i]);
+		}
 
-})
+	})
 
-module.exports = {updateSong}
+module.exports = { updateSong }
