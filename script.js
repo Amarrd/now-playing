@@ -79,7 +79,7 @@ function updateSong() {
 			mediaRecorder.start();
 			setTimeout(() => {
 				mediaRecorder.stop();
-			}, 5000);
+			}, 10000);
 
 			// Listen for data available event and store the data in chunks
 			mediaRecorder.addEventListener('dataavailable', event => {
