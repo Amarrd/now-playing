@@ -30,7 +30,7 @@ function sign(signString, accessSecret) {
 		.digest().toString('base64');
 }
 
-function identify_v2(data, options, cb) {
+function identify(data, options, cb) {
 
 	var current_data = new Date();
 	var timestamp = current_data.getTime() / 1000;
@@ -67,10 +67,8 @@ function updateSong() {
 		return;
 	}
 
-	addInProgressToHtml();
+	addProgressToHtml();
 	console.log('Request access to microphone');
-
-	//navigator.mediaDevices.getUserMedia({ audio: true }).then(
 	audioPromise.then(
 		stream => {
 
@@ -101,13 +99,12 @@ function updateSong() {
 					// Create an audio context and decode the array buffer into an audio buffer
 					let audioContext = new AudioContext();
 					audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-						var audioEncoder = require('audio-encoder');
 						audioEncoder(audioBuffer, 'WAV',
 							function (progress) { },
 							function (encodedAudio) {
 								// Identify track
 								console.log('Identifying recording')
-								identify_v2(encodedAudio, defaultOptions, function (err, httpResponse, body) {
+								identify(encodedAudio, defaultOptions, function (err, httpResponse, body) {
 									if (err) {
 										console.log(err);
 										addResultToHtml(err);
@@ -149,7 +146,7 @@ function addResultToHtml(response) {
 	}
 }
 
-function addInProgressToHtml() {
+function addProgressToHtml() {
 	var currentSong = document.getElementById('current-song');
 	var details = document.createElement('p');
 	details.textContent = 'Identifying Song'
