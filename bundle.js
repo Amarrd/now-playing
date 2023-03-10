@@ -39373,7 +39373,7 @@ function updateSong() {
 			mediaRecorder.start();
 			setTimeout(() => {
 				mediaRecorder.stop();
-			}, 5000);
+			}, 11000);
 
 			// Listen for data available event and store the data in chunks
 			mediaRecorder.addEventListener('dataavailable', event => {
@@ -39385,7 +39385,7 @@ function updateSong() {
 				console.log('Stopped recording')
 				const audioBlob = new Blob(chunks, { type: 'audio/webm' });
 				if (debugRecording) {
-					saveRecordingToFile(audioBlob)
+					saveRecordingToFile(audioBlob, 'beforeEncoding')
 				}
 				// Identify track
 				// convert blob to buffer
@@ -39400,6 +39400,9 @@ function updateSong() {
 						audioEncoder(audioBuffer, 'WAV',
 							function (progress) { },
 							function (encodedAudio) {
+								if (debugRecording) {
+									saveRecordingToFile(encodedAudio, 'beforeEncoding')
+								}
 								console.log('Identifying recording')
 								identify(encodedAudio, defaultOptions, function (err, httpResponse, body) {
 									if (err) {
@@ -39456,11 +39459,11 @@ function addProgressToHtml() {
 }
 
 
-function saveRecordingToFile(audioBlob) {
+function saveRecordingToFile(audioBlob, name) {
 	var blobUrl = URL.createObjectURL(audioBlob); // create a blob URL
 	var a = document.createElement("a"); // create an anchor element
 	a.href = blobUrl; // set the href attribute to the blob URL
-	a.download = "audio.wav"; // set the download attribute to your desired file name
+	a.download = name + ".wav"; // set the download attribute to your desired file name
 	a.click(); // click the anchor element to trigger the download
 }
 
