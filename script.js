@@ -107,7 +107,7 @@ function updateSong() {
 							function (progress) { },
 							function (encodedAudio) {
 								if (debugRecording) {
-									saveRecordingToFile(encodedAudio, 'beforeEncoding')
+									saveRecordingToFile(encodedAudio, 'afterEncoding')
 								}
 								console.log('Identifying recording')
 								identify(encodedAudio, defaultOptions, function (err, httpResponse, body) {
