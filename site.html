@@ -20,12 +20,23 @@
 			background-color: black;
 			color:white;
 		}
+		label {
+			position:fixed;
+			bottom:0;
+			right:0;
+			padding: 20px;
+			font-family: ‘Roboto’, sans-serif; 
+		}
 	</style>
 </head>
 <body>
 	<script src="bundle.js"></script>
 	<h2>Now Playing</h2>
 	<div id="current-song"></div>
-	<button onclick="myBundle.updateSong()">Update Song</button>
+	<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 </body>
+<label for="accept">
+   <input type="checkbox" id="accept" 
+   name="accept" onclick="myBundle.toggleAuto()"> Auto 
+</label >
 </html>

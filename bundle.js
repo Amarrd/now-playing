@@ -39302,6 +39302,7 @@ var audioEncoder = require('audio-encoder');
 
 const testResponse = false; // = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
+var autoMode = false;
 
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -39355,6 +39356,10 @@ function identify(data, options, cb) {
 		.catch((err) => { cb(null, err) });
 }
 
+function autoDetect() {
+
+}
+
 function updateSong() {
 	if (testResponse) {
 		console.log('Using test response');
@@ -39371,9 +39376,7 @@ function updateSong() {
 			const chunks = [];
 			console.log('Started recording')
 			mediaRecorder.start();
-			setTimeout(() => {
-				mediaRecorder.stop();
-			}, 11000);
+			setTimeout(() => mediaRecorder.stop(), 7100);
 
 			// Listen for data available event and store the data in chunks
 			mediaRecorder.addEventListener('dataavailable', event => {
@@ -39404,12 +39407,14 @@ function updateSong() {
 									saveRecordingToFile(encodedAudio, 'afterEncoding')
 								}
 								console.log('Identifying recording')
-								identify(encodedAudio, defaultOptions, function (err, httpResponse, body) {
+								identify(encodedAudio, defaultOptions, function (body, err) {
 									if (err) {
+										console.log("Error:")
 										console.log(err);
 										addResultToHtml(err);
 										return;
 									}
+									console.log("Success:")
 									console.log(body);
 									addResultToHtml(body)
 
@@ -39431,11 +39436,21 @@ function addResultToHtml(response) {
 	var details = document.createElement('p');
 	if (jsonObject.status.code === 1001) {
 		details.textContent = 'Not Found'
-
+		if (autoMode) {
+			var delay = 60000
+			console.log('Not found, setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
+		}
 	} else {
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
 		details.textContent = artist + ' - ' + title;
+		if (autoMode) {
+			var jsonObject = JSON.parse(response);
+			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms
+			console.log('Setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
+		}
 	}
 
 	if (currentSong.childNodes.length > 0) {
@@ -39467,16 +39482,20 @@ function saveRecordingToFile(audioBlob, name) {
 	a.click(); // click the anchor element to trigger the download
 }
 
-navigator.mediaDevices.enumerateDevices()
-	.then(deviceInfos => {
+function toggleAuto() {
+	const cb = document.querySelector('#accept');
+	console.log(cb.checked);
+	if (cb.checked == true) {
+		// start auto mode
+		autoMode = true;
+		updateSong();
+	} else {
+		// stop auto mode
+		autoMode = false;
+	}
+}
 
-		for (var i = deviceInfos.length - 1; i >= 0; i--) {
-			console.log(deviceInfos[i]);
-		}
-
-	})
-
-module.exports = { updateSong }
+module.exports = {updateSong, toggleAuto}
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"audio-encoder":310,"buffer":71,"crypto":82,"form-data":327,"fs":1,"request":408,"url":249}],258:[function(require,module,exports){
 'use strict';
