@@ -39363,7 +39363,7 @@ function autoDetect() {
 function updateSong() {
 	if (testResponse) {
 		console.log('Using test response');
-		addResultToHtml(testResponse);
+		processResponse(testResponse);
 		return;
 	}
 
@@ -39411,12 +39411,12 @@ function updateSong() {
 									if (err) {
 										console.log("Error:")
 										console.log(err);
-										addResultToHtml(err);
+										processResponse(err);
 										return;
 									}
 									console.log("Success:")
 									console.log(body);
-									addResultToHtml(body)
+									processResponse(body)
 
 								});
 							});
@@ -39430,18 +39430,11 @@ function updateSong() {
 		});
 }
 
-function addResultToHtml(response) {
+function processResponse(response) {
 	var jsonObject = JSON.parse(response);
 	var currentSong = document.getElementById('current-song');
 	var details = document.createElement('p');
-	if (jsonObject.status.code === 1001) {
-		details.textContent = 'Not Found'
-		if (autoMode) {
-			var delay = 60000
-			console.log('Not found, setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
-		}
-	} else {
+	if (jsonObject.status.code === 0) {
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
 		details.textContent = artist + ' - ' + title;
@@ -39449,6 +39442,13 @@ function addResultToHtml(response) {
 			var jsonObject = JSON.parse(response);
 			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms
 			console.log('Setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
+		}
+	} else {
+		details.textContent = 'Not Found'
+		if (autoMode) {
+			var delay = 60000
+			console.log('Not found, setting delay to: ' + delay)
 			setTimeout(() => updateSong(), delay);
 		}
 	}
