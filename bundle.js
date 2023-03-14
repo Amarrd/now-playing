@@ -26406,15 +26406,41 @@ function identify(data, cb) {
 
 module.exports = {identify}
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":63,"crypto":71,"form-data":192}],188:[function(require,module,exports){
+},{"buffer":63,"crypto":71,"form-data":193}],188:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
+const visualiser = require('./visualiser') 
 
 const testResponse = false; // = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
+var buttonsHidden = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+
+function startVisualiser() {
+	let micIcon = document.getElementById('mic-icon')
+	micIcon.style.display = 'none';
+	visualiser.main(audioPromise);
+}
+
+document.onkeyup = function(e) {
+	if (e.key === " ") {
+		if (buttonsHidden) {
+			let autoToggle = document.querySelector('#autoToggleLabel');
+			autoToggle.style.visibility = 'visible';
+			let updateButton = document.querySelector('#updateButton');
+			updateButton.style.visibility = 'visible';
+			buttonsHidden = false;
+		} else {
+			let autoToggle = document.querySelector('#autoToggleLabel');
+			autoToggle.style.visibility = 'hidden';
+			let updateButton = document.querySelector('#updateButton');
+			updateButton.style.visibility = 'hidden';
+			buttonsHidden = true;
+		}
+	}
+}
 
 function updateSong() {
 	if (testResponse) {
@@ -26425,65 +26451,63 @@ function updateSong() {
 
 	addProgressToHtml();
 	console.log('Request access to microphone');
-	audioPromise.then(
-		stream => {
+	audioPromise.then(stream => {
 
-			const mediaRecorder = new MediaRecorder(stream);
-			const chunks = [];
-			console.log('Started recording')
-			mediaRecorder.start();
-			setTimeout(() => mediaRecorder.stop(), 7100);
+		const mediaRecorder = new MediaRecorder(stream);
+		const chunks = [];
+		console.log('Started recording')
+		mediaRecorder.start();
+		setTimeout(() => mediaRecorder.stop(), 7100);
 
-			// Listen for data available event and store the data in chunks
-			mediaRecorder.addEventListener('dataavailable', event => {
-				chunks.push(event.data);
-			});
-
-			// Listen for stop event and create a new audio blob from the recorded data
-			mediaRecorder.addEventListener('stop', () => {
-				console.log('Stopped recording')
-				const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-				if (debugRecording) {
-					saveRecordingToFile(audioBlob, 'beforeEncoding')
-				}
-				// Identify track
-				// convert blob to buffer
-				let fileReader = new FileReader();
-				let arrayBuffer;
-				fileReader.onloadend = () => {
-
-					arrayBuffer = fileReader.result;
-					// Create an audio context and decode the array buffer into an audio buffer
-					let audioContext = new AudioContext();
-					audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-						audioEncoder(audioBuffer, 'WAV',
-							function (progress) { },
-							function (encodedAudio) {
-								if (debugRecording) {
-									saveRecordingToFile(encodedAudio, 'afterEncoding')
-								}
-								console.log('Identifying recording')
-								acrCloud.identify(encodedAudio, function (body, err) {
-									if (err) {
-										console.log("Error:")
-										console.log(err);
-										processResponse(err);
-										return;
-									}
-									console.log("Response:")
-									console.log(body);
-									processResponse(body)
-
-								});
-							});
-					});
-				}
-				fileReader.readAsArrayBuffer(audioBlob)
-			});
-		})
-		.catch(error => {
-			console.error(error);
+		// Listen for data available event and store the data in chunks
+		mediaRecorder.addEventListener('dataavailable', event => {
+			chunks.push(event.data);
 		});
+
+		// Listen for stop event and create a new audio blob from the recorded data
+		mediaRecorder.addEventListener('stop', () => {
+			console.log('Stopped recording')
+			const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+			if (debugRecording) {
+				saveRecordingToFile(audioBlob, 'beforeEncoding')
+			}
+			// Identify track
+			// convert blob to buffer
+			let fileReader = new FileReader();
+			let arrayBuffer;
+			fileReader.onloadend = () => {
+
+				arrayBuffer = fileReader.result;
+				// Create an audio context and decode the array buffer into an audio buffer
+				let audioContext = new AudioContext();
+				audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+					audioEncoder(audioBuffer, 'WAV',
+						function (progress) { },
+						function (encodedAudio) {
+							if (debugRecording) {
+								saveRecordingToFile(encodedAudio, 'afterEncoding')
+							}
+							console.log('Identifying recording')
+							acrCloud.identify(encodedAudio, function (body, err) {
+								if (err) {
+									console.log("Error:")
+									console.log(err);
+									processResponse(err);
+									return;
+								}
+								console.log("Response:")
+								console.log(body);
+								processResponse(body)
+
+							});
+						});
+				});
+			}
+			fileReader.readAsArrayBuffer(audioBlob)
+		});
+	}).catch(error => {
+		alert(error);
+	});
 }
 
 function processResponse(response) {
@@ -26501,7 +26525,6 @@ function processResponse(response) {
 			setTimeout(() => updateSong(), delay);
 		}
 	} else {
-		details.textContent = 'Not Found'
 		if (autoMode) {
 			var delay = 60000
 			console.log('Not found, setting delay to: ' + delay)
@@ -26515,18 +26538,13 @@ function processResponse(response) {
 	} else {
 		currentSong.appendChild(details);
 	}
+	let micIcon = document.getElementById('mic-icon')
+	micIcon.style.display = 'none';
 }
 
 function addProgressToHtml() {
-	var currentSong = document.getElementById('current-song');
-	var details = document.createElement('p');
-	details.textContent = 'Identifying Song'
-	if (currentSong.childNodes.length > 0) {
-		currentSong.removeChild(currentSong.childNodes[0])
-		currentSong.appendChild(details);
-	} else {
-		currentSong.appendChild(details);
-	}
+	let micIcon = document.getElementById('mic-icon')
+	micIcon.style.display = 'inline';
 }
 
 function saveRecordingToFile(audioBlob, name) {
@@ -26538,7 +26556,7 @@ function saveRecordingToFile(audioBlob, name) {
 }
 
 function toggleAuto() {
-	const cb = document.querySelector('#accept');
+	const cb = document.querySelector('#autoToggle');
 	console.log(cb.checked);
 	if (cb.checked == true) {
 		// start auto mode
@@ -26550,8 +26568,121 @@ function toggleAuto() {
 	}
 }
 
-module.exports = {updateSong, toggleAuto}
-},{"./acrCloud":187,"audio-encoder":191}],189:[function(require,module,exports){
+module.exports = { startVisualiser, updateSong, toggleAuto }
+},{"./acrCloud":187,"./visualiser":189,"audio-encoder":192}],189:[function(require,module,exports){
+class Microphone {
+    constructor(audioPromise) {
+        this.initialised = false;
+        audioPromise.then(stream => {
+            this.audioContext = new AudioContext();
+            this.microphone = this.audioContext.createMediaStreamSource(stream);
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 512;
+            const bufferLength = this.analyser.frequencyBinCount;
+            this.dataArray = new Uint8Array(bufferLength);
+            this.microphone.connect(this.analyser);
+            this.initialised = true;
+        }).catch(error => {
+            console.log(error);
+            alert(error);
+        });
+    }
+
+    getSamples() {
+        this.analyser.getByteTimeDomainData(this.dataArray);
+        let conversion = this.analyser.frequencyBinCount / 2;
+        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
+        return normSamples;
+    }
+
+    getVolume() {
+        let samples = this.getSamples();
+        let sum = 0;
+        for (let i = 0; i< samples.length; i++){
+            sum += samples[i] * samples[i]
+        }
+        return Math.sqrt(sum / samples.length)
+    }
+}
+
+class Bar {
+    constructor(x , y, width, height, colour) {
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height;
+    this.colour = colour;
+    }
+
+    update(micInput) {
+        const sound = micInput * 500;
+        if (sound > this.height) {
+            this.height = sound;
+        } else {
+            this.height -= this.height * 0.01
+        }
+        
+    }
+    
+    draw(context) {
+        // context.fillStyle = this.colour;
+        // context.fillRect(this.x, this.y, this.width, this.height);
+
+        context.strokeStyle = this.colour;
+        context.beginPath();
+        context.moveTo(this.x, this.y);
+        context.lineTo(this.x, this.y - this.height);
+        context.stroke();
+
+        // context.moveTo(this.x, this.y);
+        // context.lineTo(this.x, window.innerHeight/2 + this.height);
+    }
+}
+
+
+function main(audioPromise) {
+    const canvas =  document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    //ctx.rotate(Math.PI);
+
+
+    function createBars() {
+        let canvasMidX = canvas.width/ 2;
+        let canvasMidY = canvas.height * 0.75;
+        let barWidth = 3;
+        let frequencyBinCount = 512/2;
+        let barStart = canvasMidX - ((frequencyBinCount/2) * barWidth);
+
+        for (let i = 0; i < frequencyBinCount; i++) {
+            bars.push(new Bar(barStart + i*barWidth, canvasMidY, barWidth, 20, 'orange'));
+        }
+    }
+
+
+    function animate() {
+        if (microphone.initialised) {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            const samples = microphone.getSamples();
+            bars.forEach(function(bar, i) {
+                bar.update(samples[i]);
+                bar.draw(ctx);
+            });
+        }
+        requestAnimationFrame(animate);
+    }
+    
+    const microphone = new Microphone(audioPromise);
+    let bars = [];
+    createBars();
+    animate()
+    
+}
+
+
+module.exports = {main};
+},{}],190:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -26650,7 +26781,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":227}],190:[function(require,module,exports){
+},{"lamejs":228}],191:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -26742,7 +26873,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],191:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -26761,11 +26892,11 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":189,"./encodeWav":190}],192:[function(require,module,exports){
+},{"./encodeMp3":190,"./encodeWav":191}],193:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -26846,7 +26977,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":198,"./common.js":226}],194:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],195:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27874,7 +28005,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":198,"./LameInternalFlags.js":208,"./Tables.js":220,"./Takehiro.js":221,"./common.js":226}],195:[function(require,module,exports){
+},{"./Encoder.js":199,"./LameInternalFlags.js":209,"./Tables.js":221,"./Takehiro.js":222,"./common.js":227}],196:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27968,7 +28099,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":198,"./L3Side.js":205,"./LameInternalFlags.js":208,"./MeanBits.js":210,"./common.js":226}],196:[function(require,module,exports){
+},{"./Encoder.js":199,"./L3Side.js":206,"./LameInternalFlags.js":209,"./MeanBits.js":211,"./common.js":227}],197:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -27984,7 +28115,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":226}],197:[function(require,module,exports){
+},{"./common.js":227}],198:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -28013,7 +28144,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28677,7 +28808,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":203,"./NewMDCT.js":211,"./common.js":226}],199:[function(require,module,exports){
+},{"./III_psy_ratio.js":204,"./NewMDCT.js":212,"./common.js":227}],200:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28925,7 +29056,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":198,"./common.js":226}],200:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],201:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -29479,7 +29610,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":226}],201:[function(require,module,exports){
+},{"./common.js":227}],202:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -29588,7 +29719,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":205,"./common.js":226}],202:[function(require,module,exports){
+},{"./L3Side.js":206,"./common.js":227}],203:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29624,7 +29755,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":201,"./common.js":226}],203:[function(require,module,exports){
+},{"./GrInfo.js":202,"./common.js":227}],204:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -29636,7 +29767,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":204}],204:[function(require,module,exports){
+},{"./III_psy_xmin.js":205}],205:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -29671,7 +29802,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":198,"./common.js":226}],205:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],206:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -29684,7 +29815,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":198}],206:[function(require,module,exports){
+},{"./Encoder.js":199}],207:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -31555,7 +31686,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":193,"./BitStream.js":194,"./CBRNewIterationLoop.js":195,"./Encoder.js":198,"./LameGlobalFlags.js":207,"./LameInternalFlags.js":208,"./PsyModel.js":214,"./ReplayGain.js":217,"./Tables.js":220,"./common.js":226}],207:[function(require,module,exports){
+},{"./ATH.js":194,"./BitStream.js":195,"./CBRNewIterationLoop.js":196,"./Encoder.js":199,"./LameGlobalFlags.js":208,"./LameInternalFlags.js":209,"./PsyModel.js":215,"./ReplayGain.js":218,"./Tables.js":221,"./common.js":227}],208:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -31826,7 +31957,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":209}],208:[function(require,module,exports){
+},{"./MPEGMode.js":210}],209:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32218,7 +32349,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":198,"./IIISideInfo.js":202,"./III_psy_xmin.js":204,"./L3Side.js":205,"./NsPsy.js":212,"./ScaleFac.js":219,"./VBRSeekInfo.js":223,"./common.js":226}],209:[function(require,module,exports){
+},{"./Encoder.js":199,"./IIISideInfo.js":203,"./III_psy_xmin.js":205,"./L3Side.js":206,"./NsPsy.js":213,"./ScaleFac.js":220,"./VBRSeekInfo.js":224,"./common.js":227}],210:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -32237,14 +32368,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],210:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],211:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -33410,7 +33541,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":198,"./common.js":226}],212:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],213:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33453,7 +33584,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":198,"./common.js":226}],213:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],214:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33942,7 +34073,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":226}],214:[function(require,module,exports){
+},{"./common.js":227}],215:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -36842,7 +36973,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":198,"./FFT.js":199,"./common.js":226}],215:[function(require,module,exports){
+},{"./Encoder.js":199,"./FFT.js":200,"./common.js":227}],216:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -38342,7 +38473,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":196,"./CalcNoiseResult.js":197,"./Encoder.js":198,"./GrInfo.js":201,"./L3Side.js":205,"./VBRQuantize.js":222,"./common.js":226}],216:[function(require,module,exports){
+},{"./CalcNoiseData.js":197,"./CalcNoiseResult.js":198,"./Encoder.js":199,"./GrInfo.js":202,"./L3Side.js":206,"./VBRQuantize.js":223,"./common.js":227}],217:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -39381,7 +39512,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":198,"./LameInternalFlags.js":208,"./MeanBits.js":210,"./ScaleFac.js":219,"./common.js":226}],217:[function(require,module,exports){
+},{"./Encoder.js":199,"./LameInternalFlags.js":209,"./MeanBits.js":211,"./ScaleFac.js":220,"./common.js":227}],218:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -39442,7 +39573,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":200,"./common.js":226}],218:[function(require,module,exports){
+},{"./GainAnalysis.js":201,"./common.js":227}],219:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -39741,7 +39872,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":226}],219:[function(require,module,exports){
+},{"./common.js":227}],220:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -39795,7 +39926,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":198,"./common.js":226}],220:[function(require,module,exports){
+},{"./Encoder.js":199,"./common.js":227}],221:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -40311,7 +40442,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],221:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -41488,7 +41619,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":198,"./GrInfo.js":201,"./QuantizePVT.js":216,"./Tables.js":220,"./common.js":226}],222:[function(require,module,exports){
+},{"./Encoder.js":199,"./GrInfo.js":202,"./QuantizePVT.js":217,"./Tables.js":221,"./common.js":227}],223:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -41503,7 +41634,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],223:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -41539,7 +41670,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],224:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42511,7 +42642,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":226}],225:[function(require,module,exports){
+},{"./common.js":227}],226:[function(require,module,exports){
 function Version() {
 
     /**
@@ -42603,7 +42734,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],226:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -42774,7 +42905,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],227:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42972,5 +43103,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":194,"./Encoder.js":198,"./GainAnalysis.js":200,"./Lame.js":206,"./MPEGMode.js":209,"./Presets.js":213,"./Quantize.js":215,"./QuantizePVT.js":216,"./Reservoir.js":218,"./Takehiro.js":221,"./VBRTag.js":224,"./Version.js":225,"./common.js":226}]},{},[188,187])(188)
+},{"./BitStream.js":195,"./Encoder.js":199,"./GainAnalysis.js":201,"./Lame.js":207,"./MPEGMode.js":210,"./Presets.js":214,"./Quantize.js":216,"./QuantizePVT.js":217,"./Reservoir.js":219,"./Takehiro.js":222,"./VBRTag.js":225,"./Version.js":226,"./common.js":227}]},{},[188])(188)
 });

@@ -4,15 +4,17 @@
 	<title>Currently Playing</title>
 	<link href=“https://fonts.googleapis.com/css?family=Roboto” rel=“stylesheet”>
 	<link rel ='stylesheet' href='style.css'>
-</head>
-<body>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<script src="bundle.js"></script>
-	<h2>Now Playing</h2>
+</head>
+<canvas id='myCanvas'></canvas>
+<body onload="myBundle.startVisualiser()">
 	<div id="current-song"></div>
 	<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 </body>
-<label for="accept">
-   <input type="checkbox" id="accept" 
-   name="accept" onclick="myBundle.toggleAuto()"> Auto 
+<label for="autoToggle" id="autoToggleLabel">
+   <input type="checkbox" id="autoToggle" 
+   name="autoToggle" onclick="myBundle.toggleAuto()"> Auto 
 </label >
+<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
 </html>
