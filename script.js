@@ -1,36 +1,22 @@
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const visualiser = require('./visualiser') 
+const barVisualiser = require('./barVisualiser') 
+const flowVisualiser = require('./flowVisualiser')
 
 const testResponse = false; // = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
 var buttonsHidden = false;
+var currentSongHidden = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 
 function startVisualiser() {
+
 	let micIcon = document.getElementById('mic-icon')
 	micIcon.style.display = 'none';
-	visualiser.main(audioPromise);
-}
-
-document.onkeyup = function(e) {
-	if (e.key === " ") {
-		if (buttonsHidden) {
-			let autoToggle = document.querySelector('#autoToggleLabel');
-			autoToggle.style.visibility = 'visible';
-			let updateButton = document.querySelector('#updateButton');
-			updateButton.style.visibility = 'visible';
-			buttonsHidden = false;
-		} else {
-			let autoToggle = document.querySelector('#autoToggleLabel');
-			autoToggle.style.visibility = 'hidden';
-			let updateButton = document.querySelector('#updateButton');
-			updateButton.style.visibility = 'hidden';
-			buttonsHidden = true;
-		}
-	}
+	//barVisualiser.main(audioPromise);
+	flowVisualiser.main(audioPromise);
 }
 
 function updateSong() {
@@ -111,7 +97,7 @@ function processResponse(response) {
 		details.textContent = artist + ' - ' + title;
 		if (autoMode) {
 			var jsonObject = JSON.parse(response);
-			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms
+			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms + 5000
 			console.log('Setting delay to: ' + delay)
 			setTimeout(() => updateSong(), delay);
 		}
@@ -148,14 +134,44 @@ function saveRecordingToFile(audioBlob, name) {
 
 function toggleAuto() {
 	const cb = document.querySelector('#autoToggle');
+	let updateButton = document.querySelector('#updateButton');
 	console.log(cb.checked);
 	if (cb.checked == true) {
 		// start auto mode
 		autoMode = true;
 		updateSong();
+		updateButton.style.visibility='hidden'
 	} else {
 		// stop auto mode
 		autoMode = false;
+		updateButton.style.visibility='visible'
+	}
+}
+
+document.onkeyup = function(e) {
+	if (e.key === "c") {
+		let autoToggle = document.querySelector('#autoToggleLabel');
+		let updateButton = document.querySelector('#updateButton');
+		if (buttonsHidden) {
+			autoToggle.style.visibility = 'visible';
+			updateButton.style.visibility = 'visible';
+			buttonsHidden = false;
+		} else {
+			autoToggle.style.visibility = 'hidden';
+			updateButton.style.visibility = 'hidden';
+			buttonsHidden = true;
+		}
+	}
+	if (e.key === "s") {
+		let currentSong = document.querySelector('#current-song');
+		if (currentSongHidden) {
+			currentSong.style.visibility = 'visible';
+			currentSongHidden = false;
+		} else {
+			currentSong.style.visibility = 'hidden';
+			currentSongHidden = true;
+		}
+
 	}
 }
 
