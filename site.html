@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Currently Playing</title>
+	<title>Now Playing</title>
 	<link href=“https://fonts.googleapis.com/css?family=Roboto” rel=“stylesheet”>
 	<link rel ='stylesheet' href='style.css'>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<script src="bundle.js"></script>
 </head>
-<canvas id='myCanvas'></canvas>
 <body onload="myBundle.startVisualiser()">
-	<div id="current-song">  </div>
+	<canvas id='myCanvas'></canvas>
+	<div id="current-song"></div>
 	<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 </body>
 <label for="autoToggle" id="autoToggleLabel">

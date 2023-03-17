@@ -3,12 +3,17 @@
     box-sizing: border-box;
 }
 canvas {
+    position:absolute;
     background: black;
     padding: 0;
+    bottom:0
 }
-/* h2 {
-    padding: 20px; 
-} */
+div {
+    background-color: rgba(0,0,0,0.5);
+    position:fixed;
+    bottom: 50px;
+    left: 10px;
+}
 body {
     background-color: black;
     color: white;
@@ -18,29 +23,33 @@ body {
     bottom: 0;
     left: 0;
     margin: 0;
-    padding: 20px;
+    /* padding: 20px; */
     font-family: ‘Roboto’, sans-serif; 
     overflow: hidden;
 }
 button {
+    position: fixed;  
+    bottom:calc(10px);
+    left:calc(10px);
     background-color: black;
     color:white;
 }
 label {
+    background-color: transparent;
     position:fixed;
-    bottom:0;
+    bottom:10px;
     font-size: 18px;
-    right:0;
-    padding: 20px;
+    right:10px;
+    /* padding: 20px; */
     font-family: ‘Roboto’, sans-serif;
 }
 .mic-icon {
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    position: absolute;
+    background-color: transparent;
+    /* padding: 20px; */
+    /* display: flex; */
+    /* justify-content: center; */
+    position: fixed;
     bottom: 10px;
     /* text-align: center; */
-
-    left: calc(50% - 20px);  /*50% - half of icon width*/
+    left: calc(50% - 15px);  /*50% - half of icon width*/
   }
