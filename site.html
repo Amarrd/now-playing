@@ -12,7 +12,6 @@
 <body onload="myBundle.startVisualiser()">
 	<canvas id='myCanvas'></canvas>
 	<div class="currentSong" id="current-song"></div>
-	<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 	<div class="controls" id="controls">
 		<label for="hue"> hue
 			<input type="number" id="hue" name="hue" min="1" max="100" onchange="myBundle.hueChange()">
@@ -35,10 +34,11 @@
 		<label for="scrollSpeed"> scroll speed
 			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="10" onchange="myBundle.scrollSpeedChange()">
 		</label>
+		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
+			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> Auto
+		</label>
+		<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 	</div>
-	<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
-		<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> Auto
-	</label>
 	<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
 </body>
 
