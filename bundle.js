@@ -26571,7 +26571,7 @@ function main(audioPromise) {
         reset(volume) {
             this.x = Math.floor(Math.random() * this.effect.width);
             this.y = Math.floor(Math.random() * this.effect.height);
-            this.hue = volume * 10 + options.hue
+            this.hue = volume * 5 + options.hue
             //console.log(`volume:${volume}, hue:${this.hue}`)
             this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,50%)`, `hsl( ${this.hue},100%, 80%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
@@ -26620,7 +26620,7 @@ function main(audioPromise) {
                 }
             }
             this.counter = this.counter + options.scrollSpeed;
-           // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
+            // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
             if (createParticles) {
                 for (let i = 0; i < this.numberOfParticles; i++) {
@@ -26749,7 +26749,7 @@ module.exports = {Microphone}
 },{}],192:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const barVisualiser = require('./barVisualiser') 
+const barVisualiser = require('./barVisualiser')
 const flowVisualiser = require('./flowVisualiser')
 
 const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
@@ -26896,15 +26896,15 @@ function toggleAuto() {
 		// start auto mode
 		autoMode = true;
 		updateSong();
-		updateButton.style.visibility='hidden'
+		updateButton.style.visibility = 'hidden'
 	} else {
 		// stop auto mode
 		autoMode = false;
-		updateButton.style.visibility='visible'
+		updateButton.style.visibility = 'visible'
 	}
 }
 
-document.onkeyup = function(e) {
+document.onkeyup = function (e) {
 	if (e.key === "c") {
 		let autoToggle = document.querySelector('#autoToggleLabel');
 		let updateButton = document.querySelector('#updateButton');
@@ -26935,34 +26935,34 @@ document.onkeyup = function(e) {
 }
 
 function hueChange() {
-    flowVisualiser.hueChange(Number(document.querySelector('#hue').value)); 
+	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
 }
 
 function volumeChange() {
-    flowVisualiser.volumeChange(Number(document.querySelector('#volume').value)); 
+	flowVisualiser.volumeChange(Number(document.querySelector('#volume').value));
 }
 
 function curveChange() {
-    flowVisualiser.curveChange(Number(document.querySelector('#curve').value)); 
+	flowVisualiser.curveChange(Number(document.querySelector('#curve').value));
 }
 
 function zoomChange() {
-    flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value)); 
+	flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value));
 }
 
 function xAdjustmentChange() {
-    flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value)); 
+	flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value));
 }
 
 function yAdjustmentChange() {
-    flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value)); 
+	flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value));
 }
 
 function scrollSpeedChange() {
-    flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value)); 
+	flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value));
 }
 
-module.exports = {startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange}
+module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":190,"audio-encoder":195}],193:[function(require,module,exports){
 var lamejs = require('lamejs');
 

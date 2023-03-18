@@ -80,7 +80,7 @@ function main(audioPromise) {
         reset(volume) {
             this.x = Math.floor(Math.random() * this.effect.width);
             this.y = Math.floor(Math.random() * this.effect.height);
-            this.hue = volume * 10 + options.hue
+            this.hue = volume * 5 + options.hue
             //console.log(`volume:${volume}, hue:${this.hue}`)
             this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,50%)`, `hsl( ${this.hue},100%, 80%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
@@ -129,7 +129,7 @@ function main(audioPromise) {
                 }
             }
             this.counter = this.counter + options.scrollSpeed;
-           // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
+            // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
             if (createParticles) {
                 for (let i = 0; i < this.numberOfParticles; i++) {
