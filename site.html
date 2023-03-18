@@ -34,8 +34,11 @@
 		<label for="scrollSpeed"> scroll speed
 			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="100" onchange="myBundle.scrollSpeedChange()">
 		</label>
+		<label class="bassMode" for="bassMode" id="baseModeLabel">
+			<input type="checkbox" id="bassMode" name="bassMode" onclick="myBundle.toggleBassMode()"> bass mode
+		</label>
 		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
-			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> Auto
+			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto
 		</label>
 		<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
 	</div>
