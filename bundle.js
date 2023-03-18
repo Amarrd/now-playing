@@ -26497,8 +26497,8 @@ var options = {
     xAdjustment: -1,
     yAdjustment: -1,
     scrollSpeed: 0,
-    zoom: 15,
-    curve: 10,
+    zoom: 10,
+    curve: 12,
     speed: 2
 }
 
@@ -26523,7 +26523,7 @@ function main(audioPromise) {
             this.angle = 0;
             this.timer = this.maxLength * 2;
             this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
+            this.colours = [`hsl( ${this.hue}, 100%, 10%)`, `hsl( ${this.hue},100%,10%)`, `hsl( ${this.hue},100%, 10%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {
@@ -26573,7 +26573,7 @@ function main(audioPromise) {
             this.y = Math.floor(Math.random() * this.effect.height);
             this.hue = volume * 5 + options.hue
             //console.log(`volume:${volume}, hue:${this.hue}`)
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,50%)`, `hsl( ${this.hue},100%, 80%)`];
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
             this.history = [{ x: this.x, y: this.y }];
             this.timer = this.maxLength;
