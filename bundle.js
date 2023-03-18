@@ -26493,7 +26493,7 @@ const Microphone = require("./microphone");
 
 var options = {
     hue: 25,
-    volume: 35,
+    volume: 75,
     xAdjustment: -1,
     yAdjustment: -1,
     scrollSpeed: 0,
