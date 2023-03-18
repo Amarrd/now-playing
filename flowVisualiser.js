@@ -2,6 +2,7 @@ const Microphone = require("./microphone");
 
 var options = {
     hue: 350,
+    hueShift:5,
     volume: 100,
     curve: 60,
     zoom: 7,
@@ -81,7 +82,7 @@ function main(audioPromise) {
         reset(volume) {
             this.x = Math.floor(Math.random() * this.effect.width);
             this.y = Math.floor(Math.random() * this.effect.height);
-            this.hue = volume * 5 + options.hue
+            this.hue = volume * options.hueShift + options.hue
             //console.log(`volume:${volume}, hue:${this.hue}`)
             this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
@@ -193,6 +194,7 @@ function main(audioPromise) {
 
 function setOptions() {
     document.querySelector('#hue').setAttribute('value', options.hue);
+    document.querySelector('#hueShift').setAttribute('value', options.hueShift);
     document.querySelector('#volume').setAttribute('value', options.volume);
     document.querySelector('#curve').setAttribute('value', options.curve);
     document.querySelector('#zoom').setAttribute('value', options.zoom);
@@ -203,6 +205,10 @@ function setOptions() {
 
 function hueChange(hue) {
     options.hue = hue;
+}
+
+function hueShiftChange(hueShift) {
+    options.hueShift = hueShift;
 }
 
 function volumeChange(volume) {
@@ -231,8 +237,7 @@ function scrollSpeedChange(scrollSpeed) {
 
 function toggleBassMode(bassMode) {
     options.bassMode = bassMode;
-    console.log('bassMode:%s', options.bassMode)
 }
 
-module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
+module.exports = { main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
     yAdjustmentChange, scrollSpeedChange, toggleBassMode }
