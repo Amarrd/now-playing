@@ -9,10 +9,30 @@ canvas {
     bottom:0
 }
 div {
-    background-color: rgba(0,0,0,0.5);
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+    background-color: rgba(0,0,0,0.0);
     position:fixed;
     bottom: 50px;
     left: 10px;
+}
+div.controls {
+    border-radius: 25px;
+    background-color: transparent;
+    position:fixed;
+    bottom:calc(50% - 100px);
+    font-size: 18px;
+    left:auto;
+    right:0px;
+    padding: 20px;
+    font-family: ‘Roboto’, sans-serif;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+input {
+    background-color: black; 
+    color: white;
 }
 body {
     background-color: black;
@@ -23,7 +43,6 @@ body {
     bottom: 0;
     left: 0;
     margin: 0;
-    /* padding: 20px; */
     font-family: ‘Roboto’, sans-serif; 
     overflow: hidden;
 }
@@ -34,13 +53,12 @@ button {
     background-color: black;
     color:white;
 }
-label {
+label.autoToggle {
     background-color: transparent;
     position:fixed;
     bottom:10px;
     font-size: 18px;
     right:10px;
-    /* padding: 20px; */
     font-family: ‘Roboto’, sans-serif;
 }
 .mic-icon {

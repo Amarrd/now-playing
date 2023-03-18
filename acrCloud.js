@@ -1,15 +1,6 @@
 const crypto = require('crypto');
 const FormData = require('form-data');
-
-var options = {
-	host: 'identify-eu-west-1.acrcloud.com',
-	endpoint: '/v1/identify',
-	signature_version: '1',
-	data_type: 'audio',
-	secure: true,
-	access_key: 'a5aa8a35f41a9bd996a355421abd87e9',
-	access_secret: 'qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7'
-};
+const options = require('./acrConfig.json');
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
 	return [method, uri, accessKey, dataType, signatureVersion, timestamp].join('\n');

@@ -26353,16 +26353,7 @@ function config (name) {
 (function (Buffer){(function (){
 const crypto = require('crypto');
 const FormData = require('form-data');
-
-var options = {
-	host: 'identify-eu-west-1.acrcloud.com',
-	endpoint: '/v1/identify',
-	signature_version: '1',
-	data_type: 'audio',
-	secure: true,
-	access_key: 'a5aa8a35f41a9bd996a355421abd87e9',
-	access_secret: 'qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7'
-};
+const options = require('./acrConfig.json');
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
 	return [method, uri, accessKey, dataType, signatureVersion, timestamp].join('\n');
@@ -26406,7 +26397,17 @@ function identify(data, cb) {
 
 module.exports = {identify}
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":63,"crypto":71,"form-data":195}],188:[function(require,module,exports){
+},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":196}],188:[function(require,module,exports){
+module.exports={
+	"host": "identify-eu-west-1.acrcloud.com",
+	"endpoint": "/v1/identify",
+	"signature_version": "1",
+	"data_type": "audio",
+	"secure": true,
+	"access_key": "a5aa8a35f41a9bd996a355421abd87e9",
+	"access_secret": "qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7"
+}
+},{}],189:[function(require,module,exports){
 const Microphone = require("./microphone");
 
 class Bar {
@@ -26487,19 +26488,27 @@ function main(audioPromise) {
 
 
 module.exports = {main};
-},{"./microphone":190}],189:[function(require,module,exports){
-const perlin = require('perlin-noise-3d');
+},{"./microphone":191}],190:[function(require,module,exports){
 const Microphone = require("./microphone");
 
+var options = {
+    hue: 25,
+    volume: 35,
+    xAdjustment: -1,
+    yAdjustment: -1,
+    scrollSpeed: 0,
+    zoom: 0.1,
+    curve: 3,
+    speed: 2
+}
+
 function main(audioPromise) {
-    const canvas =  document.getElementById('myCanvas');
+    const canvas = document.getElementById('myCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    ctx.fillStyle = '#eb8100' //'#fc9003';
-    ctx.strokeStyle = '#eb8100';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1;
+    setOptions()
 
     class Particle {
         constructor(effect) {
@@ -26507,143 +26516,198 @@ function main(audioPromise) {
             this.x = Math.floor(Math.random() * this.effect.width);
             this.y = Math.floor(Math.random() * this.effect.height);
             this.speedX;
-            this.speedY; 
-            this.speedModifier = Math.floor(Math.random() * 2 + 1);
-            this.history = [{x: this.x, y: this.y}];
-            this.maxLength = Math.floor(Math.random() * 100 + 10);
+            this.speedY;
+            this.speedModifier = 2;
+            this.history = [{ x: this.x, y: this.y }];
+            this.maxLength = Math.floor(Math.random() * 70 + 50);
             this.angle = 0;
-            this.timer = this.maxLength * 1;
-            this.colours = ['#fc9003', '#e89531', '#edd2b2'] // fill this array with some dynamically generated colours using the frequency?
+            this.timer = this.maxLength * 2;
+            this.hue = 25; //25 //227
+            this.colours = [`hsl( ${this.hue}, 100%, 50%)`, `hsl( ${this.hue},100%,70%)`, `hsl( ${this.hue},100%, 80%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
-        draw(context, volume) {
-            // this.colours = ['#fc9003', '#e89531', '#edd2b2']
-            // this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
+        draw(context) {
             context.beginPath();
             context.moveTo(this.history[0].x, this.history[0].y)
             for (let i = 0; i < this.history.length; i++) {
                 context.lineTo(this.history[i].x, this.history[i].y);
             }
-            
+
             context.strokeStyle = this.colour;
             context.stroke();
 
         }
-        update(volume) {
+
+        updateParticle(volume) {
             this.timer--;
             if (this.timer >= 1) {
                 let x = Math.floor(this.x / this.effect.cellSize);
                 let y = Math.floor(this.y / this.effect.cellSize);
                 let index = y * this.effect.cols + x;
                 this.angle = this.effect.flowField[index];
-    
+
                 this.speedX = Math.cos(this.angle);
                 this.speedY = Math.sin(this.angle);
-              
-                this.x += this.speedX * (volume +1)  //* this.speedModifier //+ (volume);
-                this.y += this.speedY * (volume +1)//*this.speedModifier //+ (volume);
-         
-                this.history.push({x: this.x, y: this.y});
+
+                let randomSpeed = Math.floor(Math.random() * options.speed + 1);
+                this.x += this.speedX * (volume * randomSpeed + 0.5)
+                this.y += this.speedY * (volume * randomSpeed + 0.5)
+
+                this.history.push({ x: this.x, y: this.y });
+
                 if (this.history.length > this.maxLength) {
                     this.history.shift();
                 }
-            } else if(this.history.length > 1) {
+
+            } else if (this.history.length > 1) {
                 this.history.shift();
+
             } else {
-                this.reset();
+                this.reset(volume);
             }
 
         }
-        reset() {
+
+        reset(volume) {
             this.x = Math.floor(Math.random() * this.effect.width);
             this.y = Math.floor(Math.random() * this.effect.height);
-            this.history = [{x: this.x, y: this.y}];
+            this.hue = volume * 10 + options.hue
+            //console.log(`volume:${volume}, hue:${this.hue}`)
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,50%)`, `hsl( ${this.hue},100%, 80%)`];
+            this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
+            this.history = [{ x: this.x, y: this.y }];
             this.timer = this.maxLength;
         }
 
     }
 
     class Effect {
-        constructor(width, height) {
-            this.width = width;
-            this.height = height;
+        constructor(canvas) {
+            this.width = canvas.width;
+            this.height = canvas.height;
             this.particles = [];
-            this.numberOfParticles = 1500;
+            this.numberOfParticles = 2500;
             this.cellSize = 20;
             this.rows;
             this.cols;
             this.flowField = [];
-            this.curve = 0.5;
-            this.zoom = 0.15
-            this.noise;
+            this.curve = 0.3;
+            this.zoom = 0.1
             this.counter = 0;
-            this.update(true, 0);
-        }
-        update(createParticles, volume) {
-            // create flow field
-            if (createParticles) {
-                this.rows = Math.floor(this.height / this.cellSize);
-                this.cols = Math.floor(this.width / this.cellSize);
-                this.noise = new perlin();
-            }
+            this.updateEffect(true, 0);
 
+            window.addEventListener('resize', e => {
+                let newWidth = e.target.innerWidth;
+                let newHeight = e.target.innerHeight;
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                this.width = canvas.width;
+                this.height = canvas.height;
+                this.updateEffect();
+            })
+        }
+
+        updateEffect(createParticles, volume) {
+            this.rows = Math.floor(this.height / this.cellSize);
+            this.cols = Math.floor(this.width / this.cellSize);
             this.flowField = [];
+            //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    //ctx.lineWidth = adjustedVolume 
-                    //console.log((volume * 3.4 + 0.1));
-                    let angle = (Math.cos(x * this.zoom) + Math.sin(y * this.zoom)) * (volume * 0.2 + 0.1 );
-                    //let angle = this.noise.get(x, y, 0)* 2 * Math.PI;
+                    let angle = (Math.cos((x + this.counter * options.xAdjustment) * options.zoom)
+                        + Math.sin((y + this.counter * options.yAdjustment) * options.zoom)) * (volume * options.curve);
                     this.flowField.push(angle);
                 }
             }
-            this.counter++
+            this.counter = this.counter + options.scrollSpeed;
+           // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
-            // create particles
             if (createParticles) {
                 for (let i = 0; i < this.numberOfParticles; i++) {
                     this.particles.push(new Particle(this));
                 }
             }
         }
+
         render(context, volume) {
             this.particles.forEach(particle => {
-                particle.draw(context, volume);
-                particle.update(volume);
+                particle.draw(context);
+                particle.updateParticle(volume);
             })
         }
-
     }
-
-    let maxV = 0;
 
     function animate() {
         if (microphone.initialised) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            normVolume = 3//getNormalisedVolume()
+
+            effect.updateEffect(false, normVolume)
+            effect.render(ctx, normVolume);
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function getNormalisedVolume() {
         let volume = microphone.getVolume();
         let minV = 0;
         if (maxV < volume) {
             maxV = volume;
         }
-        if (volume < maxV/2) {
+        if (volume < maxV / 20) {
             maxV = volume;
         }
-        let adjVolume = Math.floor(microphone.getVolume() * 75)/10;
-        let normVolume = (adjVolume - minV)/(maxV - minV);
-        effect.update(false, normVolume)
-        effect.render(ctx, normVolume);
-        }
-        requestAnimationFrame(animate);
+        let adjVolume = Math.floor(volume * options.volume) / 10;
+        return (adjVolume - minV) / (maxV - minV);
     }
 
     const microphone = new Microphone.Microphone(audioPromise);
-    const effect = new Effect(canvas.width, canvas.height);
-    effect.render(ctx, 0)  
+    const effect = new Effect(canvas);
+    effect.render(ctx, 0)
+    let maxV = 0;
     animate();
 }
 
-module.exports = {main}
-},{"./microphone":190,"perlin-noise-3d":231}],190:[function(require,module,exports){
+function setOptions() {
+    document.querySelector('#hue').setAttribute('value', options.hue);
+    document.querySelector('#volume').setAttribute('value', options.volume);
+    document.querySelector('#curve').setAttribute('value', options.curve);
+    document.querySelector('#zoom').setAttribute('value', options.zoom);
+    document.querySelector('#xAdjustment').setAttribute('value', options.xAdjustment);
+    document.querySelector('#yAdjustment').setAttribute('value', options.yAdjustment);
+    document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
+}
+
+function hueChange(hue) {
+    options.hue = hue;
+}
+
+function volumeChange(volume) {
+    options.volume = volume > 0 ? volume : 1;
+}
+
+function curveChange(curve) {
+    options.curve = curve;
+}
+
+function zoomChange(zoom) {
+    options.zoom = zoom;
+}
+
+function xAdjustmentChange(xAdjustment) {
+    options.xAdjustment = -xAdjustment;
+}
+
+function yAdjustmentChange(yAdjustment) {
+    options.yAdjustment = yAdjustment;
+}
+
+function scrollSpeedChange(scrollSpeed) {
+    options.scrollSpeed = scrollSpeed / 10;
+}
+
+module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
+},{"./microphone":191}],191:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
@@ -26682,13 +26746,13 @@ class Microphone {
 }
 
 module.exports = {Microphone}
-},{}],191:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const barVisualiser = require('./barVisualiser') 
 const flowVisualiser = require('./flowVisualiser')
 
-const testResponse = false; // = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
@@ -26777,9 +26841,16 @@ function processResponse(response) {
 	var currentSong = document.getElementById('current-song');
 	var details = document.createElement('p');
 	if (jsonObject.status.code === 0) {
+		var extraDetails = document.createElement('p');
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
+		var album = jsonObject.metadata.music[0].album.name;
+		var releaseDate = jsonObject.metadata.music[0].release_date.split('-')[0];
 		details.textContent = artist + ' - ' + title;
+		extraDetails.textContent = album + ', ' + releaseDate;
+		extraDetails.style.fontStyle = 'italic';
+		extraDetails.style.fontSize = '18px';
+		details.appendChild(extraDetails);
 		if (autoMode) {
 			var jsonObject = JSON.parse(response);
 			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms + 5000
@@ -26837,13 +26908,17 @@ document.onkeyup = function(e) {
 	if (e.key === "c") {
 		let autoToggle = document.querySelector('#autoToggleLabel');
 		let updateButton = document.querySelector('#updateButton');
+		let controls = document.querySelector('#controls');
+		console.log(controls);
 		if (buttonsHidden) {
 			autoToggle.style.visibility = 'visible';
 			updateButton.style.visibility = 'visible';
+			controls.style.visibility = 'visible';
 			buttonsHidden = false;
 		} else {
 			autoToggle.style.visibility = 'hidden';
 			updateButton.style.visibility = 'hidden';
+			controls.style.visibility = 'hidden';
 			buttonsHidden = true;
 		}
 	}
@@ -26860,8 +26935,36 @@ document.onkeyup = function(e) {
 	}
 }
 
-module.exports = { startVisualiser, updateSong, toggleAuto }
-},{"./acrCloud":187,"./barVisualiser":188,"./flowVisualiser":189,"audio-encoder":194}],192:[function(require,module,exports){
+function hueChange() {
+    flowVisualiser.hueChange(Number(document.querySelector('#hue').value)); 
+}
+
+function volumeChange() {
+    flowVisualiser.volumeChange(Number(document.querySelector('#volume').value)); 
+}
+
+function curveChange() {
+    flowVisualiser.curveChange(Number(document.querySelector('#curve').value)); 
+}
+
+function zoomChange() {
+    flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value)); 
+}
+
+function xAdjustmentChange() {
+    flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value)); 
+}
+
+function yAdjustmentChange() {
+    flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value)); 
+}
+
+function scrollSpeedChange() {
+    flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value)); 
+}
+
+module.exports = {startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange}
+},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":190,"audio-encoder":195}],193:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -26960,7 +27063,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":230}],193:[function(require,module,exports){
+},{"lamejs":231}],194:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -27052,7 +27155,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],194:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -27071,11 +27174,11 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":192,"./encodeWav":193}],195:[function(require,module,exports){
+},{"./encodeMp3":193,"./encodeWav":194}],196:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],196:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27156,7 +27259,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":201,"./common.js":229}],197:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],198:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28184,7 +28287,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":201,"./LameInternalFlags.js":211,"./Tables.js":223,"./Takehiro.js":224,"./common.js":229}],198:[function(require,module,exports){
+},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./Tables.js":224,"./Takehiro.js":225,"./common.js":230}],199:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28278,7 +28381,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":201,"./L3Side.js":208,"./LameInternalFlags.js":211,"./MeanBits.js":213,"./common.js":229}],199:[function(require,module,exports){
+},{"./Encoder.js":202,"./L3Side.js":209,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./common.js":230}],200:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -28294,7 +28397,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":229}],200:[function(require,module,exports){
+},{"./common.js":230}],201:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -28323,7 +28426,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],201:[function(require,module,exports){
+},{}],202:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28987,7 +29090,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":206,"./NewMDCT.js":214,"./common.js":229}],202:[function(require,module,exports){
+},{"./III_psy_ratio.js":207,"./NewMDCT.js":215,"./common.js":230}],203:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29235,7 +29338,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":201,"./common.js":229}],203:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],204:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -29789,7 +29892,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":229}],204:[function(require,module,exports){
+},{"./common.js":230}],205:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -29898,7 +30001,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":208,"./common.js":229}],205:[function(require,module,exports){
+},{"./L3Side.js":209,"./common.js":230}],206:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29934,7 +30037,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":204,"./common.js":229}],206:[function(require,module,exports){
+},{"./GrInfo.js":205,"./common.js":230}],207:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -29946,7 +30049,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":207}],207:[function(require,module,exports){
+},{"./III_psy_xmin.js":208}],208:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -29981,7 +30084,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":201,"./common.js":229}],208:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],209:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -29994,7 +30097,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":201}],209:[function(require,module,exports){
+},{"./Encoder.js":202}],210:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -31865,7 +31968,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":196,"./BitStream.js":197,"./CBRNewIterationLoop.js":198,"./Encoder.js":201,"./LameGlobalFlags.js":210,"./LameInternalFlags.js":211,"./PsyModel.js":217,"./ReplayGain.js":220,"./Tables.js":223,"./common.js":229}],210:[function(require,module,exports){
+},{"./ATH.js":197,"./BitStream.js":198,"./CBRNewIterationLoop.js":199,"./Encoder.js":202,"./LameGlobalFlags.js":211,"./LameInternalFlags.js":212,"./PsyModel.js":218,"./ReplayGain.js":221,"./Tables.js":224,"./common.js":230}],211:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -32136,7 +32239,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":212}],211:[function(require,module,exports){
+},{"./MPEGMode.js":213}],212:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32528,7 +32631,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":201,"./IIISideInfo.js":205,"./III_psy_xmin.js":207,"./L3Side.js":208,"./NsPsy.js":215,"./ScaleFac.js":222,"./VBRSeekInfo.js":226,"./common.js":229}],212:[function(require,module,exports){
+},{"./Encoder.js":202,"./IIISideInfo.js":206,"./III_psy_xmin.js":208,"./L3Side.js":209,"./NsPsy.js":216,"./ScaleFac.js":223,"./VBRSeekInfo.js":227,"./common.js":230}],213:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -32547,14 +32650,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],213:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],214:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -33720,7 +33823,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":201,"./common.js":229}],215:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],216:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33763,7 +33866,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":201,"./common.js":229}],216:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],217:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -34252,7 +34355,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":229}],217:[function(require,module,exports){
+},{"./common.js":230}],218:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -37152,7 +37255,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":201,"./FFT.js":202,"./common.js":229}],218:[function(require,module,exports){
+},{"./Encoder.js":202,"./FFT.js":203,"./common.js":230}],219:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -38652,7 +38755,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":199,"./CalcNoiseResult.js":200,"./Encoder.js":201,"./GrInfo.js":204,"./L3Side.js":208,"./VBRQuantize.js":225,"./common.js":229}],219:[function(require,module,exports){
+},{"./CalcNoiseData.js":200,"./CalcNoiseResult.js":201,"./Encoder.js":202,"./GrInfo.js":205,"./L3Side.js":209,"./VBRQuantize.js":226,"./common.js":230}],220:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -39691,7 +39794,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":201,"./LameInternalFlags.js":211,"./MeanBits.js":213,"./ScaleFac.js":222,"./common.js":229}],220:[function(require,module,exports){
+},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./ScaleFac.js":223,"./common.js":230}],221:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -39752,7 +39855,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":203,"./common.js":229}],221:[function(require,module,exports){
+},{"./GainAnalysis.js":204,"./common.js":230}],222:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -40051,7 +40154,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":229}],222:[function(require,module,exports){
+},{"./common.js":230}],223:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -40105,7 +40208,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":201,"./common.js":229}],223:[function(require,module,exports){
+},{"./Encoder.js":202,"./common.js":230}],224:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -40621,7 +40724,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],224:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -41798,7 +41901,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":201,"./GrInfo.js":204,"./QuantizePVT.js":219,"./Tables.js":223,"./common.js":229}],225:[function(require,module,exports){
+},{"./Encoder.js":202,"./GrInfo.js":205,"./QuantizePVT.js":220,"./Tables.js":224,"./common.js":230}],226:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -41813,7 +41916,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],226:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -41849,7 +41952,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],227:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42821,7 +42924,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":229}],228:[function(require,module,exports){
+},{"./common.js":230}],229:[function(require,module,exports){
 function Version() {
 
     /**
@@ -42913,7 +43016,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],229:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -43084,7 +43187,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],230:[function(require,module,exports){
+},{}],231:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -43282,8 +43385,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":197,"./Encoder.js":201,"./GainAnalysis.js":203,"./Lame.js":209,"./MPEGMode.js":212,"./Presets.js":216,"./Quantize.js":218,"./QuantizePVT.js":219,"./Reservoir.js":221,"./Takehiro.js":224,"./VBRTag.js":227,"./Version.js":228,"./common.js":229}],231:[function(require,module,exports){
-var r=perlinNoise3d=function(){for(var r=Math.floor(720),n=new Array(r),t=new Array(r),i=Math.PI/180,e=0;e<r;e++)n[e]=Math.sin(e*i*.5),t[e]=Math.cos(e*i*.5);var o=r;o>>=1;var l=function(){this.perlin_octaves=4,this.perlin_amp_falloff=.5,this.perlin=null};return l.prototype={noiseSeed:function(r){var n=function(){var r,n,t=4294967296;return{setSeed:function(i){n=r=(null==i?Math.random()*t:i)>>>0},getSeed:function(){return r},rand:function(){return(n=(1664525*n+1013904223)%t)/t}}}();n.setSeed(r),this.perlin=new Array(4096);for(var t=0;t<4096;t++)this.perlin[t]=n.rand();return this},get:function(n,i,e){if(i=i||0,e=e||0,null==this.perlin){this.perlin=new Array(4096);for(var l=0;l<4096;l++)this.perlin[l]=Math.random()}n<0&&(n=-n),i<0&&(i=-i),e<0&&(e=-e);for(var a,h,s,f,p,u=Math.floor(n),c=Math.floor(i),v=Math.floor(e),d=n-u,M=i-c,_=e-v,m=0,y=.5,w=function(n){return.5*(1-t[Math.floor(n*o)%r])},A=0;A<this.perlin_octaves;A++){var S=u+(c<<4)+(v<<8);a=w(d),h=w(M),s=this.perlin[4095&S],s+=a*(this.perlin[S+1&4095]-s),f=this.perlin[S+16&4095],s+=h*((f+=a*(this.perlin[S+16+1&4095]-f))-s),f=this.perlin[4095&(S+=256)],f+=a*(this.perlin[S+1&4095]-f),p=this.perlin[S+16&4095],f+=h*((p+=a*(this.perlin[S+16+1&4095]-p))-f),m+=(s+=w(_)*(f-s))*y,y*=this.perlin_amp_falloff,u<<=1,c<<=1,v<<=1,(d*=2)>=1&&(u++,d--),(M*=2)>=1&&(c++,M--),(_*=2)>=1&&(v++,_--)}return m}},l}();module.exports=r;
-
-},{}]},{},[191])(191)
+},{"./BitStream.js":198,"./Encoder.js":202,"./GainAnalysis.js":204,"./Lame.js":210,"./MPEGMode.js":213,"./Presets.js":217,"./Quantize.js":219,"./QuantizePVT.js":220,"./Reservoir.js":222,"./Takehiro.js":225,"./VBRTag.js":228,"./Version.js":229,"./common.js":230}]},{},[192])(192)
 });
