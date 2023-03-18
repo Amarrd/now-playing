@@ -1,12 +1,12 @@
 const Microphone = require("./microphone");
 
 var options = {
-    hue: 25,
+    hue: 5,
     volume: 75,
     xAdjustment: -1,
     yAdjustment: -1,
     scrollSpeed: 0,
-    zoom: 0.1,
+    zoom: 5,
     curve: 3,
     speed: 2
 }
@@ -123,12 +123,13 @@ function main(audioPromise) {
             //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    let angle = (Math.cos((x + this.counter * options.xAdjustment) * options.zoom)
-                        + Math.sin((y + this.counter * options.yAdjustment) * options.zoom)) * (volume * options.curve);
+                    aadjustedZoom = options.zoom/100
+                    let angle = (Math.cos((x + this.counter * options.xAdjustment) * adjustedZoom)
+                        + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
                     this.flowField.push(angle);
                 }
             }
-            this.counter = this.counter + options.scrollSpeed;
+            this.counter += options.scrollSpeed/10;
             // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
             if (createParticles) {
@@ -212,7 +213,7 @@ function yAdjustmentChange(yAdjustment) {
 }
 
 function scrollSpeedChange(scrollSpeed) {
-    options.scrollSpeed = scrollSpeed / 10;
+    options.scrollSpeed = scrollSpeed;
 }
 
 module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
