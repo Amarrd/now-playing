@@ -6,8 +6,8 @@ var options = {
     xAdjustment: -1,
     yAdjustment: -1,
     scrollSpeed: 0,
-    zoom: 5,
-    curve: 3,
+    zoom: 15,
+    curve: 10,
     speed: 2
 }
 
@@ -32,7 +32,7 @@ function main(audioPromise) {
             this.angle = 0;
             this.timer = this.maxLength * 2;
             this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 50%)`, `hsl( ${this.hue},100%,70%)`, `hsl( ${this.hue},100%, 80%)`];
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {

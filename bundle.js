@@ -26497,8 +26497,8 @@ var options = {
     xAdjustment: -1,
     yAdjustment: -1,
     scrollSpeed: 0,
-    zoom: 5,
-    curve: 3,
+    zoom: 15,
+    curve: 10,
     speed: 2
 }
 
@@ -26523,7 +26523,7 @@ function main(audioPromise) {
             this.angle = 0;
             this.timer = this.maxLength * 2;
             this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 50%)`, `hsl( ${this.hue},100%,70%)`, `hsl( ${this.hue},100%, 80%)`];
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {
@@ -26586,7 +26586,7 @@ function main(audioPromise) {
             this.width = canvas.width;
             this.height = canvas.height;
             this.particles = [];
-            this.numberOfParticles = 2500;
+            this.numberOfParticles = 2000;
             this.cellSize = 20;
             this.rows;
             this.cols;
@@ -26661,7 +26661,7 @@ function main(audioPromise) {
         let adjVolume = Math.floor(volume * options.volume) / 10;
         let adjMaxV= Math.floor(maxV * options.volume) / 10;
         let normVolume = (adjVolume - minV) / (maxV - minV);
-        console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
