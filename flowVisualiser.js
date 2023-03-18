@@ -168,8 +168,8 @@ function main(audioPromise) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV= Math.floor(maxV * options.volume) / 10;
-        let normVolume = (adjVolume - minV) / (maxV - minV);
+        let adjMaxV= maxV * 1.2
+        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
        // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }

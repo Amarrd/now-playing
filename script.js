@@ -1,9 +1,8 @@
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const barVisualiser = require('./barVisualiser')
 const flowVisualiser = require('./flowVisualiser')
 
-const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
@@ -15,7 +14,6 @@ function startVisualiser() {
 
 	let micIcon = document.getElementById('mic-icon')
 	micIcon.style.display = 'none';
-	//barVisualiser.main(audioPromise);
 	flowVisualiser.main(audioPromise);
 }
 
@@ -104,15 +102,17 @@ function processResponse(response) {
 		details.appendChild(extraDetails);
 		if (autoMode) {
 			var jsonObject = JSON.parse(response);
-			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms + 5000
-			console.log('Setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
+			detectDelay = delay + 5000;
+			console.log('Setting delay to: ' + detectDelay)
+			setTimeout(() => clearSong(), delay)
+			setTimeout(() => updateSong(), detectDelay);
 		}
 	} else {
 		if (autoMode) {
-			var delay = 60000
-			console.log('Not found, setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			var detectDelay = 60000
+			console.log('Not found, setting delay to: ' + detectDelay)
+			setTimeout(() => updateSong(), detectDelay);
 		}
 	}
 
@@ -124,6 +124,11 @@ function processResponse(response) {
 	}
 	let micIcon = document.getElementById('mic-icon')
 	micIcon.style.display = 'none';
+}
+
+function clearSong() {
+	let currentSong = document.querySelector('#current-song');
+	currentSong.removeChild(currentSong.childNodes[0]);
 }
 
 function addProgressToHtml() {

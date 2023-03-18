@@ -26397,7 +26397,7 @@ function identify(data, cb) {
 
 module.exports = {identify}
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":196}],188:[function(require,module,exports){
+},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":195}],188:[function(require,module,exports){
 module.exports={
 	"host": "identify-eu-west-1.acrcloud.com",
 	"endpoint": "/v1/identify",
@@ -26408,87 +26408,6 @@ module.exports={
 	"access_secret": "qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7"
 }
 },{}],189:[function(require,module,exports){
-const Microphone = require("./microphone");
-
-class Bar {
-    constructor(x , y, width, height, colour) {
-    this.x = x
-    this.y = y
-    this.width = width
-    this.height = height;
-    this.colour = colour;
-
-    }
-
-    update(micInput, volume) {
-        //const sound = volume * 1000;
-        const sound = micInput * 500;
-        if (sound > this.height) {
-            this.height = sound;
-        } else {
-            this.height -= this.height * 0.03
-        }
-        
-    }
-    
-    draw(context) {
-        // context.fillStyle = this.colour;
-        // context.fillRect(this.x, this.y, this.width, -this.height);
-
-        context.strokeStyle = this.colour;
-        context.beginPath();
-        context.moveTo(this.x, this.y);
-        context.lineTo(this.x, this.y - this.height);
-        context.stroke();
-
-        // context.moveTo(this.x, this.y);
-        // context.lineTo(this.x, window.innerHeight/2 + this.height);
-    }
-}
-
-
-function main(audioPromise) {
-    const canvas =  document.getElementById('myCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    function createBars() {
-        let canvasMidX = canvas.width/ 2;
-        let canvasMidY = canvas.height * 0.75;
-        let barWidth = 10;
-        let frequencyBinCount = 512/4;
-        let barStart = canvasMidX - ((frequencyBinCount/2) * barWidth);
-
-        for (let i = 0; i < frequencyBinCount; i++) {
-            bars.push(new Bar(barStart + i*barWidth, canvasMidY, barWidth, 20, 'orange'));
-        }
-    }
-
-
-    function animate() {
-        if (microphone.initialised) {
-            ctx.clearRect(0,0, canvas.width, canvas.height);
-            const samples = microphone.getSamples();
-            const volume = microphone.getVolume();
-            bars.forEach(function(bar, i) {
-                bar.update(samples[i], volume);
-                bar.draw(ctx);
-            });
-        }
-        requestAnimationFrame(animate);
-    }
-    
-    const microphone = new Microphone.Microphone(audioPromise);
-    let bars = [];
-    createBars();
-    animate()
-    
-}
-
-
-module.exports = {main};
-},{"./microphone":191}],190:[function(require,module,exports){
 const Microphone = require("./microphone");
 
 var options = {
@@ -26659,8 +26578,8 @@ function main(audioPromise) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV= Math.floor(maxV * options.volume) / 10;
-        let normVolume = (adjVolume - minV) / (maxV - minV);
+        let adjMaxV= maxV * 1.2
+        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
        // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
@@ -26711,7 +26630,7 @@ function scrollSpeedChange(scrollSpeed) {
 }
 
 module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
-},{"./microphone":191}],191:[function(require,module,exports){
+},{"./microphone":190}],190:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
@@ -26750,13 +26669,12 @@ class Microphone {
 }
 
 module.exports = {Microphone}
-},{}],192:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const barVisualiser = require('./barVisualiser')
 const flowVisualiser = require('./flowVisualiser')
 
-const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
@@ -26768,7 +26686,6 @@ function startVisualiser() {
 
 	let micIcon = document.getElementById('mic-icon')
 	micIcon.style.display = 'none';
-	//barVisualiser.main(audioPromise);
 	flowVisualiser.main(audioPromise);
 }
 
@@ -26857,15 +26774,17 @@ function processResponse(response) {
 		details.appendChild(extraDetails);
 		if (autoMode) {
 			var jsonObject = JSON.parse(response);
-			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms + 5000
-			console.log('Setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
+			detectDelay = delay + 5000;
+			console.log('Setting delay to: ' + detectDelay)
+			setTimeout(() => clearSong(), delay)
+			setTimeout(() => updateSong(), detectDelay);
 		}
 	} else {
 		if (autoMode) {
-			var delay = 60000
-			console.log('Not found, setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			var detectDelay = 60000
+			console.log('Not found, setting delay to: ' + detectDelay)
+			setTimeout(() => updateSong(), detectDelay);
 		}
 	}
 
@@ -26877,6 +26796,11 @@ function processResponse(response) {
 	}
 	let micIcon = document.getElementById('mic-icon')
 	micIcon.style.display = 'none';
+}
+
+function clearSong() {
+	let currentSong = document.querySelector('#current-song');
+	currentSong.removeChild(currentSong.childNodes[0]);
 }
 
 function addProgressToHtml() {
@@ -26967,7 +26891,7 @@ function scrollSpeedChange() {
 }
 
 module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
-},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":190,"audio-encoder":195}],193:[function(require,module,exports){
+},{"./acrCloud":187,"./flowVisualiser":189,"audio-encoder":194}],192:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -27066,7 +26990,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":231}],194:[function(require,module,exports){
+},{"lamejs":230}],193:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -27158,7 +27082,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],195:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -27177,11 +27101,11 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":193,"./encodeWav":194}],196:[function(require,module,exports){
+},{"./encodeMp3":192,"./encodeWav":193}],195:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],197:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27262,7 +27186,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":202,"./common.js":230}],198:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],197:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28290,7 +28214,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./Tables.js":224,"./Takehiro.js":225,"./common.js":230}],199:[function(require,module,exports){
+},{"./Encoder.js":201,"./LameInternalFlags.js":211,"./Tables.js":223,"./Takehiro.js":224,"./common.js":229}],198:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28384,7 +28308,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":202,"./L3Side.js":209,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./common.js":230}],200:[function(require,module,exports){
+},{"./Encoder.js":201,"./L3Side.js":208,"./LameInternalFlags.js":211,"./MeanBits.js":213,"./common.js":229}],199:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -28400,7 +28324,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":230}],201:[function(require,module,exports){
+},{"./common.js":229}],200:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -28429,7 +28353,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],202:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29093,7 +29017,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":207,"./NewMDCT.js":215,"./common.js":230}],203:[function(require,module,exports){
+},{"./III_psy_ratio.js":206,"./NewMDCT.js":214,"./common.js":229}],202:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29341,7 +29265,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":202,"./common.js":230}],204:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],203:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -29895,7 +29819,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":230}],205:[function(require,module,exports){
+},{"./common.js":229}],204:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -30004,7 +29928,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":209,"./common.js":230}],206:[function(require,module,exports){
+},{"./L3Side.js":208,"./common.js":229}],205:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -30040,7 +29964,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":205,"./common.js":230}],207:[function(require,module,exports){
+},{"./GrInfo.js":204,"./common.js":229}],206:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -30052,7 +29976,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":208}],208:[function(require,module,exports){
+},{"./III_psy_xmin.js":207}],207:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -30087,7 +30011,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":202,"./common.js":230}],209:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],208:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -30100,7 +30024,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":202}],210:[function(require,module,exports){
+},{"./Encoder.js":201}],209:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -31971,7 +31895,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":197,"./BitStream.js":198,"./CBRNewIterationLoop.js":199,"./Encoder.js":202,"./LameGlobalFlags.js":211,"./LameInternalFlags.js":212,"./PsyModel.js":218,"./ReplayGain.js":221,"./Tables.js":224,"./common.js":230}],211:[function(require,module,exports){
+},{"./ATH.js":196,"./BitStream.js":197,"./CBRNewIterationLoop.js":198,"./Encoder.js":201,"./LameGlobalFlags.js":210,"./LameInternalFlags.js":211,"./PsyModel.js":217,"./ReplayGain.js":220,"./Tables.js":223,"./common.js":229}],210:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -32242,7 +32166,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":213}],212:[function(require,module,exports){
+},{"./MPEGMode.js":212}],211:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32634,7 +32558,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":202,"./IIISideInfo.js":206,"./III_psy_xmin.js":208,"./L3Side.js":209,"./NsPsy.js":216,"./ScaleFac.js":223,"./VBRSeekInfo.js":227,"./common.js":230}],213:[function(require,module,exports){
+},{"./Encoder.js":201,"./IIISideInfo.js":205,"./III_psy_xmin.js":207,"./L3Side.js":208,"./NsPsy.js":215,"./ScaleFac.js":222,"./VBRSeekInfo.js":226,"./common.js":229}],212:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -32653,14 +32577,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],214:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],215:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -33826,7 +33750,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":202,"./common.js":230}],216:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],215:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33869,7 +33793,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":202,"./common.js":230}],217:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],216:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -34358,7 +34282,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":230}],218:[function(require,module,exports){
+},{"./common.js":229}],217:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -37258,7 +37182,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":202,"./FFT.js":203,"./common.js":230}],219:[function(require,module,exports){
+},{"./Encoder.js":201,"./FFT.js":202,"./common.js":229}],218:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -38758,7 +38682,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":200,"./CalcNoiseResult.js":201,"./Encoder.js":202,"./GrInfo.js":205,"./L3Side.js":209,"./VBRQuantize.js":226,"./common.js":230}],220:[function(require,module,exports){
+},{"./CalcNoiseData.js":199,"./CalcNoiseResult.js":200,"./Encoder.js":201,"./GrInfo.js":204,"./L3Side.js":208,"./VBRQuantize.js":225,"./common.js":229}],219:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -39797,7 +39721,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./ScaleFac.js":223,"./common.js":230}],221:[function(require,module,exports){
+},{"./Encoder.js":201,"./LameInternalFlags.js":211,"./MeanBits.js":213,"./ScaleFac.js":222,"./common.js":229}],220:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -39858,7 +39782,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":204,"./common.js":230}],222:[function(require,module,exports){
+},{"./GainAnalysis.js":203,"./common.js":229}],221:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -40157,7 +40081,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":230}],223:[function(require,module,exports){
+},{"./common.js":229}],222:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -40211,7 +40135,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":202,"./common.js":230}],224:[function(require,module,exports){
+},{"./Encoder.js":201,"./common.js":229}],223:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -40727,7 +40651,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],225:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -41904,7 +41828,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":202,"./GrInfo.js":205,"./QuantizePVT.js":220,"./Tables.js":224,"./common.js":230}],226:[function(require,module,exports){
+},{"./Encoder.js":201,"./GrInfo.js":204,"./QuantizePVT.js":219,"./Tables.js":223,"./common.js":229}],225:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -41919,7 +41843,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],227:[function(require,module,exports){
+},{}],226:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -41955,7 +41879,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],228:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42927,7 +42851,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":230}],229:[function(require,module,exports){
+},{"./common.js":229}],228:[function(require,module,exports){
 function Version() {
 
     /**
@@ -43019,7 +42943,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],230:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -43190,7 +43114,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],231:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -43388,5 +43312,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":198,"./Encoder.js":202,"./GainAnalysis.js":204,"./Lame.js":210,"./MPEGMode.js":213,"./Presets.js":217,"./Quantize.js":219,"./QuantizePVT.js":220,"./Reservoir.js":222,"./Takehiro.js":225,"./VBRTag.js":228,"./Version.js":229,"./common.js":230}]},{},[192])(192)
+},{"./BitStream.js":197,"./Encoder.js":201,"./GainAnalysis.js":203,"./Lame.js":209,"./MPEGMode.js":212,"./Presets.js":216,"./Quantize.js":218,"./QuantizePVT.js":219,"./Reservoir.js":221,"./Takehiro.js":224,"./VBRTag.js":227,"./Version.js":228,"./common.js":229}]},{},[191])(191)
 });
