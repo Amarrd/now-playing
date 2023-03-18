@@ -174,7 +174,7 @@ function main(audioPromise) {
         if (maxV < volume) {
             maxV = volume;
         }
-        if (volume < maxV / 20) {
+        if (volume < maxV * 0.2) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
