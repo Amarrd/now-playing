@@ -8,12 +8,12 @@ canvas {
     padding: 0;
     bottom:0
 }
-div {
+div.currentSong {
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
     background-color: rgba(0,0,0,0.0);
     position:fixed;
-    bottom: 50px;
-    left: 10px;
+    bottom: calc(7%);
+    left: calc(2%);
 }
 div.controls {
     border-radius: 25px;
