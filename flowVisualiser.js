@@ -160,7 +160,12 @@ function main(audioPromise) {
 
     function getNormalisedVolume() {
         if (options.bassMode) {
-            var volume = microphone.getSamples()[0];
+            let samples = microphone.getSamples()
+            let sum = 0;
+            for (let i = 0; i< samples.length/10; i++) {
+                sum += samples[i];
+            }
+            var volume = sum / (samples.length/10);
         }
         else {
             var volume  = microphone.getVolume();
