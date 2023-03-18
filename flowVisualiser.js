@@ -95,7 +95,7 @@ function main(audioPromise) {
             this.width = canvas.width;
             this.height = canvas.height;
             this.particles = [];
-            this.numberOfParticles = 2500;
+            this.numberOfParticles = 2000;
             this.cellSize = 20;
             this.rows;
             this.cols;
@@ -170,7 +170,7 @@ function main(audioPromise) {
         let adjVolume = Math.floor(volume * options.volume) / 10;
         let adjMaxV= Math.floor(maxV * options.volume) / 10;
         let normVolume = (adjVolume - minV) / (maxV - minV);
-        console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
