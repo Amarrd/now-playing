@@ -1,14 +1,15 @@
 const Microphone = require("./microphone");
 
 var options = {
-    hue: 5,
-    volume: 75,
-    xAdjustment: -1,
-    yAdjustment: -1,
-    scrollSpeed: 0,
-    zoom: 10,
-    curve: 12,
-    speed: 2
+    hue: 350,
+    volume: 100,
+    curve: 60,
+    zoom: 7,
+    xAdjustment: 1,
+    yAdjustment: 0,
+    scrollSpeed: 1,
+    speed: 2,
+    bassMode: false
 }
 
 function main(audioPromise) {
@@ -31,8 +32,8 @@ function main(audioPromise) {
             this.maxLength = Math.floor(Math.random() * 70 + 50);
             this.angle = 0;
             this.timer = this.maxLength * 2;
-            this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 10%)`, `hsl( ${this.hue},100%,10%)`, `hsl( ${this.hue},100%, 10%)`];
+            this.hue = options.hue; 
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {
@@ -124,7 +125,7 @@ function main(audioPromise) {
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
                     let adjustedZoom = options.zoom/100
-                    let angle = (Math.cos((x + this.counter * options.xAdjustment) * adjustedZoom)
+                    let angle = (Math.cos((x + this.counter * -options.xAdjustment) * adjustedZoom)
                         + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
                     this.flowField.push(angle);
                 }
@@ -150,8 +151,7 @@ function main(audioPromise) {
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            normVolume = getNormalisedVolume()
-
+            let normVolume = getNormalisedVolume()
             effect.updateEffect(false, normVolume)
             effect.render(ctx, normVolume);
         }
@@ -159,7 +159,12 @@ function main(audioPromise) {
     }
 
     function getNormalisedVolume() {
-        let volume = microphone.getVolume();
+        if (options.bassMode) {
+            var volume = microphone.getSamples()[0];
+        }
+        else {
+            var volume  = microphone.getVolume();
+        }
         let minV = 0;
         if (maxV < volume) {
             maxV = volume;
@@ -170,7 +175,7 @@ function main(audioPromise) {
         let adjVolume = Math.floor(volume * options.volume) / 10;
         let adjMaxV= maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+      //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
@@ -208,7 +213,7 @@ function zoomChange(zoom) {
 }
 
 function xAdjustmentChange(xAdjustment) {
-    options.xAdjustment = -xAdjustment;
+    options.xAdjustment = xAdjustment;
 }
 
 function yAdjustmentChange(yAdjustment) {
@@ -219,4 +224,10 @@ function scrollSpeedChange(scrollSpeed) {
     options.scrollSpeed = scrollSpeed;
 }
 
-module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
+function toggleBassMode(bassMode) {
+    options.bassMode = bassMode;
+    console.log('bassMode:%s', options.bassMode)
+}
+
+module.exports = { main, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
+    yAdjustmentChange, scrollSpeedChange, toggleBassMode }

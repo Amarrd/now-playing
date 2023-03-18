@@ -26411,13 +26411,13 @@ module.exports={
 const Microphone = require("./microphone");
 
 var options = {
-    hue: 5,
-    volume: 75,
-    xAdjustment: -1,
-    yAdjustment: -1,
-    scrollSpeed: 0,
-    zoom: 10,
-    curve: 12,
+    hue: 350,
+    volume: 100,
+    curve: 60,
+    zoom: 7,
+    xAdjustment: 1,
+    yAdjustment: 0,
+    scrollSpeed: 1,
     speed: 2
 }
 
@@ -26441,8 +26441,8 @@ function main(audioPromise) {
             this.maxLength = Math.floor(Math.random() * 70 + 50);
             this.angle = 0;
             this.timer = this.maxLength * 2;
-            this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 10%)`, `hsl( ${this.hue},100%,10%)`, `hsl( ${this.hue},100%, 10%)`];
+            this.hue = options.hue; 
+            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {
@@ -26534,7 +26534,7 @@ function main(audioPromise) {
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
                     let adjustedZoom = options.zoom/100
-                    let angle = (Math.cos((x + this.counter * options.xAdjustment) * adjustedZoom)
+                    let angle = (Math.cos((x + this.counter * -options.xAdjustment) * adjustedZoom)
                         + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
                     this.flowField.push(angle);
                 }
@@ -26618,7 +26618,7 @@ function zoomChange(zoom) {
 }
 
 function xAdjustmentChange(xAdjustment) {
-    options.xAdjustment = -xAdjustment;
+    options.xAdjustment = xAdjustment;
 }
 
 function yAdjustmentChange(yAdjustment) {

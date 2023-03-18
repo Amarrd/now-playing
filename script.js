@@ -145,10 +145,9 @@ function saveRecordingToFile(audioBlob, name) {
 }
 
 function toggleAuto() {
-	const cb = document.querySelector('#autoToggle');
+	const autoToggle = document.querySelector('#autoToggle');
 	let updateButton = document.querySelector('#updateButton');
-	console.log(cb.checked);
-	if (cb.checked == true) {
+	if (autoToggle.checked == true) {
 		// start auto mode
 		autoMode = true;
 		updateSong();
@@ -218,4 +217,9 @@ function scrollSpeedChange() {
 	flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value));
 }
 
-module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange }
+function toggleBassMode() {
+	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
+}
+
+module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, volumeChange, 
+	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
