@@ -123,7 +123,7 @@ function main(audioPromise) {
             //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    aadjustedZoom = options.zoom/100
+                    let adjustedZoom = options.zoom/100
                     let angle = (Math.cos((x + this.counter * options.xAdjustment) * adjustedZoom)
                         + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
                     this.flowField.push(angle);
@@ -168,7 +168,10 @@ function main(audioPromise) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
-        return (adjVolume - minV) / (maxV - minV);
+        let adjMaxV= Math.floor(maxV * options.volume) / 10;
+        let normVolume = (adjVolume - minV) / (maxV - minV);
+        console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        return normVolume
     }
 
     const microphone = new Microphone.Microphone(audioPromise);
