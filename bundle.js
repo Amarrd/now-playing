@@ -26640,7 +26640,7 @@ function main(audioPromise) {
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            normVolume = 3//getNormalisedVolume()
+            normVolume = getNormalisedVolume()
 
             effect.updateEffect(false, normVolume)
             effect.render(ctx, normVolume);
@@ -26909,7 +26909,6 @@ document.onkeyup = function(e) {
 		let autoToggle = document.querySelector('#autoToggleLabel');
 		let updateButton = document.querySelector('#updateButton');
 		let controls = document.querySelector('#controls');
-		console.log(controls);
 		if (buttonsHidden) {
 			autoToggle.style.visibility = 'visible';
 			updateButton.style.visibility = 'visible';

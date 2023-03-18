@@ -149,7 +149,7 @@ function main(audioPromise) {
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            normVolume = 3//getNormalisedVolume()
+            normVolume = getNormalisedVolume()
 
             effect.updateEffect(false, normVolume)
             effect.render(ctx, normVolume);
