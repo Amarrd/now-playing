@@ -32,7 +32,7 @@ function main(audioPromise) {
             this.angle = 0;
             this.timer = this.maxLength * 2;
             this.hue = 25; //25 //227
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
+            this.colours = [`hsl( ${this.hue}, 100%, 20%)`, `hsl( ${this.hue},100%,30%)`, `hsl( ${this.hue},100%, 40%)`];
             this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         }
         draw(context) {
