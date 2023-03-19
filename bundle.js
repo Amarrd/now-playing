@@ -26685,14 +26685,14 @@ function main(audioPromise) {
 }
 
 function loadOptions() {
-    options.hue = Number(localStorage.getItem('hue')) || options.hue;
-    options.hueShift = Number(localStorage.getItem('hueShift')) || options.hueShift;
-    options.volume = Number(localStorage.getItem('volume')) || options.volume;
-    options.curve = Number(localStorage.getItem('curve')) || options.curve;
-    options.zoom = Number(localStorage.getItem('zoom')) || options.zoom;
-    options.xAdjustment = Number(localStorage.getItem('xAdjustment')) || options.xAdjustment;
-    options.yAdjustment = Number(localStorage.getItem('yAdjustment')) || options.yAdjustment;
-    options.scrollSpeed = Number(localStorage.getItem('scrollSpeed')) || options.scrollSpeed;
+    options.hue = Number(localStorage.getItem('hue') || options.hue);
+    options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
+    options.volume = Number(localStorage.getItem('volume') || options.volume);
+    options.curve = Number(localStorage.getItem('curve') || options.curve);
+    options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
+    options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
+    options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
+    options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
 }
 
 function setOptions() {
