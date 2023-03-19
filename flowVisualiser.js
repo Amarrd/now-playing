@@ -219,8 +219,11 @@ function setOptions() {
 function updateMicIcon() {
     let micIcon = document.querySelector('#mic-icon');
     let currentSong = document.querySelector('#current-song')
-    micIcon.style.color = `hsl( ${options.hue}, 100%, 75%)`
-    currentSong.style.color = `hsl( ${options.hue}, 100%, 75%)`
+    let controls = document.querySelector('#controls')
+    micIcon.style.color = `hsl( ${options.hue}, 100%, 80%)`
+    currentSong.style.color = `hsl( ${options.hue}, 100%, 80%)`
+    currentSong.style.controls = `hsl( ${options.hue}, 100%, 80%)`
+
 }
 
 function hueChange(hue) {
