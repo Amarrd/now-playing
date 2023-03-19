@@ -151,9 +151,7 @@ document.onkeyup = function (e) {
 function fade(elementId) {
 	let element = document.querySelector(elementId);
 	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '1' ? '0' : '1'
-	element.style.visibility = controls.style.visibility === 'hidden' ? 'visible' : 'hidden';
-}
+	element.style.opacity = element.style.opacity === '1' ? '0' : '1'}
 
 function hueChange() {
 	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
