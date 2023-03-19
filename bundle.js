@@ -26512,6 +26512,7 @@ function main(audioPromise) {
     ctx.lineWidth = 1;
     loadOptions()
     setOptions()
+    updateMicIcon();
 
     class Particle {
         constructor(effect) {
@@ -26706,9 +26707,17 @@ function setOptions() {
     document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
 }
 
+function updateMicIcon() {
+    let micIcon = document.querySelector('#mic-icon');
+    let currentSong = document.querySelector('#current-song')
+    micIcon.style.color = `hsl( ${options.hue}, 100%, 90%)`
+    currentSong.style.color = `hsl( ${options.hue}, 100%, 90%)`
+}
+
 function hueChange(hue) {
     options.hue = hue;
     localStorage.setItem('hue', hue);
+    updateMicIcon();
 }
 
 function hueShiftChange(hueShift) {
@@ -26798,18 +26807,13 @@ const acrCloud = require('./acrCloud')
 const flowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
-const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
-var buttonsHidden = false;
-var currentSongHidden = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 
 function startVisualiser() {
-
-	let micIcon = document.getElementById('mic-icon')
-	micIcon.style.display = 'none';
 	//barVisualiser.main(audioPromise);
 	flowVisualiser.main(audioPromise);
 }
@@ -26821,7 +26825,7 @@ function updateSong() {
 		return;
 	}
 
-	addProgressToHtml();
+	fade('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
 
@@ -26870,6 +26874,7 @@ function updateSong() {
 								console.log("Response:")
 								console.log(body);
 								processResponse(body)
+								fade('#mic-icon')
 
 							});
 						});
@@ -26885,24 +26890,25 @@ function updateSong() {
 function processResponse(response) {
 	var jsonObject = JSON.parse(response);
 	var currentSong = document.getElementById('current-song');
-	var details = document.createElement('p');
+	var albumYear = document.querySelector('#albumYear');
 	if (jsonObject.status.code === 0) {
-		var extraDetails = document.createElement('p');
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
 		var album = jsonObject.metadata.music[0].album.name;
 		var releaseDate = jsonObject.metadata.music[0].release_date.split('-')[0];
-		details.textContent = artist + ' - ' + title;
-		extraDetails.textContent = album + ', ' + releaseDate;
-		extraDetails.style.fontStyle = 'italic';
-		extraDetails.style.fontSize = '18px';
-		details.appendChild(extraDetails);
+		currentSong.textContent = artist + ' - ' + title;
+		albumYear.textContent = album + ', ' + releaseDate;
+		albumYear.style.fontStyle = 'italic';
+		albumYear.style.fontSize = '18px';
+		currentSong.appendChild(albumYear);
+		currentSong.style.transition = 'opacity 0.5s linear 0s';
+		currentSong.style.opacity = 1;
 		if (autoMode) {
 			var jsonObject = JSON.parse(response);
 			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
 			detectDelay = delay + 5000;
 			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => clearSong(), delay)
+			setTimeout(() => fade('#current-song'), delay)
 			setTimeout(() => updateSong(), detectDelay);
 		}
 	} else {
@@ -26912,25 +26918,6 @@ function processResponse(response) {
 			setTimeout(() => updateSong(), detectDelay);
 		}
 	}
-
-	if (currentSong.childNodes.length > 0) {
-		currentSong.removeChild(currentSong.childNodes[0])
-		currentSong.appendChild(details);
-	} else {
-		currentSong.appendChild(details);
-	}
-	let micIcon = document.getElementById('mic-icon')
-	micIcon.style.display = 'none';
-}
-
-function clearSong() {
-	let currentSong = document.querySelector('#current-song');
-	currentSong.removeChild(currentSong.childNodes[0]);
-}
-
-function addProgressToHtml() {
-	let micIcon = document.getElementById('mic-icon')
-	micIcon.style.display = 'inline';
 }
 
 function saveRecordingToFile(audioBlob, name) {
@@ -26946,8 +26933,8 @@ function toggleAuto() {
 	let updateButton = document.querySelector('#updateButton');
 	if (autoToggle.checked == true) {
 		// start auto mode
-		autoMode = true;
 		updateSong();
+		autoMode = true;
 		updateButton.style.visibility = 'hidden'
 	} else {
 		// stop auto mode
@@ -26958,32 +26945,18 @@ function toggleAuto() {
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
-		let autoToggle = document.querySelector('#autoToggleLabel');
-		let updateButton = document.querySelector('#updateButton');
-		let controls = document.querySelector('#controls');
-		if (buttonsHidden) {
-			autoToggle.style.visibility = 'visible';
-			updateButton.style.visibility = 'visible';
-			controls.style.visibility = 'visible';
-			buttonsHidden = false;
-		} else {
-			autoToggle.style.visibility = 'hidden';
-			updateButton.style.visibility = 'hidden';
-			controls.style.visibility = 'hidden';
-			buttonsHidden = true;
-		}
+		fade('#controls');
 	}
 	if (e.key === "s") {
-		let currentSong = document.querySelector('#current-song');
-		if (currentSongHidden) {
-			currentSong.style.visibility = 'visible';
-			currentSongHidden = false;
-		} else {
-			currentSong.style.visibility = 'hidden';
-			currentSongHidden = true;
-		}
-
+		fade('#current-song');
 	}
+}
+
+function fade(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+	element.style.visibility = controls.style.visibility === 'hidden' ? 'visible' : 'hidden';
 }
 
 function hueChange() {

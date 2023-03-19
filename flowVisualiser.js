@@ -21,6 +21,7 @@ function main(audioPromise) {
     ctx.lineWidth = 1;
     loadOptions()
     setOptions()
+    updateMicIcon();
 
     class Particle {
         constructor(effect) {
@@ -215,9 +216,17 @@ function setOptions() {
     document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
 }
 
+function updateMicIcon() {
+    let micIcon = document.querySelector('#mic-icon');
+    let currentSong = document.querySelector('#current-song')
+    micIcon.style.color = `hsl( ${options.hue}, 100%, 90%)`
+    currentSong.style.color = `hsl( ${options.hue}, 100%, 90%)`
+}
+
 function hueChange(hue) {
     options.hue = hue;
     localStorage.setItem('hue', hue);
+    updateMicIcon();
 }
 
 function hueShiftChange(hueShift) {

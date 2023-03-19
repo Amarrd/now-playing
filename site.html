@@ -11,7 +11,9 @@
 
 <body onload="myBundle.startVisualiser()">
 	<canvas id='myCanvas'></canvas>
-	<div class="currentSong" id="current-song"></div>
+	<div class="currentSong" id="current-song">
+		<p class="albumYear" id="albumYear" ></p>
+	</div>
 	<div class="controls" id="controls">
 		<label for="hue"> hue
 			<input type="number" id="hue" name="hue" min="1" max="360" onchange="myBundle.hueChange()">
