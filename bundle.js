@@ -26510,6 +26510,7 @@ function main(audioPromise) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     ctx.lineWidth = 1;
+    loadOptions()
     setOptions()
 
     class Particle {
@@ -26683,6 +26684,17 @@ function main(audioPromise) {
     animate();
 }
 
+function loadOptions() {
+    options.hue = Number(localStorage.getItem('hue')) || options.hue;
+    options.hueShift = Number(localStorage.getItem('hueShift')) || options.hueShift;
+    options.volume = Number(localStorage.getItem('volume')) || options.volume;
+    options.curve = Number(localStorage.getItem('curve')) || options.curve;
+    options.zoom = Number(localStorage.getItem('zoom')) || options.zoom;
+    options.xAdjustment = Number(localStorage.getItem('xAdjustment')) || options.xAdjustment;
+    options.yAdjustment = Number(localStorage.getItem('yAdjustment')) || options.yAdjustment;
+    options.scrollSpeed = Number(localStorage.getItem('scrollSpeed')) || options.scrollSpeed;
+}
+
 function setOptions() {
     document.querySelector('#hue').setAttribute('value', options.hue);
     document.querySelector('#hueShift').setAttribute('value', options.hueShift);
@@ -26696,38 +26708,47 @@ function setOptions() {
 
 function hueChange(hue) {
     options.hue = hue;
+    localStorage.setItem('hue', hue);
 }
 
 function hueShiftChange(hueShift) {
     options.hueShift = hueShift;
+    localStorage.setItem('hueShift', hueShift);
 }
 
 function volumeChange(volume) {
     options.volume = volume > 0 ? volume : 1;
+    localStorage.setItem('volume', volume);
 }
 
 function curveChange(curve) {
     options.curve = curve;
+    localStorage.setItem('curve', curve);
 }
 
 function zoomChange(zoom) {
     options.zoom = zoom;
+    localStorage.setItem('zoom', zoom);
 }
 
 function xAdjustmentChange(xAdjustment) {
     options.xAdjustment = xAdjustment;
+    localStorage.setItem('xAdjustment', xAdjustment);
 }
 
 function yAdjustmentChange(yAdjustment) {
     options.yAdjustment = yAdjustment;
+    localStorage.setItem('yAdjustment', yAdjustment);
 }
 
 function scrollSpeedChange(scrollSpeed) {
     options.scrollSpeed = scrollSpeed;
+    localStorage.setItem('scrollSpeed', scrollSpeed);
 }
 
 function toggleBassMode(bassMode) {
     options.bassMode = bassMode;
+    localStorage.setItem('bassMode', bassMode);
 }
 
 module.exports = { main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
