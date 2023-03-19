@@ -26713,7 +26713,7 @@ function updateMicIcon() {
     let controls = document.querySelector('#controls')
     micIcon.style.color = `hsl( ${options.hue}, 100%, 80%)`
     currentSong.style.color = `hsl( ${options.hue}, 100%, 80%)`
-    controls.style.controls = `hsl( ${options.hue}, 100%, 80%)`
+    controls.style.color = `hsl( ${options.hue}, 100%, 80%)`
 
 }
 
