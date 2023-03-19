@@ -26492,13 +26492,13 @@ module.exports = {main};
 const Microphone = require("./microphone");
 
 var options = {
-    hue: 350,
-    hueShift:5,
+    hue: 10,
+    hueShift:2,
     volume: 100,
-    curve: 60,
+    curve: 10,
     zoom: 7,
-    xAdjustment: 1,
-    yAdjustment: 0,
+    xAdjustment: -1,
+    yAdjustment:-1,
     scrollSpeed: 1,
     speed: 2,
     bassMode: false
@@ -26867,7 +26867,7 @@ function updateSong() {
 			// convert blob to buffer
 			let fileReader = new FileReader();
 			let arrayBuffer;
-			fileReader.onloadend = () => {
+			fileReader.onloadend = () => { 
 
 				arrayBuffer = fileReader.result;
 				// Create an audio context and decode the array buffer into an audio buffer
@@ -26890,9 +26890,9 @@ function updateSong() {
 								console.log("Response:")
 								console.log(body);
 								processResponse(body)
-								fade('#mic-icon')
 
 							});
+							fade('#mic-icon')
 						});
 				});
 			}

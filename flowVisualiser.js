@@ -1,13 +1,13 @@
 const Microphone = require("./microphone");
 
 var options = {
-    hue: 350,
-    hueShift:5,
+    hue: 10,
+    hueShift:2,
     volume: 100,
-    curve: 60,
+    curve: 10,
     zoom: 7,
-    xAdjustment: 1,
-    yAdjustment: 0,
+    xAdjustment: -1,
+    yAdjustment:-1,
     scrollSpeed: 1,
     speed: 2,
     bassMode: false

@@ -47,7 +47,7 @@ function updateSong() {
 			// convert blob to buffer
 			let fileReader = new FileReader();
 			let arrayBuffer;
-			fileReader.onloadend = () => {
+			fileReader.onloadend = () => { 
 
 				arrayBuffer = fileReader.result;
 				// Create an audio context and decode the array buffer into an audio buffer
@@ -70,9 +70,9 @@ function updateSong() {
 								console.log("Response:")
 								console.log(body);
 								processResponse(body)
-								fade('#mic-icon')
 
 							});
+							fade('#mic-icon')
 						});
 				});
 			}
