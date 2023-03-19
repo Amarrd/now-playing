@@ -220,9 +220,22 @@ function updateMicIcon() {
     let micIcon = document.querySelector('#mic-icon');
     let currentSong = document.querySelector('#current-song')
     let controls = document.querySelector('#controls')
-    micIcon.style.color = `hsl( ${options.hue}, 100%, 80%)`
-    currentSong.style.color = `hsl( ${options.hue}, 100%, 80%)`
-    controls.style.color = `hsl( ${options.hue}, 100%, 80%)`
+    let button = document.querySelector('#updateButton')
+    let newColour = `hsl( ${options.hue}, 100%, 80%)`
+    micIcon.style.color = newColour
+    currentSong.style.color = newColour
+    controls.style.color = newColour
+    button.style.color = newColour
+    controls.childNodes.forEach(element => {
+        if (element.nodeName === 'LABEL') {
+            console.log(element);
+            element.childNodes.forEach (input => {
+                if (input.nodeName === 'INPUT') input.style.color = newColour;
+            })
+           
+          }
+    })
+
 
 }
 

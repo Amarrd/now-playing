@@ -26711,9 +26711,22 @@ function updateMicIcon() {
     let micIcon = document.querySelector('#mic-icon');
     let currentSong = document.querySelector('#current-song')
     let controls = document.querySelector('#controls')
-    micIcon.style.color = `hsl( ${options.hue}, 100%, 80%)`
-    currentSong.style.color = `hsl( ${options.hue}, 100%, 80%)`
-    controls.style.color = `hsl( ${options.hue}, 100%, 80%)`
+    let button = document.querySelector('#updateButton')
+    let newColour = `hsl( ${options.hue}, 100%, 80%)`
+    micIcon.style.color = newColour
+    currentSong.style.color = newColour
+    controls.style.color = newColour
+    button.style.color = newColour
+    controls.childNodes.forEach(element => {
+        if (element.nodeName === 'LABEL') {
+            console.log(element);
+            element.childNodes.forEach (input => {
+                if (input.nodeName === 'INPUT') input.style.color = newColour;
+            })
+           
+          }
+    })
+
 
 }
 
@@ -26810,7 +26823,7 @@ const acrCloud = require('./acrCloud')
 const flowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
-const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
