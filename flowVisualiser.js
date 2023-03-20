@@ -1,13 +1,14 @@
 const Microphone = require("./microphone");
+const Effect = require("./flowEffect");
 
 var options = {
     hue: 10,
-    hueShift:2,
+    hueShift: 2,
     volume: 100,
     curve: 10,
     zoom: 7,
     xAdjustment: -1,
-    yAdjustment:-1,
+    yAdjustment: -1,
     scrollSpeed: 1,
     speed: 2,
     bassMode: false
@@ -21,157 +22,29 @@ function main(audioPromise) {
     ctx.lineWidth = 1;
     loadOptions()
     setOptions()
-    updateMicIcon();
-
-    class Particle {
-        constructor(effect) {
-            this.effect = effect;
-            this.x = Math.floor(Math.random() * this.effect.width);
-            this.y = Math.floor(Math.random() * this.effect.height);
-            this.speedX;
-            this.speedY;
-            this.speedModifier = 2;
-            this.history = [{ x: this.x, y: this.y }];
-            this.maxLength = Math.floor(Math.random() * 70 + 50);
-            this.angle = 0;
-            this.timer = this.maxLength * 2;
-            this.hue = options.hue; 
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
-            this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
-        }
-        draw(context) {
-            context.beginPath();
-            context.moveTo(this.history[0].x, this.history[0].y)
-            for (let i = 0; i < this.history.length; i++) {
-                context.lineTo(this.history[i].x, this.history[i].y);
-            }
-
-            context.strokeStyle = this.colour;
-            context.stroke();
-
-        }
-
-        updateParticle(volume) {
-            this.timer--;
-            if (this.timer >= 1) {
-                let x = Math.floor(this.x / this.effect.cellSize);
-                let y = Math.floor(this.y / this.effect.cellSize);
-                let index = y * this.effect.cols + x;
-                this.angle = this.effect.flowField[index];
-
-                this.speedX = Math.cos(this.angle);
-                this.speedY = Math.sin(this.angle);
-
-                let randomSpeed = Math.floor(Math.random() * options.speed + 1);
-                this.x += this.speedX * (volume * randomSpeed + 0.5)
-                this.y += this.speedY * (volume * randomSpeed + 0.5)
-
-                this.history.push({ x: this.x, y: this.y });
-
-                if (this.history.length > this.maxLength) {
-                    this.history.shift();
-                }
-
-            } else if (this.history.length > 1) {
-                this.history.shift();
-
-            } else {
-                this.reset(volume);
-            }
-
-        }
-
-        reset(volume) {
-            this.x = Math.floor(Math.random() * this.effect.width);
-            this.y = Math.floor(Math.random() * this.effect.height);
-            this.hue = volume * options.hueShift + options.hue
-            //console.log(`volume:${volume}, hue:${this.hue}`)
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
-            this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
-            this.history = [{ x: this.x, y: this.y }];
-            this.timer = this.maxLength;
-        }
-
-    }
-
-    class Effect {
-        constructor(canvas) {
-            this.width = canvas.width;
-            this.height = canvas.height;
-            this.particles = [];
-            this.numberOfParticles = 2000;
-            this.cellSize = 20;
-            this.rows;
-            this.cols;
-            this.flowField = [];
-            this.curve = 0.3;
-            this.zoom = 0.1
-            this.counter = 0;
-            this.updateEffect(true, 0);
-
-            window.addEventListener('resize', e => {
-                let newWidth = e.target.innerWidth;
-                let newHeight = e.target.innerHeight;
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-                this.width = canvas.width;
-                this.height = canvas.height;
-                this.updateEffect();
-            })
-        }
-
-        updateEffect(createParticles, volume) {
-            this.rows = Math.floor(this.height / this.cellSize);
-            this.cols = Math.floor(this.width / this.cellSize);
-            this.flowField = [];
-            //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
-            for (let y = 0; y < this.rows; y++) {
-                for (let x = 0; x < this.cols; x++) {
-                    let adjustedZoom = options.zoom/100
-                    let angle = (Math.cos((x + this.counter * -options.xAdjustment) * adjustedZoom)
-                        + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
-                    this.flowField.push(angle);
-                }
-            }
-            this.counter += options.scrollSpeed/10;
-            // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
-
-            if (createParticles) {
-                for (let i = 0; i < this.numberOfParticles; i++) {
-                    this.particles.push(new Particle(this));
-                }
-            }
-        }
-
-        render(context, volume) {
-            this.particles.forEach(particle => {
-                particle.draw(context);
-                particle.updateParticle(volume);
-            })
-        }
-    }
+    updateColours();
 
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let normVolume = getNormalisedVolume()
+            let normVolume = getNormalisedVolume(microphone)
             effect.updateEffect(false, normVolume)
             effect.render(ctx, normVolume);
         }
         requestAnimationFrame(animate);
     }
 
-    function getNormalisedVolume() {
+    function getNormalisedVolume(microphone) {
         if (options.bassMode) {
             let samples = microphone.getSamples()
             let sum = 0;
-            for (let i = 0; i< samples.length/10; i++) {
+            for (let i = 0; i < samples.length / 10; i++) {
                 sum += samples[i];
             }
-            var volume = sum / (samples.length/10);
+            var volume = sum / (samples.length / 10);
         }
         else {
-            var volume  = microphone.getVolume();
+            var volume = microphone.getVolume();
         }
         let minV = 0;
         if (maxV < volume) {
@@ -181,14 +54,14 @@ function main(audioPromise) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV= maxV * 1.2
+        let adjMaxV = maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-      //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
     const microphone = new Microphone.Microphone(audioPromise);
-    const effect = new Effect(canvas);
+    const effect = new Effect.FlowEffect(canvas, options);
     effect.render(ctx, 0)
     let maxV = 0;
     animate();
@@ -216,33 +89,31 @@ function setOptions() {
     document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
 }
 
-function updateMicIcon() {
+function updateColours() {
     let micIcon = document.querySelector('#mic-icon');
-    let currentSong = document.querySelector('#current-song')
-    let controls = document.querySelector('#controls')
-    let button = document.querySelector('#updateButton')
-    let newColour = `hsl( ${options.hue}, 100%, 80%)`
-    micIcon.style.color = newColour
-    currentSong.style.color = newColour
-    controls.style.color = newColour
-    button.style.color = newColour
+    let currentSong = document.querySelector('#current-song');
+    let controls = document.querySelector('#controls');
+    let button = document.querySelector('#updateButton');
+    let newColour = `hsl( ${options.hue}, 100%, 80%)`;
+
+    micIcon.style.color = newColour;
+    currentSong.style.color = newColour;
+    controls.style.color = newColour;
+    button.style.color = newColour;
     controls.childNodes.forEach(element => {
         if (element.nodeName === 'LABEL') {
             console.log(element);
-            element.childNodes.forEach (input => {
+            element.childNodes.forEach(input => {
                 if (input.nodeName === 'INPUT') input.style.color = newColour;
             })
-           
-          }
+        }
     })
-
-
 }
 
 function hueChange(hue) {
     options.hue = hue;
     localStorage.setItem('hue', hue);
-    updateMicIcon();
+    updateColours();
 }
 
 function hueShiftChange(hueShift) {
@@ -285,5 +156,7 @@ function toggleBassMode(bassMode) {
     localStorage.setItem('bassMode', bassMode);
 }
 
-module.exports = { main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
-    yAdjustmentChange, scrollSpeedChange, toggleBassMode }
+module.exports = {
+    main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange,
+    yAdjustmentChange, scrollSpeedChange, toggleBassMode
+}

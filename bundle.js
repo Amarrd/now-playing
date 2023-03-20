@@ -26397,7 +26397,7 @@ function identify(data, cb) {
 
 module.exports = {identify}
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":196}],188:[function(require,module,exports){
+},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":198}],188:[function(require,module,exports){
 module.exports={
 	"host": "identify-eu-west-1.acrcloud.com",
 	"endpoint": "/v1/identify",
@@ -26488,17 +26488,156 @@ function main(audioPromise) {
 
 
 module.exports = {main};
-},{"./microphone":191}],190:[function(require,module,exports){
+},{"./microphone":193}],190:[function(require,module,exports){
+const Particle = require('./flowParticle')
+
+class FlowEffect {
+
+    constructor(canvas, options) {
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.options = options;
+        this.particles = [];
+        this.numberOfParticles = 2000;
+        this.cellSize = 20;
+        this.rows;
+        this.cols;
+        this.flowField = [];
+        this.curve = 0.3;
+        this.zoom = 0.1
+        this.counter = 0;
+        this.updateEffect(true, 0);
+
+        window.addEventListener('resize', e => {
+            let newWidth = e.target.innerWidth;
+            let newHeight = e.target.innerHeight;
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            this.width = canvas.width;
+            this.height = canvas.height;
+            this.updateEffect();
+        })
+    }
+
+    updateEffect(createParticles, volume) {
+        this.rows = Math.floor(this.height / this.cellSize);
+        this.cols = Math.floor(this.width / this.cellSize);
+        this.flowField = [];
+        //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
+        for (let y = 0; y < this.rows; y++) {
+            for (let x = 0; x < this.cols; x++) {
+                let adjustedZoom = this.options.zoom / 100
+                let angle = (Math.cos((x + this.counter * -this.options.xAdjustment) * adjustedZoom)
+                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 100);
+                this.flowField.push(angle);
+            }
+        }
+        this.counter += this.options.scrollSpeed / 10;
+        // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
+
+        if (createParticles) {
+            for (let i = 0; i < this.numberOfParticles; i++) {
+                this.particles.push(new Particle.FlowParticle(this));
+            }
+        }
+    }
+
+    render(context, volume) {
+        this.particles.forEach(particle => {
+            particle.draw(context);
+            particle.updateParticle(volume);
+        })
+    }
+}
+
+module.exports = { FlowEffect }
+},{"./flowParticle":191}],191:[function(require,module,exports){
+class FlowParticle {
+
+    constructor(effect) {
+        this.effect = effect;
+        this.x = Math.floor(Math.random() * this.effect.width);
+        this.y = Math.floor(Math.random() * this.effect.height);
+        this.speedX;
+        this.speedY;
+        this.speedModifier = 2;
+        this.history = [{ x: this.x, y: this.y }];
+        this.maxLength = Math.floor(Math.random() * 70 + 50);
+        this.angle = 0;
+        this.timer = this.maxLength * 2;
+        this.hue = this.effect.options.hue;
+        this.colours;
+        this.colour;
+    }
+
+    draw(context) {
+        context.beginPath();
+        context.moveTo(this.history[0].x, this.history[0].y)
+        for (let i = 0; i < this.history.length; i++) {
+            context.lineTo(this.history[i].x, this.history[i].y);
+        }
+
+        context.strokeStyle = this.colour;
+        context.stroke();
+
+    }
+
+    updateParticle(volume) {
+        this.timer--;
+        if (this.timer >= 1) {
+            let x = Math.floor(this.x / this.effect.cellSize);
+            let y = Math.floor(this.y / this.effect.cellSize);
+            let index = y * this.effect.cols + x;
+            this.angle = this.effect.flowField[index];
+
+            this.speedX = Math.cos(this.angle);
+            this.speedY = Math.sin(this.angle);
+
+            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
+            this.x += this.speedX * (volume * randomSpeed + 0.5)
+            this.y += this.speedY * (volume * randomSpeed + 0.5)
+
+            this.history.push({ x: this.x, y: this.y });
+
+            if (this.history.length > this.maxLength) {
+                this.history.shift();
+            }
+
+        } else if (this.history.length > 1) {
+            this.history.shift();
+
+        } else {
+            this.reset(volume);
+        }
+
+    }
+
+    reset(volume) {
+        this.x = Math.floor(Math.random() * this.effect.width);
+        this.y = Math.floor(Math.random() * this.effect.height);
+        this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
+        //console.log(`volume:${volume}, hue:${this.hue}`)
+        this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
+        this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
+        this.history = [{ x: this.x, y: this.y }];
+        this.timer = this.maxLength;
+    }
+
+}
+
+module.exports = { FlowParticle }
+},{}],192:[function(require,module,exports){
 const Microphone = require("./microphone");
+const Effect = require("./flowEffect");
 
 var options = {
     hue: 10,
-    hueShift:2,
+    hueShift: 2,
     volume: 100,
     curve: 10,
     zoom: 7,
     xAdjustment: -1,
-    yAdjustment:-1,
+    yAdjustment: -1,
     scrollSpeed: 1,
     speed: 2,
     bassMode: false
@@ -26512,157 +26651,29 @@ function main(audioPromise) {
     ctx.lineWidth = 1;
     loadOptions()
     setOptions()
-    updateMicIcon();
-
-    class Particle {
-        constructor(effect) {
-            this.effect = effect;
-            this.x = Math.floor(Math.random() * this.effect.width);
-            this.y = Math.floor(Math.random() * this.effect.height);
-            this.speedX;
-            this.speedY;
-            this.speedModifier = 2;
-            this.history = [{ x: this.x, y: this.y }];
-            this.maxLength = Math.floor(Math.random() * 70 + 50);
-            this.angle = 0;
-            this.timer = this.maxLength * 2;
-            this.hue = options.hue; 
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
-            this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
-        }
-        draw(context) {
-            context.beginPath();
-            context.moveTo(this.history[0].x, this.history[0].y)
-            for (let i = 0; i < this.history.length; i++) {
-                context.lineTo(this.history[i].x, this.history[i].y);
-            }
-
-            context.strokeStyle = this.colour;
-            context.stroke();
-
-        }
-
-        updateParticle(volume) {
-            this.timer--;
-            if (this.timer >= 1) {
-                let x = Math.floor(this.x / this.effect.cellSize);
-                let y = Math.floor(this.y / this.effect.cellSize);
-                let index = y * this.effect.cols + x;
-                this.angle = this.effect.flowField[index];
-
-                this.speedX = Math.cos(this.angle);
-                this.speedY = Math.sin(this.angle);
-
-                let randomSpeed = Math.floor(Math.random() * options.speed + 1);
-                this.x += this.speedX * (volume * randomSpeed + 0.5)
-                this.y += this.speedY * (volume * randomSpeed + 0.5)
-
-                this.history.push({ x: this.x, y: this.y });
-
-                if (this.history.length > this.maxLength) {
-                    this.history.shift();
-                }
-
-            } else if (this.history.length > 1) {
-                this.history.shift();
-
-            } else {
-                this.reset(volume);
-            }
-
-        }
-
-        reset(volume) {
-            this.x = Math.floor(Math.random() * this.effect.width);
-            this.y = Math.floor(Math.random() * this.effect.height);
-            this.hue = volume * options.hueShift + options.hue
-            //console.log(`volume:${volume}, hue:${this.hue}`)
-            this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
-            this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
-            this.history = [{ x: this.x, y: this.y }];
-            this.timer = this.maxLength;
-        }
-
-    }
-
-    class Effect {
-        constructor(canvas) {
-            this.width = canvas.width;
-            this.height = canvas.height;
-            this.particles = [];
-            this.numberOfParticles = 2000;
-            this.cellSize = 20;
-            this.rows;
-            this.cols;
-            this.flowField = [];
-            this.curve = 0.3;
-            this.zoom = 0.1
-            this.counter = 0;
-            this.updateEffect(true, 0);
-
-            window.addEventListener('resize', e => {
-                let newWidth = e.target.innerWidth;
-                let newHeight = e.target.innerHeight;
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-                this.width = canvas.width;
-                this.height = canvas.height;
-                this.updateEffect();
-            })
-        }
-
-        updateEffect(createParticles, volume) {
-            this.rows = Math.floor(this.height / this.cellSize);
-            this.cols = Math.floor(this.width / this.cellSize);
-            this.flowField = [];
-            //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
-            for (let y = 0; y < this.rows; y++) {
-                for (let x = 0; x < this.cols; x++) {
-                    let adjustedZoom = options.zoom/100
-                    let angle = (Math.cos((x + this.counter * -options.xAdjustment) * adjustedZoom)
-                        + Math.sin((y + this.counter * options.yAdjustment) * adjustedZoom)) * (volume * options.curve/100);
-                    this.flowField.push(angle);
-                }
-            }
-            this.counter += options.scrollSpeed/10;
-            // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
-
-            if (createParticles) {
-                for (let i = 0; i < this.numberOfParticles; i++) {
-                    this.particles.push(new Particle(this));
-                }
-            }
-        }
-
-        render(context, volume) {
-            this.particles.forEach(particle => {
-                particle.draw(context);
-                particle.updateParticle(volume);
-            })
-        }
-    }
+    updateColours();
 
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let normVolume = getNormalisedVolume()
+            let normVolume = getNormalisedVolume(microphone)
             effect.updateEffect(false, normVolume)
             effect.render(ctx, normVolume);
         }
         requestAnimationFrame(animate);
     }
 
-    function getNormalisedVolume() {
+    function getNormalisedVolume(microphone) {
         if (options.bassMode) {
             let samples = microphone.getSamples()
             let sum = 0;
-            for (let i = 0; i< samples.length/10; i++) {
+            for (let i = 0; i < samples.length / 10; i++) {
                 sum += samples[i];
             }
-            var volume = sum / (samples.length/10);
+            var volume = sum / (samples.length / 10);
         }
         else {
-            var volume  = microphone.getVolume();
+            var volume = microphone.getVolume();
         }
         let minV = 0;
         if (maxV < volume) {
@@ -26672,14 +26683,14 @@ function main(audioPromise) {
             maxV = volume;
         }
         let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV= maxV * 1.2
+        let adjMaxV = maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-      //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
     const microphone = new Microphone.Microphone(audioPromise);
-    const effect = new Effect(canvas);
+    const effect = new Effect.FlowEffect(canvas, options);
     effect.render(ctx, 0)
     let maxV = 0;
     animate();
@@ -26707,33 +26718,31 @@ function setOptions() {
     document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
 }
 
-function updateMicIcon() {
+function updateColours() {
     let micIcon = document.querySelector('#mic-icon');
-    let currentSong = document.querySelector('#current-song')
-    let controls = document.querySelector('#controls')
-    let button = document.querySelector('#updateButton')
-    let newColour = `hsl( ${options.hue}, 100%, 80%)`
-    micIcon.style.color = newColour
-    currentSong.style.color = newColour
-    controls.style.color = newColour
-    button.style.color = newColour
+    let currentSong = document.querySelector('#current-song');
+    let controls = document.querySelector('#controls');
+    let button = document.querySelector('#updateButton');
+    let newColour = `hsl( ${options.hue}, 100%, 80%)`;
+
+    micIcon.style.color = newColour;
+    currentSong.style.color = newColour;
+    controls.style.color = newColour;
+    button.style.color = newColour;
     controls.childNodes.forEach(element => {
         if (element.nodeName === 'LABEL') {
             console.log(element);
-            element.childNodes.forEach (input => {
+            element.childNodes.forEach(input => {
                 if (input.nodeName === 'INPUT') input.style.color = newColour;
             })
-           
-          }
+        }
     })
-
-
 }
 
 function hueChange(hue) {
     options.hue = hue;
     localStorage.setItem('hue', hue);
-    updateMicIcon();
+    updateColours();
 }
 
 function hueShiftChange(hueShift) {
@@ -26776,9 +26785,11 @@ function toggleBassMode(bassMode) {
     localStorage.setItem('bassMode', bassMode);
 }
 
-module.exports = { main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange, 
-    yAdjustmentChange, scrollSpeedChange, toggleBassMode }
-},{"./microphone":191}],191:[function(require,module,exports){
+module.exports = {
+    main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange,
+    yAdjustmentChange, scrollSpeedChange, toggleBassMode
+}
+},{"./flowEffect":190,"./microphone":193}],193:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
@@ -26817,7 +26828,7 @@ class Microphone {
 }
 
 module.exports = {Microphone}
-},{}],192:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const flowVisualiser = require('./flowVisualiser')
@@ -27011,7 +27022,7 @@ function toggleBassMode() {
 
 module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, hueShiftChange, volumeChange, 
 	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
-},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":190,"audio-encoder":195}],193:[function(require,module,exports){
+},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":192,"audio-encoder":197}],195:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -27110,7 +27121,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":231}],194:[function(require,module,exports){
+},{"lamejs":233}],196:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -27202,7 +27213,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],195:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -27221,11 +27232,11 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":193,"./encodeWav":194}],196:[function(require,module,exports){
+},{"./encodeMp3":195,"./encodeWav":196}],198:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],197:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27306,7 +27317,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":202,"./common.js":230}],198:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],200:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28334,7 +28345,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./Tables.js":224,"./Takehiro.js":225,"./common.js":230}],199:[function(require,module,exports){
+},{"./Encoder.js":204,"./LameInternalFlags.js":214,"./Tables.js":226,"./Takehiro.js":227,"./common.js":232}],201:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28428,7 +28439,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":202,"./L3Side.js":209,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./common.js":230}],200:[function(require,module,exports){
+},{"./Encoder.js":204,"./L3Side.js":211,"./LameInternalFlags.js":214,"./MeanBits.js":216,"./common.js":232}],202:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -28444,7 +28455,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":230}],201:[function(require,module,exports){
+},{"./common.js":232}],203:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -28473,7 +28484,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],202:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29137,7 +29148,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":207,"./NewMDCT.js":215,"./common.js":230}],203:[function(require,module,exports){
+},{"./III_psy_ratio.js":209,"./NewMDCT.js":217,"./common.js":232}],205:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29385,7 +29396,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":202,"./common.js":230}],204:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],206:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -29939,7 +29950,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":230}],205:[function(require,module,exports){
+},{"./common.js":232}],207:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -30048,7 +30059,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":209,"./common.js":230}],206:[function(require,module,exports){
+},{"./L3Side.js":211,"./common.js":232}],208:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -30084,7 +30095,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":205,"./common.js":230}],207:[function(require,module,exports){
+},{"./GrInfo.js":207,"./common.js":232}],209:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -30096,7 +30107,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":208}],208:[function(require,module,exports){
+},{"./III_psy_xmin.js":210}],210:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -30131,7 +30142,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":202,"./common.js":230}],209:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],211:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -30144,7 +30155,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":202}],210:[function(require,module,exports){
+},{"./Encoder.js":204}],212:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32015,7 +32026,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":197,"./BitStream.js":198,"./CBRNewIterationLoop.js":199,"./Encoder.js":202,"./LameGlobalFlags.js":211,"./LameInternalFlags.js":212,"./PsyModel.js":218,"./ReplayGain.js":221,"./Tables.js":224,"./common.js":230}],211:[function(require,module,exports){
+},{"./ATH.js":199,"./BitStream.js":200,"./CBRNewIterationLoop.js":201,"./Encoder.js":204,"./LameGlobalFlags.js":213,"./LameInternalFlags.js":214,"./PsyModel.js":220,"./ReplayGain.js":223,"./Tables.js":226,"./common.js":232}],213:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -32286,7 +32297,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":213}],212:[function(require,module,exports){
+},{"./MPEGMode.js":215}],214:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32678,7 +32689,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":202,"./IIISideInfo.js":206,"./III_psy_xmin.js":208,"./L3Side.js":209,"./NsPsy.js":216,"./ScaleFac.js":223,"./VBRSeekInfo.js":227,"./common.js":230}],213:[function(require,module,exports){
+},{"./Encoder.js":204,"./IIISideInfo.js":208,"./III_psy_xmin.js":210,"./L3Side.js":211,"./NsPsy.js":218,"./ScaleFac.js":225,"./VBRSeekInfo.js":229,"./common.js":232}],215:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -32697,14 +32708,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],214:[function(require,module,exports){
+},{}],216:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],215:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -33870,7 +33881,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":202,"./common.js":230}],216:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],218:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33913,7 +33924,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":202,"./common.js":230}],217:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],219:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -34402,7 +34413,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":230}],218:[function(require,module,exports){
+},{"./common.js":232}],220:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -37302,7 +37313,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":202,"./FFT.js":203,"./common.js":230}],219:[function(require,module,exports){
+},{"./Encoder.js":204,"./FFT.js":205,"./common.js":232}],221:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -38802,7 +38813,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":200,"./CalcNoiseResult.js":201,"./Encoder.js":202,"./GrInfo.js":205,"./L3Side.js":209,"./VBRQuantize.js":226,"./common.js":230}],220:[function(require,module,exports){
+},{"./CalcNoiseData.js":202,"./CalcNoiseResult.js":203,"./Encoder.js":204,"./GrInfo.js":207,"./L3Side.js":211,"./VBRQuantize.js":228,"./common.js":232}],222:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -39841,7 +39852,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":202,"./LameInternalFlags.js":212,"./MeanBits.js":214,"./ScaleFac.js":223,"./common.js":230}],221:[function(require,module,exports){
+},{"./Encoder.js":204,"./LameInternalFlags.js":214,"./MeanBits.js":216,"./ScaleFac.js":225,"./common.js":232}],223:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -39902,7 +39913,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":204,"./common.js":230}],222:[function(require,module,exports){
+},{"./GainAnalysis.js":206,"./common.js":232}],224:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -40201,7 +40212,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":230}],223:[function(require,module,exports){
+},{"./common.js":232}],225:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -40255,7 +40266,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":202,"./common.js":230}],224:[function(require,module,exports){
+},{"./Encoder.js":204,"./common.js":232}],226:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -40771,7 +40782,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],225:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -41948,7 +41959,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":202,"./GrInfo.js":205,"./QuantizePVT.js":220,"./Tables.js":224,"./common.js":230}],226:[function(require,module,exports){
+},{"./Encoder.js":204,"./GrInfo.js":207,"./QuantizePVT.js":222,"./Tables.js":226,"./common.js":232}],228:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -41963,7 +41974,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],227:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -41999,7 +42010,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],228:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42971,7 +42982,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":230}],229:[function(require,module,exports){
+},{"./common.js":232}],231:[function(require,module,exports){
 function Version() {
 
     /**
@@ -43063,7 +43074,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],230:[function(require,module,exports){
+},{}],232:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -43234,7 +43245,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],231:[function(require,module,exports){
+},{}],233:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -43432,5 +43443,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":198,"./Encoder.js":202,"./GainAnalysis.js":204,"./Lame.js":210,"./MPEGMode.js":213,"./Presets.js":217,"./Quantize.js":219,"./QuantizePVT.js":220,"./Reservoir.js":222,"./Takehiro.js":225,"./VBRTag.js":228,"./Version.js":229,"./common.js":230}]},{},[192])(192)
+},{"./BitStream.js":200,"./Encoder.js":204,"./GainAnalysis.js":206,"./Lame.js":212,"./MPEGMode.js":215,"./Presets.js":219,"./Quantize.js":221,"./QuantizePVT.js":222,"./Reservoir.js":224,"./Takehiro.js":227,"./VBRTag.js":230,"./Version.js":231,"./common.js":232}]},{},[194])(194)
 });
