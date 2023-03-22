@@ -159,6 +159,10 @@ function changeProfile(value) {
 	flowVisualiser.changeProfile(value.split(' ')[1] - 1);
 }
 
+function changeOption(option) {
+	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
+}
+
 function hueChange() {
 	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
 }
@@ -195,5 +199,5 @@ function toggleBassMode() {
 	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, toggleAuto, hueChange, hueShiftChange, volumeChange, 
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, hueChange, hueShiftChange, volumeChange, 
 	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }

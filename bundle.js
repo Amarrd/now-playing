@@ -26535,7 +26535,7 @@ class FlowEffect {
         this.curve = 0.3;
         this.zoom = 0.1
         this.counter = 0;
-        this.updateEffect(true, 0);
+        this.updateEffect(true, this.options, 0);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -26544,11 +26544,14 @@ class FlowEffect {
             canvas.height = newHeight;
             this.width = canvas.width;
             this.height = canvas.height;
-            this.updateEffect();
+            this.updateEffect(false, 0, this.options);
         })
     }
 
-    updateEffect(createParticles, volume) {
+    updateEffect(createParticles, volume, options) {
+        // console.log('effect:');
+        // console.log(this.options);
+        this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
@@ -26574,8 +26577,16 @@ class FlowEffect {
     render(context, volume) {
         this.particles.forEach(particle => {
             particle.draw(context);
-            particle.updateParticle(volume);
+            particle.updateParticle(volume, this.options);
         })
+    }
+
+    clearAll() {
+        this.particles.forEach(particle => {
+            particle.history = [];
+        })
+        this.particles = [];
+        this.flowField = [];
     }
 }
 
@@ -26611,7 +26622,8 @@ class FlowParticle {
 
     }
 
-    updateParticle(volume) {
+    updateParticle(volume, options) {
+        this.options = options
         this.timer--;
         if (this.timer >= 1) {
             let x = Math.floor(this.x / this.effect.cellSize);
@@ -26686,9 +26698,11 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
+            // console.log('visualiser:');
+            // console.log(this.options.hue);
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone)
-            this.effect.updateEffect(false, normVolume)
+            this.effect.updateEffect(false, normVolume, this.options)
             this.effect.render(this.ctx, normVolume);
         }
         requestAnimationFrame(this.animate.bind(this));
@@ -26777,11 +26791,18 @@ class FlowVisualier {
         options = profiles.profiles[index];
         setOptions()
     }
+
+    changeOption(option, value) {
+        this.options.option = value;
+        localStorage.setItem(option, value);
+        console.log('visualiser:');
+        console.log(this.options.hue);
+    }
     
     hueChange(hue) {
-        options.hue = hue;
+        this.options.hue = hue;
         localStorage.setItem('hue', hue);
-        updateColours();
+        this.updateColours();
     }
     
     hueShiftChange(hueShift) {
@@ -27029,6 +27050,10 @@ function changeProfile(value) {
 	flowVisualiser.changeProfile(value.split(' ')[1] - 1);
 }
 
+function changeOption(option) {
+	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
+}
+
 function hueChange() {
 	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
 }
@@ -27065,7 +27090,7 @@ function toggleBassMode() {
 	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, toggleAuto, hueChange, hueShiftChange, volumeChange, 
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, hueChange, hueShiftChange, volumeChange, 
 	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');

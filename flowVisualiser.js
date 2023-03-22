@@ -28,9 +28,11 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
+            // console.log('visualiser:');
+            // console.log(this.options.hue);
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone)
-            this.effect.updateEffect(false, normVolume)
+            this.effect.updateEffect(false, normVolume, this.options)
             this.effect.render(this.ctx, normVolume);
         }
         requestAnimationFrame(this.animate.bind(this));
@@ -119,11 +121,18 @@ class FlowVisualier {
         options = profiles.profiles[index];
         setOptions()
     }
+
+    changeOption(option, value) {
+        this.options.option = value;
+        localStorage.setItem(option, value);
+        console.log('visualiser:');
+        console.log(this.options.hue);
+    }
     
     hueChange(hue) {
-        options.hue = hue;
+        this.options.hue = hue;
         localStorage.setItem('hue', hue);
-        updateColours();
+        this.updateColours();
     }
     
     hueShiftChange(hueShift) {

@@ -15,7 +15,7 @@ class FlowEffect {
         this.curve = 0.3;
         this.zoom = 0.1
         this.counter = 0;
-        this.updateEffect(true, 0);
+        this.updateEffect(true, this.options, 0);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -24,11 +24,14 @@ class FlowEffect {
             canvas.height = newHeight;
             this.width = canvas.width;
             this.height = canvas.height;
-            this.updateEffect();
+            this.updateEffect(false, 0, this.options);
         })
     }
 
-    updateEffect(createParticles, volume) {
+    updateEffect(createParticles, volume, options) {
+        // console.log('effect:');
+        // console.log(this.options);
+        this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
@@ -54,8 +57,16 @@ class FlowEffect {
     render(context, volume) {
         this.particles.forEach(particle => {
             particle.draw(context);
-            particle.updateParticle(volume);
+            particle.updateParticle(volume, this.options);
         })
+    }
+
+    clearAll() {
+        this.particles.forEach(particle => {
+            particle.history = [];
+        })
+        this.particles = [];
+        this.flowField = [];
     }
 }
 
