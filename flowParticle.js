@@ -28,7 +28,8 @@ class FlowParticle {
 
     }
 
-    updateParticle(volume) {
+    updateParticle(volume, options) {
+        this.options = options
         this.timer--;
         if (this.timer >= 1) {
             let x = Math.floor(this.x / this.effect.cellSize);

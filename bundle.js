@@ -26397,7 +26397,7 @@ function identify(data, cb) {
 
 module.exports = {identify}
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":198}],188:[function(require,module,exports){
+},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":199}],188:[function(require,module,exports){
 module.exports={
 	"host": "identify-eu-west-1.acrcloud.com",
 	"endpoint": "/v1/identify",
@@ -26488,7 +26488,36 @@ function main(audioPromise) {
 
 
 module.exports = {main};
-},{"./microphone":193}],190:[function(require,module,exports){
+},{"./microphone":194}],190:[function(require,module,exports){
+module.exports={
+    "profiles": [
+        {
+            "hue": 10,
+            "hueShift": 2,
+            "volume": 100,
+            "curve": 10,
+            "zoom": 7,
+            "xAdjustment": 0,
+            "yAdjustment": 0,
+            "scrollSpeed": 0,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 150,
+            "hueShift": 2,
+            "volume": 100,
+            "curve": 50,
+            "zoom": 20,
+            "xAdjustment": -1,
+            "yAdjustment": -1,
+            "scrollSpeed": 1,
+            "speed": 2,
+            "bassMode": false
+        }
+    ]
+}
+},{}],191:[function(require,module,exports){
 const Particle = require('./flowParticle')
 
 class FlowEffect {
@@ -26506,7 +26535,7 @@ class FlowEffect {
         this.curve = 0.3;
         this.zoom = 0.1
         this.counter = 0;
-        this.updateEffect(true, 0);
+        this.updateEffect(true, 0, this.options);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -26515,11 +26544,14 @@ class FlowEffect {
             canvas.height = newHeight;
             this.width = canvas.width;
             this.height = canvas.height;
-            this.updateEffect();
+            this.updateEffect(false, 0, this.options);
         })
     }
 
-    updateEffect(createParticles, volume) {
+    updateEffect(createParticles, volume, options) {
+        // console.log('effect:');
+        // console.log(this.options);
+        this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
@@ -26545,13 +26577,21 @@ class FlowEffect {
     render(context, volume) {
         this.particles.forEach(particle => {
             particle.draw(context);
-            particle.updateParticle(volume);
+            particle.updateParticle(volume, this.options);
         })
+    }
+
+    clearAll() {
+        this.particles.forEach(particle => {
+            particle.history = [];
+        })
+        this.particles = [];
+        this.flowField = [];
     }
 }
 
 module.exports = { FlowEffect }
-},{"./flowParticle":191}],191:[function(require,module,exports){
+},{"./flowParticle":192}],192:[function(require,module,exports){
 class FlowParticle {
 
     constructor(effect) {
@@ -26582,7 +26622,8 @@ class FlowParticle {
 
     }
 
-    updateParticle(volume) {
+    updateParticle(volume, options) {
+        this.options = options
         this.timer--;
         if (this.timer >= 1) {
             let x = Math.floor(this.x / this.effect.cellSize);
@@ -26626,45 +26667,46 @@ class FlowParticle {
 }
 
 module.exports = { FlowParticle }
-},{}],192:[function(require,module,exports){
+},{}],193:[function(require,module,exports){
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
+const profiles = require("./flowDefaultProfiles.json");
 
-var options = {
-    hue: 10,
-    hueShift: 2,
-    volume: 100,
-    curve: 10,
-    zoom: 7,
-    xAdjustment: -1,
-    yAdjustment: -1,
-    scrollSpeed: 1,
-    speed: 2,
-    bassMode: false
-}
+class FlowVisualier {
 
-function main(audioPromise) {
-    const canvas = document.getElementById('myCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    ctx.lineWidth = 1;
-    loadOptions()
-    setOptions()
-    updateColours();
+    constructor(audioPromise) {
+        this.canvas = document.querySelector('#myCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.options = profiles.profiles[0]
+        this.profileNumber = 1;
+        this.maxV = 0;
+        this.ctx.lineWidth = 1;
 
-    function animate() {
-        if (microphone.initialised) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let normVolume = getNormalisedVolume(microphone)
-            effect.updateEffect(false, normVolume)
-            effect.render(ctx, normVolume);
-        }
-        requestAnimationFrame(animate);
+        this.setupProfiles();
+        // loadOptions()
+        this.setOptions(this.options);
+        this.updateColours();
+
+        this.microphone = new Microphone.Microphone(audioPromise);
+        this.effect = new Effect.FlowEffect(this.canvas, this.options);
+        this.effect.render(this.ctx, 5);
+        this.animate();
     }
 
-    function getNormalisedVolume(microphone) {
-        if (options.bassMode) {
+    animate() {
+        if (this.microphone.initialised) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            let normVolume = this.getNormalisedVolume(this.microphone)
+            this.effect.updateEffect(false, normVolume, this.options)
+            this.effect.render(this.ctx, normVolume);
+        }
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
+    getNormalisedVolume(microphone) {
+        if (this.options.bassMode) {
             let samples = microphone.getSamples()
             let sum = 0;
             for (let i = 0; i < samples.length / 10; i++) {
@@ -26676,124 +26718,103 @@ function main(audioPromise) {
             var volume = microphone.getVolume();
         }
         let minV = 0;
-        if (maxV < volume) {
-            maxV = volume;
+        if (this.maxV < volume) {
+            this.maxV = volume;
         }
-        if (volume < maxV * 0.2) {
-            maxV = volume;
+        if (volume < this.maxV * 0.2) {
+            this.maxV = volume;
         }
-        let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV = maxV * 1.2
+        let adjVolume = Math.floor(volume * this.options.volume) / 10;
+        let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
-    const microphone = new Microphone.Microphone(audioPromise);
-    const effect = new Effect.FlowEffect(canvas, options);
-    effect.render(ctx, 0)
-    let maxV = 0;
-    animate();
-}
+    loadOptions() {
+        options.hue = Number(localStorage.getItem('hue') || options.hue);
+        options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
+        options.volume = Number(localStorage.getItem('volume') || options.volume);
+        options.curve = Number(localStorage.getItem('curve') || options.curve);
+        options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
+        options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
+        options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
+        options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
+    }
+    
+    setOptions(options) {
+        document.querySelector('#controls-title').innerHTML = 'profile ' + this.profileNumber;
+        document.querySelector('#hue').value = options.hue;
+        document.querySelector('#hueShift').value = options.hueShift;
+        document.querySelector('#volume').value = options.volume;
+        document.querySelector('#curve').value = options.curve;
+        document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#xAdjustment').value = options.xAdjustment;
+        document.querySelector('#yAdjustment').value = options.yAdjustment;
+        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+    }
+    
+    updateColours() {
+        let micIcon = document.querySelector('#mic-icon');
+        let currentSong = document.querySelector('#current-song');
+        let controls = document.querySelector('#controls');
+        let button = document.querySelector('#updateButton');
+        let profileButton = document.querySelector('#profile-'+this.profileNumber+'-button')
+        let newColour = `hsl( ${this.options.hue}, 100%, 80%)`;
+    
+        micIcon.style.color = newColour;
+        currentSong.style.color = newColour;
+        controls.style.color = newColour;
+        button.style.color = newColour;
+        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%)`;
 
-function loadOptions() {
-    options.hue = Number(localStorage.getItem('hue') || options.hue);
-    options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
-    options.volume = Number(localStorage.getItem('volume') || options.volume);
-    options.curve = Number(localStorage.getItem('curve') || options.curve);
-    options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
-    options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
-    options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
-    options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
-}
+        controls.childNodes.forEach(element => {
+            if (element.nodeName === 'LABEL') {
+                element.childNodes.forEach(input => {
+                    if (input.nodeName === 'INPUT') input.style.color = newColour;
+                })
+            }
+        })
 
-function setOptions() {
-    document.querySelector('#hue').setAttribute('value', options.hue);
-    document.querySelector('#hueShift').setAttribute('value', options.hueShift);
-    document.querySelector('#volume').setAttribute('value', options.volume);
-    document.querySelector('#curve').setAttribute('value', options.curve);
-    document.querySelector('#zoom').setAttribute('value', options.zoom);
-    document.querySelector('#xAdjustment').setAttribute('value', options.xAdjustment);
-    document.querySelector('#yAdjustment').setAttribute('value', options.yAdjustment);
-    document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
-}
 
-function updateColours() {
-    let micIcon = document.querySelector('#mic-icon');
-    let currentSong = document.querySelector('#current-song');
-    let controls = document.querySelector('#controls');
-    let button = document.querySelector('#updateButton');
-    let newColour = `hsl( ${options.hue}, 100%, 80%)`;
-
-    micIcon.style.color = newColour;
-    currentSong.style.color = newColour;
-    controls.style.color = newColour;
-    button.style.color = newColour;
-    controls.childNodes.forEach(element => {
-        if (element.nodeName === 'LABEL') {
-            console.log(element);
-            element.childNodes.forEach(input => {
-                if (input.nodeName === 'INPUT') input.style.color = newColour;
-            })
+    }
+    
+    setupProfiles() {
+        let profileElements = document.querySelector('#profiles');
+        for (let i = 0;  i < profiles.profiles.length; i++) {
+            let button = document.createElement('button'); 
+            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%)`;
+            let profileNumber = i + 1;
+            button.id = 'profile-'+profileNumber+'-button';
+            button.textContent = 'profile '+profileNumber;
+            profileElements.appendChild(button);
+            button.style.backgroundColor = profileColour;
+            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
         }
-    })
+    }
+    
+    changeProfile(index) {
+        this.options = profiles.profiles[index];
+        this.profileNumber = index + 1;
+        console.log('changeProfile: ' + this.options.hue);
+        this.setOptions(this.options)
+        this.updateColours();
+    }
+
+    changeOption(option, value) {
+        this.options[option] = value;
+        console.log('changeOption: ' + this.options.hue);
+      //  localStorage.setItem(option, value);
+        this.updateColours();
+    }
 }
 
-function hueChange(hue) {
-    options.hue = hue;
-    localStorage.setItem('hue', hue);
-    updateColours();
-}
-
-function hueShiftChange(hueShift) {
-    options.hueShift = hueShift;
-    localStorage.setItem('hueShift', hueShift);
-}
-
-function volumeChange(volume) {
-    options.volume = volume > 0 ? volume : 1;
-    localStorage.setItem('volume', volume);
-}
-
-function curveChange(curve) {
-    options.curve = curve;
-    localStorage.setItem('curve', curve);
-}
-
-function zoomChange(zoom) {
-    options.zoom = zoom;
-    localStorage.setItem('zoom', zoom);
-}
-
-function xAdjustmentChange(xAdjustment) {
-    options.xAdjustment = xAdjustment;
-    localStorage.setItem('xAdjustment', xAdjustment);
-}
-
-function yAdjustmentChange(yAdjustment) {
-    options.yAdjustment = yAdjustment;
-    localStorage.setItem('yAdjustment', yAdjustment);
-}
-
-function scrollSpeedChange(scrollSpeed) {
-    options.scrollSpeed = scrollSpeed;
-    localStorage.setItem('scrollSpeed', scrollSpeed);
-}
-
-function toggleBassMode(bassMode) {
-    options.bassMode = bassMode;
-    localStorage.setItem('bassMode', bassMode);
-}
-
-module.exports = {
-    main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange,
-    yAdjustmentChange, scrollSpeedChange, toggleBassMode
-}
-},{"./flowEffect":190,"./microphone":193}],193:[function(require,module,exports){
+module.exports = {FlowVisualier};
+},{"./flowDefaultProfiles.json":190,"./flowEffect":191,"./microphone":194}],194:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
-        audioPromise.then(stream => {
+        audioPromise.then(function(stream) {
             this.audioContext = new AudioContext();
             this.microphone = this.audioContext.createMediaStreamSource(stream);
             this.analyser = this.audioContext.createAnalyser();
@@ -26802,7 +26823,7 @@ class Microphone {
             this.dataArray = new Uint8Array(bufferLength);
             this.microphone.connect(this.analyser);
             this.initialised = true;
-        }).catch(error => {
+        }.bind(this)).catch(error => {
             console.log(error);
             alert(error);
         });
@@ -26828,10 +26849,10 @@ class Microphone {
 }
 
 module.exports = {Microphone}
-},{}],194:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const flowVisualiser = require('./flowVisualiser')
+const FlowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
 const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
@@ -26839,10 +26860,11 @@ const debugRecording = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+var flowVisualiser; 
 
-function startVisualiser() {
+function startVisualiser() { 
 	//barVisualiser.main(audioPromise);
-	flowVisualiser.main(audioPromise);
+	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
 function updateSong() {
@@ -26973,6 +26995,7 @@ function toggleAuto() {
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
+		fade('#profiles');
 	}
 	if (e.key === "s") {
 		fade('#current-song');
@@ -26984,45 +27007,16 @@ function fade(elementId) {
 	element.style.transition = 'opacity 0.2s linear 0s';
 	element.style.opacity = element.style.opacity === '1' ? '0' : '1'}
 
-function hueChange() {
-	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
+function changeProfile(value) {
+	flowVisualiser.changeProfile(value.split(' ')[1] - 1);
 }
 
-function hueShiftChange() {
-	flowVisualiser.hueShiftChange(Number(document.querySelector('#hueShift').value));
+function changeOption(option) {
+	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
 }
 
-function volumeChange() {
-	flowVisualiser.volumeChange(Number(document.querySelector('#volume').value));
-}
-
-function curveChange() {
-	flowVisualiser.curveChange(Number(document.querySelector('#curve').value));
-}
-
-function zoomChange() {
-	flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value));
-}
-
-function xAdjustmentChange() {
-	flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value));
-}
-
-function yAdjustmentChange() {
-	flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value));
-}
-
-function scrollSpeedChange() {
-	flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value));
-}
-
-function toggleBassMode() {
-	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
-}
-
-module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, hueShiftChange, volumeChange, 
-	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
-},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":192,"audio-encoder":197}],195:[function(require,module,exports){
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto}
+},{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -27121,7 +27115,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":233}],196:[function(require,module,exports){
+},{"lamejs":234}],197:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -27213,7 +27207,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -27232,11 +27226,11 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":195,"./encodeWav":196}],198:[function(require,module,exports){
+},{"./encodeMp3":196,"./encodeWav":197}],199:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],199:[function(require,module,exports){
+},{}],200:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -27317,7 +27311,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":204,"./common.js":232}],200:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],201:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28345,7 +28339,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":204,"./LameInternalFlags.js":214,"./Tables.js":226,"./Takehiro.js":227,"./common.js":232}],201:[function(require,module,exports){
+},{"./Encoder.js":205,"./LameInternalFlags.js":215,"./Tables.js":227,"./Takehiro.js":228,"./common.js":233}],202:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -28439,7 +28433,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":204,"./L3Side.js":211,"./LameInternalFlags.js":214,"./MeanBits.js":216,"./common.js":232}],202:[function(require,module,exports){
+},{"./Encoder.js":205,"./L3Side.js":212,"./LameInternalFlags.js":215,"./MeanBits.js":217,"./common.js":233}],203:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -28455,7 +28449,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":232}],203:[function(require,module,exports){
+},{"./common.js":233}],204:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -28484,7 +28478,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],204:[function(require,module,exports){
+},{}],205:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29148,7 +29142,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":209,"./NewMDCT.js":217,"./common.js":232}],205:[function(require,module,exports){
+},{"./III_psy_ratio.js":210,"./NewMDCT.js":218,"./common.js":233}],206:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -29396,7 +29390,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":204,"./common.js":232}],206:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],207:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -29950,7 +29944,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":232}],207:[function(require,module,exports){
+},{"./common.js":233}],208:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -30059,7 +30053,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":211,"./common.js":232}],208:[function(require,module,exports){
+},{"./L3Side.js":212,"./common.js":233}],209:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -30095,7 +30089,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":207,"./common.js":232}],209:[function(require,module,exports){
+},{"./GrInfo.js":208,"./common.js":233}],210:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -30107,7 +30101,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":210}],210:[function(require,module,exports){
+},{"./III_psy_xmin.js":211}],211:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -30142,7 +30136,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":204,"./common.js":232}],211:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],212:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -30155,7 +30149,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":204}],212:[function(require,module,exports){
+},{"./Encoder.js":205}],213:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32026,7 +32020,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":199,"./BitStream.js":200,"./CBRNewIterationLoop.js":201,"./Encoder.js":204,"./LameGlobalFlags.js":213,"./LameInternalFlags.js":214,"./PsyModel.js":220,"./ReplayGain.js":223,"./Tables.js":226,"./common.js":232}],213:[function(require,module,exports){
+},{"./ATH.js":200,"./BitStream.js":201,"./CBRNewIterationLoop.js":202,"./Encoder.js":205,"./LameGlobalFlags.js":214,"./LameInternalFlags.js":215,"./PsyModel.js":221,"./ReplayGain.js":224,"./Tables.js":227,"./common.js":233}],214:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -32297,7 +32291,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":215}],214:[function(require,module,exports){
+},{"./MPEGMode.js":216}],215:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32689,7 +32683,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":204,"./IIISideInfo.js":208,"./III_psy_xmin.js":210,"./L3Side.js":211,"./NsPsy.js":218,"./ScaleFac.js":225,"./VBRSeekInfo.js":229,"./common.js":232}],215:[function(require,module,exports){
+},{"./Encoder.js":205,"./IIISideInfo.js":209,"./III_psy_xmin.js":211,"./L3Side.js":212,"./NsPsy.js":219,"./ScaleFac.js":226,"./VBRSeekInfo.js":230,"./common.js":233}],216:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -32708,14 +32702,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],216:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],217:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -33881,7 +33875,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":204,"./common.js":232}],218:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],219:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33924,7 +33918,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":204,"./common.js":232}],219:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],220:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -34413,7 +34407,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":232}],220:[function(require,module,exports){
+},{"./common.js":233}],221:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -37313,7 +37307,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":204,"./FFT.js":205,"./common.js":232}],221:[function(require,module,exports){
+},{"./Encoder.js":205,"./FFT.js":206,"./common.js":233}],222:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -38813,7 +38807,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":202,"./CalcNoiseResult.js":203,"./Encoder.js":204,"./GrInfo.js":207,"./L3Side.js":211,"./VBRQuantize.js":228,"./common.js":232}],222:[function(require,module,exports){
+},{"./CalcNoiseData.js":203,"./CalcNoiseResult.js":204,"./Encoder.js":205,"./GrInfo.js":208,"./L3Side.js":212,"./VBRQuantize.js":229,"./common.js":233}],223:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -39852,7 +39846,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":204,"./LameInternalFlags.js":214,"./MeanBits.js":216,"./ScaleFac.js":225,"./common.js":232}],223:[function(require,module,exports){
+},{"./Encoder.js":205,"./LameInternalFlags.js":215,"./MeanBits.js":217,"./ScaleFac.js":226,"./common.js":233}],224:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -39913,7 +39907,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":206,"./common.js":232}],224:[function(require,module,exports){
+},{"./GainAnalysis.js":207,"./common.js":233}],225:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -40212,7 +40206,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":232}],225:[function(require,module,exports){
+},{"./common.js":233}],226:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -40266,7 +40260,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":204,"./common.js":232}],226:[function(require,module,exports){
+},{"./Encoder.js":205,"./common.js":233}],227:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -40782,7 +40776,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],227:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -41959,7 +41953,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":204,"./GrInfo.js":207,"./QuantizePVT.js":222,"./Tables.js":226,"./common.js":232}],228:[function(require,module,exports){
+},{"./Encoder.js":205,"./GrInfo.js":208,"./QuantizePVT.js":223,"./Tables.js":227,"./common.js":233}],229:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -41974,7 +41968,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],229:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -42010,7 +42004,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],230:[function(require,module,exports){
+},{}],231:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42982,7 +42976,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":232}],231:[function(require,module,exports){
+},{"./common.js":233}],232:[function(require,module,exports){
 function Version() {
 
     /**
@@ -43074,7 +43068,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],232:[function(require,module,exports){
+},{}],233:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -43245,7 +43239,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],233:[function(require,module,exports){
+},{}],234:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -43443,5 +43437,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":200,"./Encoder.js":204,"./GainAnalysis.js":206,"./Lame.js":212,"./MPEGMode.js":215,"./Presets.js":219,"./Quantize.js":221,"./QuantizePVT.js":222,"./Reservoir.js":224,"./Takehiro.js":227,"./VBRTag.js":230,"./Version.js":231,"./common.js":232}]},{},[194])(194)
+},{"./BitStream.js":201,"./Encoder.js":205,"./GainAnalysis.js":207,"./Lame.js":213,"./MPEGMode.js":216,"./Presets.js":220,"./Quantize.js":222,"./QuantizePVT.js":223,"./Reservoir.js":225,"./Takehiro.js":228,"./VBRTag.js":231,"./Version.js":232,"./common.js":233}]},{},[195])(195)
 });

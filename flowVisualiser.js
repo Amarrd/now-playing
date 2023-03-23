@@ -1,41 +1,42 @@
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
+const profiles = require("./flowDefaultProfiles.json");
 
-var options = {
-    hue: 10,
-    hueShift: 2,
-    volume: 100,
-    curve: 10,
-    zoom: 7,
-    xAdjustment: -1,
-    yAdjustment: -1,
-    scrollSpeed: 1,
-    speed: 2,
-    bassMode: false
-}
+class FlowVisualier {
 
-function main(audioPromise) {
-    const canvas = document.getElementById('myCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    ctx.lineWidth = 1;
-    loadOptions()
-    setOptions()
-    updateColours();
+    constructor(audioPromise) {
+        this.canvas = document.querySelector('#myCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.options = profiles.profiles[0]
+        this.profileNumber = 1;
+        this.maxV = 0;
+        this.ctx.lineWidth = 1;
 
-    function animate() {
-        if (microphone.initialised) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let normVolume = getNormalisedVolume(microphone)
-            effect.updateEffect(false, normVolume)
-            effect.render(ctx, normVolume);
-        }
-        requestAnimationFrame(animate);
+        this.setupProfiles();
+        // loadOptions()
+        this.setOptions(this.options);
+        this.updateColours();
+
+        this.microphone = new Microphone.Microphone(audioPromise);
+        this.effect = new Effect.FlowEffect(this.canvas, this.options);
+        this.effect.render(this.ctx, 5);
+        this.animate();
     }
 
-    function getNormalisedVolume(microphone) {
-        if (options.bassMode) {
+    animate() {
+        if (this.microphone.initialised) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            let normVolume = this.getNormalisedVolume(this.microphone)
+            this.effect.updateEffect(false, normVolume, this.options)
+            this.effect.render(this.ctx, normVolume);
+        }
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
+    getNormalisedVolume(microphone) {
+        if (this.options.bassMode) {
             let samples = microphone.getSamples()
             let sum = 0;
             for (let i = 0; i < samples.length / 10; i++) {
@@ -47,116 +48,95 @@ function main(audioPromise) {
             var volume = microphone.getVolume();
         }
         let minV = 0;
-        if (maxV < volume) {
-            maxV = volume;
+        if (this.maxV < volume) {
+            this.maxV = volume;
         }
-        if (volume < maxV * 0.2) {
-            maxV = volume;
+        if (volume < this.maxV * 0.2) {
+            this.maxV = volume;
         }
-        let adjVolume = Math.floor(volume * options.volume) / 10;
-        let adjMaxV = maxV * 1.2
+        let adjVolume = Math.floor(volume * this.options.volume) / 10;
+        let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
-    const microphone = new Microphone.Microphone(audioPromise);
-    const effect = new Effect.FlowEffect(canvas, options);
-    effect.render(ctx, 0)
-    let maxV = 0;
-    animate();
-}
+    loadOptions() {
+        options.hue = Number(localStorage.getItem('hue') || options.hue);
+        options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
+        options.volume = Number(localStorage.getItem('volume') || options.volume);
+        options.curve = Number(localStorage.getItem('curve') || options.curve);
+        options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
+        options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
+        options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
+        options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
+    }
+    
+    setOptions(options) {
+        document.querySelector('#controls-title').innerHTML = 'profile ' + this.profileNumber;
+        document.querySelector('#hue').value = options.hue;
+        document.querySelector('#hueShift').value = options.hueShift;
+        document.querySelector('#volume').value = options.volume;
+        document.querySelector('#curve').value = options.curve;
+        document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#xAdjustment').value = options.xAdjustment;
+        document.querySelector('#yAdjustment').value = options.yAdjustment;
+        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+    }
+    
+    updateColours() {
+        let micIcon = document.querySelector('#mic-icon');
+        let currentSong = document.querySelector('#current-song');
+        let controls = document.querySelector('#controls');
+        let button = document.querySelector('#updateButton');
+        let profileButton = document.querySelector('#profile-'+this.profileNumber+'-button')
+        let newColour = `hsl( ${this.options.hue}, 100%, 80%)`;
+    
+        micIcon.style.color = newColour;
+        currentSong.style.color = newColour;
+        controls.style.color = newColour;
+        button.style.color = newColour;
+        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%)`;
 
-function loadOptions() {
-    options.hue = Number(localStorage.getItem('hue') || options.hue);
-    options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
-    options.volume = Number(localStorage.getItem('volume') || options.volume);
-    options.curve = Number(localStorage.getItem('curve') || options.curve);
-    options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
-    options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
-    options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
-    options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
-}
+        controls.childNodes.forEach(element => {
+            if (element.nodeName === 'LABEL') {
+                element.childNodes.forEach(input => {
+                    if (input.nodeName === 'INPUT') input.style.color = newColour;
+                })
+            }
+        })
 
-function setOptions() {
-    document.querySelector('#hue').setAttribute('value', options.hue);
-    document.querySelector('#hueShift').setAttribute('value', options.hueShift);
-    document.querySelector('#volume').setAttribute('value', options.volume);
-    document.querySelector('#curve').setAttribute('value', options.curve);
-    document.querySelector('#zoom').setAttribute('value', options.zoom);
-    document.querySelector('#xAdjustment').setAttribute('value', options.xAdjustment);
-    document.querySelector('#yAdjustment').setAttribute('value', options.yAdjustment);
-    document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
-}
 
-function updateColours() {
-    let micIcon = document.querySelector('#mic-icon');
-    let currentSong = document.querySelector('#current-song');
-    let controls = document.querySelector('#controls');
-    let button = document.querySelector('#updateButton');
-    let newColour = `hsl( ${options.hue}, 100%, 80%)`;
-
-    micIcon.style.color = newColour;
-    currentSong.style.color = newColour;
-    controls.style.color = newColour;
-    button.style.color = newColour;
-    controls.childNodes.forEach(element => {
-        if (element.nodeName === 'LABEL') {
-            console.log(element);
-            element.childNodes.forEach(input => {
-                if (input.nodeName === 'INPUT') input.style.color = newColour;
-            })
+    }
+    
+    setupProfiles() {
+        let profileElements = document.querySelector('#profiles');
+        for (let i = 0;  i < profiles.profiles.length; i++) {
+            let button = document.createElement('button'); 
+            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%)`;
+            let profileNumber = i + 1;
+            button.id = 'profile-'+profileNumber+'-button';
+            button.textContent = 'profile '+profileNumber;
+            profileElements.appendChild(button);
+            button.style.backgroundColor = profileColour;
+            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
         }
-    })
+    }
+    
+    changeProfile(index) {
+        this.options = profiles.profiles[index];
+        this.profileNumber = index + 1;
+        console.log('changeProfile: ' + this.options.hue);
+        this.setOptions(this.options)
+        this.updateColours();
+    }
+
+    changeOption(option, value) {
+        this.options[option] = value;
+        console.log('changeOption: ' + this.options.hue);
+      //  localStorage.setItem(option, value);
+        this.updateColours();
+    }
 }
 
-function hueChange(hue) {
-    options.hue = hue;
-    localStorage.setItem('hue', hue);
-    updateColours();
-}
-
-function hueShiftChange(hueShift) {
-    options.hueShift = hueShift;
-    localStorage.setItem('hueShift', hueShift);
-}
-
-function volumeChange(volume) {
-    options.volume = volume > 0 ? volume : 1;
-    localStorage.setItem('volume', volume);
-}
-
-function curveChange(curve) {
-    options.curve = curve;
-    localStorage.setItem('curve', curve);
-}
-
-function zoomChange(zoom) {
-    options.zoom = zoom;
-    localStorage.setItem('zoom', zoom);
-}
-
-function xAdjustmentChange(xAdjustment) {
-    options.xAdjustment = xAdjustment;
-    localStorage.setItem('xAdjustment', xAdjustment);
-}
-
-function yAdjustmentChange(yAdjustment) {
-    options.yAdjustment = yAdjustment;
-    localStorage.setItem('yAdjustment', yAdjustment);
-}
-
-function scrollSpeedChange(scrollSpeed) {
-    options.scrollSpeed = scrollSpeed;
-    localStorage.setItem('scrollSpeed', scrollSpeed);
-}
-
-function toggleBassMode(bassMode) {
-    options.bassMode = bassMode;
-    localStorage.setItem('bassMode', bassMode);
-}
-
-module.exports = {
-    main, hueChange, hueShiftChange, volumeChange, curveChange, zoomChange, xAdjustmentChange,
-    yAdjustmentChange, scrollSpeedChange, toggleBassMode
-}
+module.exports = {FlowVisualier};

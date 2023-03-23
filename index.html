@@ -14,38 +14,40 @@
 	<div class="currentSong" id="current-song">
 		<p class="albumYear" id="albumYear" ></p>
 	</div>
+	<div class="profiles" id="profiles"></div>
 	<div class="controls" id="controls">
+		<h4 id="controls-title">profile 1</h4>
 		<label for="hue"> hue
-			<input type="number" id="hue" name="hue" min="1" max="360" onchange="myBundle.hueChange()">
+			<input type="number" id="hue" name="hue" min="1" max="360" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="hueShift"> hue shift
-			<input type="number" id="hueShift" name="hueShift" min="1" max="360" onchange="myBundle.hueShiftChange()">
+			<input type="number" id="hueShift" name="hueShift" min="1" max="360" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="volume"> volume
-			<input type="number" id="volume" name="volume" min="1" max="200" onchange="myBundle.volumeChange()">
+			<input type="number" id="volume" name="volume" min="1" max="200" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="curve"> curve
-			<input type="number" id="curve" name="curve" min="0" max="100" onchange="myBundle.curveChange()">
+			<input type="number" id="curve" name="curve" min="0" max="100" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="zoom"> zoom
-			<input type="number" id="zoom" name="zoom" min="0" max="100" onchange="myBundle.zoomChange()">
+			<input type="number" id="zoom" name="zoom" min="0" max="100" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="xAdjustment"> horizontal scroll
-			<input type="number" id="xAdjustment" name="xAdjustment" min="-1" max="1" onchange="myBundle.xAdjustmentChange()">
+			<input type="number" id="xAdjustment" name="xAdjustment" min="-1" max="1" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="yAdjustment"> vertical scroll
-			<input type="number" id="yAdjustment" name="yAdjustment" min="-1" max="1" onchange="myBundle.yAdjustmentChange()">
+			<input type="number" id="yAdjustment" name="yAdjustment" min="-1" max="1" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="scrollSpeed"> scroll speed
-			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="100" onchange="myBundle.scrollSpeedChange()">
+			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="100" onchange="myBundle.changeOption(this.name)">
 		</label>
-		<label class="bassMode" for="bassMode" id="baseModeLabel">
-			<input type="checkbox" id="bassMode" name="bassMode" onclick="myBundle.toggleBassMode()"> bass mode
-		</label>
+		<!-- <label class="bassMode" for="bassMode" id="baseModeLabel">
+			<input type="checkbox" id="bassMode" name="bassMode" onclick="myBundle.changeOption(this.name)"> bass mode
+		</label> -->
 		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
-			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto
+			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify
 		</label>
-		<button id="updateButton" onclick="myBundle.updateSong()">Update Song</button>
+		<button id="updateButton" onclick="myBundle.updateSong()">update Song</button>
 	</div>
 	<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
 </body>

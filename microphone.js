@@ -1,7 +1,7 @@
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
-        audioPromise.then(stream => {
+        audioPromise.then(function(stream) {
             this.audioContext = new AudioContext();
             this.microphone = this.audioContext.createMediaStreamSource(stream);
             this.analyser = this.audioContext.createAnalyser();
@@ -10,7 +10,7 @@ class Microphone {
             this.dataArray = new Uint8Array(bufferLength);
             this.microphone.connect(this.analyser);
             this.initialised = true;
-        }).catch(error => {
+        }.bind(this)).catch(error => {
             console.log(error);
             alert(error);
         });

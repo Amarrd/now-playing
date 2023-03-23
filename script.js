@@ -1,6 +1,6 @@
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
-const flowVisualiser = require('./flowVisualiser')
+const FlowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
 const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
@@ -8,10 +8,11 @@ const debugRecording = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+var flowVisualiser; 
 
-function startVisualiser() {
+function startVisualiser() { 
 	//barVisualiser.main(audioPromise);
-	flowVisualiser.main(audioPromise);
+	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
 function updateSong() {
@@ -142,6 +143,7 @@ function toggleAuto() {
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
+		fade('#profiles');
 	}
 	if (e.key === "s") {
 		fade('#current-song');
@@ -153,41 +155,12 @@ function fade(elementId) {
 	element.style.transition = 'opacity 0.2s linear 0s';
 	element.style.opacity = element.style.opacity === '1' ? '0' : '1'}
 
-function hueChange() {
-	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
+function changeProfile(value) {
+	flowVisualiser.changeProfile(value.split(' ')[1] - 1);
 }
 
-function hueShiftChange() {
-	flowVisualiser.hueShiftChange(Number(document.querySelector('#hueShift').value));
+function changeOption(option) {
+	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
 }
 
-function volumeChange() {
-	flowVisualiser.volumeChange(Number(document.querySelector('#volume').value));
-}
-
-function curveChange() {
-	flowVisualiser.curveChange(Number(document.querySelector('#curve').value));
-}
-
-function zoomChange() {
-	flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value));
-}
-
-function xAdjustmentChange() {
-	flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value));
-}
-
-function yAdjustmentChange() {
-	flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value));
-}
-
-function scrollSpeedChange() {
-	flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value));
-}
-
-function toggleBassMode() {
-	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
-}
-
-module.exports = { startVisualiser, updateSong, toggleAuto, hueChange, hueShiftChange, volumeChange, 
-	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto}
