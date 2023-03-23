@@ -26535,7 +26535,7 @@ class FlowEffect {
         this.curve = 0.3;
         this.zoom = 0.1
         this.counter = 0;
-        this.updateEffect(true, this.options, 0);
+        this.updateEffect(true, 0, this.options);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -26672,8 +26672,6 @@ const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const profiles = require("./flowDefaultProfiles.json");
 
-//var options = profiles.profiles[0];
-
 class FlowVisualier {
 
     constructor(audioPromise) {
@@ -26682,6 +26680,7 @@ class FlowVisualier {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.options = profiles.profiles[0]
+        this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
 
@@ -26698,8 +26697,6 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
-            // console.log('visualiser:');
-            // console.log(this.options.hue);
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone)
             this.effect.updateEffect(false, normVolume, this.options)
@@ -26746,14 +26743,15 @@ class FlowVisualier {
     }
     
     setOptions(options) {
-        document.querySelector('#hue').setAttribute('value', options.hue);
-        document.querySelector('#hueShift').setAttribute('value', options.hueShift);
-        document.querySelector('#volume').setAttribute('value', options.volume);
-        document.querySelector('#curve').setAttribute('value', options.curve);
-        document.querySelector('#zoom').setAttribute('value', options.zoom);
-        document.querySelector('#xAdjustment').setAttribute('value', options.xAdjustment);
-        document.querySelector('#yAdjustment').setAttribute('value', options.yAdjustment);
-        document.querySelector('#scrollSpeed').setAttribute('value', options.scrollSpeed);
+        document.querySelector('#controls-title').innerHTML = 'profile ' + this.profileNumber;
+        document.querySelector('#hue').value = options.hue;
+        document.querySelector('#hueShift').value = options.hueShift;
+        document.querySelector('#volume').value = options.volume;
+        document.querySelector('#curve').value = options.curve;
+        document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#xAdjustment').value = options.xAdjustment;
+        document.querySelector('#yAdjustment').value = options.yAdjustment;
+        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
     }
     
     updateColours() {
@@ -26761,12 +26759,15 @@ class FlowVisualier {
         let currentSong = document.querySelector('#current-song');
         let controls = document.querySelector('#controls');
         let button = document.querySelector('#updateButton');
+        let profileButton = document.querySelector('#profile-'+this.profileNumber+'-button')
         let newColour = `hsl( ${this.options.hue}, 100%, 80%)`;
     
         micIcon.style.color = newColour;
         currentSong.style.color = newColour;
         controls.style.color = newColour;
         button.style.color = newColour;
+        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%)`;
+
         controls.childNodes.forEach(element => {
             if (element.nodeName === 'LABEL') {
                 element.childNodes.forEach(input => {
@@ -26774,79 +26775,39 @@ class FlowVisualier {
                 })
             }
         })
+
+
     }
     
     setupProfiles() {
         let profileElements = document.querySelector('#profiles');
         for (let i = 0;  i < profiles.profiles.length; i++) {
             let button = document.createElement('button'); 
-            console.log(button);
-            button.textContent = 'Profile ' + (i+1);
+            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%)`;
+            let profileNumber = i + 1;
+            button.id = 'profile-'+profileNumber+'-button';
+            button.textContent = 'profile '+profileNumber;
             profileElements.appendChild(button);
+            button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
         }
     }
     
     changeProfile(index) {
-        options = profiles.profiles[index];
-        setOptions()
+        this.options = profiles.profiles[index];
+        this.profileNumber = index + 1;
+        console.log('changeProfile: ' + this.options.hue);
+        this.setOptions(this.options)
+        this.updateColours();
     }
 
     changeOption(option, value) {
-        this.options.option = value;
-        localStorage.setItem(option, value);
-        console.log('visualiser:');
-        console.log(this.options.hue);
-    }
-    
-    hueChange(hue) {
-        this.options.hue = hue;
-        localStorage.setItem('hue', hue);
+        this.options[option] = value;
+        console.log('changeOption: ' + this.options.hue);
+      //  localStorage.setItem(option, value);
         this.updateColours();
     }
-    
-    hueShiftChange(hueShift) {
-        options.hueShift = hueShift;
-        localStorage.setItem('hueShift', hueShift);
-    }
-    
-    volumeChange(volume) {
-        options.volume = volume > 0 ? volume : 1;
-        localStorage.setItem('volume', volume);
-    }
-    
-    curveChange(curve) {
-        options.curve = curve;
-        localStorage.setItem('curve', curve);
-    }
-    
-    zoomChange(zoom) {
-        options.zoom = zoom;
-        localStorage.setItem('zoom', zoom);
-    }
-    
-    xAdjustmentChange(xAdjustment) {
-        options.xAdjustment = xAdjustment;
-        localStorage.setItem('xAdjustment', xAdjustment);
-    }
-    
-    yAdjustmentChange(yAdjustment) {
-        options.yAdjustment = yAdjustment;
-        localStorage.setItem('yAdjustment', yAdjustment);
-    }
-    
-    scrollSpeedChange(scrollSpeed) {
-        options.scrollSpeed = scrollSpeed;
-        localStorage.setItem('scrollSpeed', scrollSpeed);
-    }
-    
-    toggleBassMode(bassMode) {
-        options.bassMode = bassMode;
-        localStorage.setItem('bassMode', bassMode);
-    }
 }
-
-
 
 module.exports = {FlowVisualier};
 },{"./flowDefaultProfiles.json":190,"./flowEffect":191,"./microphone":194}],194:[function(require,module,exports){
@@ -27054,44 +27015,7 @@ function changeOption(option) {
 	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
 }
 
-function hueChange() {
-	flowVisualiser.hueChange(Number(document.querySelector('#hue').value));
-}
-
-function hueShiftChange() {
-	flowVisualiser.hueShiftChange(Number(document.querySelector('#hueShift').value));
-}
-
-function volumeChange() {
-	flowVisualiser.volumeChange(Number(document.querySelector('#volume').value));
-}
-
-function curveChange() {
-	flowVisualiser.curveChange(Number(document.querySelector('#curve').value));
-}
-
-function zoomChange() {
-	flowVisualiser.zoomChange(Number(document.querySelector('#zoom').value));
-}
-
-function xAdjustmentChange() {
-	flowVisualiser.xAdjustmentChange(Number(document.querySelector('#xAdjustment').value));
-}
-
-function yAdjustmentChange() {
-	flowVisualiser.yAdjustmentChange(Number(document.querySelector('#yAdjustment').value));
-}
-
-function scrollSpeedChange() {
-	flowVisualiser.scrollSpeedChange(Number(document.querySelector('#scrollSpeed').value));
-}
-
-function toggleBassMode() {
-	flowVisualiser.toggleBassMode(document.querySelector('#bassMode').checked);
-}
-
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, hueChange, hueShiftChange, volumeChange, 
-	curveChange, zoomChange, xAdjustmentChange, yAdjustmentChange, scrollSpeedChange, toggleBassMode }
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto}
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
 

@@ -15,7 +15,7 @@ class FlowEffect {
         this.curve = 0.3;
         this.zoom = 0.1
         this.counter = 0;
-        this.updateEffect(true, this.options, 0);
+        this.updateEffect(true, 0, this.options);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
