@@ -14,6 +14,11 @@ function sign(signString, accessSecret) {
 
 function identify(data, cb) {
 
+	if (!options.access_key || !options.access_secret) {
+		alert("Song identification hasn't been configured yet. Coming soon!")
+		return;
+	}
+
 	var current_data = new Date();
 	var timestamp = current_data.getTime() / 1000;
 
