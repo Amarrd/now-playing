@@ -26493,7 +26493,7 @@ module.exports={
     "profiles": [
         {
             "hue": 10,
-            "hueShift": 2,
+            "hueShift": 4,
             "volume": 100,
             "curve": 10,
             "zoom": 7,
@@ -26504,12 +26504,60 @@ module.exports={
             "bassMode": false
         },
         {
-            "hue": 150,
+            "hue": 40,
             "hueShift": 2,
             "volume": 100,
-            "curve": 50,
-            "zoom": 20,
+            "curve": 30,
+            "zoom": 10,
             "xAdjustment": -1,
+            "yAdjustment": -1,
+            "scrollSpeed": 1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 90,
+            "hueShift": 15,
+            "volume": 100,
+            "curve": 60,
+            "zoom": 50,
+            "xAdjustment": 1,
+            "yAdjustment": 0,
+            "scrollSpeed": 0.1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 170,
+            "hueShift": 20,
+            "volume": 100,
+            "curve": 5,
+            "zoom": 10,
+            "xAdjustment": 1,
+            "yAdjustment": -1,
+            "scrollSpeed": 1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 220,
+            "hueShift": 15,
+            "volume": 100,
+            "curve": 70,
+            "zoom": 10,
+            "xAdjustment": 0,
+            "yAdjustment": 0,
+            "scrollSpeed": 0,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 330,
+            "hueShift": 10,
+            "volume": 100,
+            "curve": 50,
+            "zoom": 100,
+            "xAdjustment": 0,
             "yAdjustment": -1,
             "scrollSpeed": 1,
             "speed": 2,
