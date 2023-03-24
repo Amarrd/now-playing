@@ -14,8 +14,8 @@ var flowVisualiser;
 function startVisualiser() { 
 	//barVisualiser.main(audioPromise);
 	if (visualiserOnly) {
-		document.querySelector('#updateButton').style.visibility = 'hidden';
-		document.querySelector('#autoToggleLabel').style.visibility = 'hidden';
+		document.querySelector('#updateButton').disabled = true;
+		document.querySelector('#autoToggleLabel').disabled = true;
 	}
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
