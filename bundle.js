@@ -26367,6 +26367,11 @@ function sign(signString, accessSecret) {
 
 function identify(data, cb) {
 
+	if (!options.access_key || !options.access_secret) {
+		alert("Song identification hasn't been configured yet. Coming soon!")
+		return;
+	}
+
 	var current_data = new Date();
 	var timestamp = current_data.getTime() / 1000;
 
@@ -26403,10 +26408,9 @@ module.exports={
 	"endpoint": "/v1/identify",
 	"signature_version": "1",
 	"data_type": "audio",
-	"secure": true,
-	"access_key": "a5aa8a35f41a9bd996a355421abd87e9",
-	"access_secret": "qwBIddOHDLy3tYXijszsv5bfjLCS2lT0blHJtPh7"
+	"secure": true
 }
+
 },{}],189:[function(require,module,exports){
 const Microphone = require("./microphone");
 
@@ -26493,7 +26497,7 @@ module.exports={
     "profiles": [
         {
             "hue": 10,
-            "hueShift": 2,
+            "hueShift": 4,
             "volume": 100,
             "curve": 10,
             "zoom": 7,
@@ -26504,12 +26508,60 @@ module.exports={
             "bassMode": false
         },
         {
-            "hue": 150,
+            "hue": 40,
             "hueShift": 2,
             "volume": 100,
-            "curve": 50,
-            "zoom": 20,
+            "curve": 30,
+            "zoom": 10,
             "xAdjustment": -1,
+            "yAdjustment": -1,
+            "scrollSpeed": 1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 90,
+            "hueShift": 15,
+            "volume": 100,
+            "curve": 60,
+            "zoom": 50,
+            "xAdjustment": 1,
+            "yAdjustment": 0,
+            "scrollSpeed": 0.1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 170,
+            "hueShift": 20,
+            "volume": 100,
+            "curve": 5,
+            "zoom": 10,
+            "xAdjustment": 1,
+            "yAdjustment": -1,
+            "scrollSpeed": 1,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 220,
+            "hueShift": 15,
+            "volume": 100,
+            "curve": 70,
+            "zoom": 10,
+            "xAdjustment": 0,
+            "yAdjustment": 0,
+            "scrollSpeed": 0,
+            "speed": 2,
+            "bassMode": false
+        },
+        {
+            "hue": 330,
+            "hueShift": 10,
+            "volume": 100,
+            "curve": 50,
+            "zoom": 100,
+            "xAdjustment": 0,
             "yAdjustment": -1,
             "scrollSpeed": 1,
             "speed": 2,
@@ -26857,6 +26909,7 @@ const barVisualiser = require('./barVisualiser')
 
 const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
+const visualiserOnly = true;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
@@ -26864,6 +26917,10 @@ var flowVisualiser;
 
 function startVisualiser() { 
 	//barVisualiser.main(audioPromise);
+	if (visualiserOnly) {
+		document.querySelector('#updateButton').disabled = true;
+		document.querySelector('#autoToggleLabel').disabled = true;
+	}
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
@@ -27016,6 +27073,7 @@ function changeOption(option) {
 }
 
 module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto}
+
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
 
