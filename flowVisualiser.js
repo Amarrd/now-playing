@@ -96,7 +96,7 @@ class FlowVisualier {
         currentSong.style.color = newColour;
         controls.style.color = newColour;
         button.style.color = newColour;
-        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%)`;
+        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
 
         controls.childNodes.forEach(element => {
             if (element.nodeName === 'LABEL') {
@@ -113,10 +113,10 @@ class FlowVisualier {
         let profileElements = document.querySelector('#profiles');
         for (let i = 0;  i < profiles.profiles.length; i++) {
             let button = document.createElement('button'); 
-            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%)`;
+            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-'+profileNumber+'-button';
-            button.textContent = 'profile '+profileNumber;
+            button.textContent = profileNumber;
             profileElements.appendChild(button);
             button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')

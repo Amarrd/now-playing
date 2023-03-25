@@ -26355,6 +26355,74 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
+function identify(data, cb) {
+
+	let accessKey = localStorage.getItem('accessKey');
+	let accessSecret = localStorage.getItem('accessSecret');
+
+	if (!accessKey || !accessSecret) {
+		let prompt = document.createElement('div');
+		let keyInput = document.createElement('input')
+		let secretInput = document.createElement('input')
+		let submit = document.createElement('button');
+		prompt.className = 'credentialsPrompt';
+		prompt.id = 'credentialsPrompt';
+		keyInput.id = 'keyInput';
+		secretInput.id = 'secretInput';
+		prompt.innerHTML = 'Enter ACRCloud credentials';
+		keyInput.placeholder = 'Access Key';
+		secretInput.placeholder = 'Access Secret';
+		submit.innerHTML = 'Submit';
+		submit.id = 'submitCredentials';
+		submit.setAttribute('onclick', 'myBundle.submitCredentials()');
+
+		prompt.appendChild(keyInput);
+		prompt.appendChild(secretInput);
+		prompt.appendChild(submit);
+		document.body.appendChild(prompt);
+		return;
+	}
+
+	console.log(accessKey);
+	console.log(accessSecret);
+
+	var current_data = new Date();
+	var timestamp = current_data.getTime() / 1000;
+
+	var stringToSign = buildStringToSign('POST',
+		options.endpoint,
+		accessKey,
+		options.data_type,
+		options.signature_version,
+		timestamp);
+
+	var signature = sign(stringToSign, accessSecret);
+
+	var form = new FormData();
+	form.append('sample', data);
+	form.append('sample_bytes', data.length);
+	form.append('access_key', accessKey);
+	form.append('data_type', options.data_type);
+	form.append('signature_version', options.signature_version);
+	form.append('signature', signature);
+	form.append('timestamp', timestamp);
+
+	fetch("https://" + options.host + options.endpoint,
+		{ method: 'POST', body: form })
+		.then((res) => { return res.text() })
+		.then((res) => { cb(res, null) })
+		.catch((err) => { cb(null, err) });
+}
+
+function submitConfiguration() {
+	let accessKey = document.querySelector('#keyInput').value;
+	let accessSecret = document.querySelector('#secretInput').value;
+	localStorage.setItem('accessKey', accessKey);
+	localStorage.setItem('accessSecret', accessSecret);
+	document.querySelector('#submitCredentials').innerHTML = 'Testing Credentials';
+	document.body.removeChild(document.querySelector('#credentialsPrompt'))
+}
+
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
 	return [method, uri, accessKey, dataType, signatureVersion, timestamp].join('\n');
 }
@@ -26365,42 +26433,7 @@ function sign(signString, accessSecret) {
 		.digest().toString('base64');
 }
 
-function identify(data, cb) {
-
-	if (!options.access_key || !options.access_secret) {
-		alert("Song identification hasn't been configured yet. Coming soon!")
-		return;
-	}
-
-	var current_data = new Date();
-	var timestamp = current_data.getTime() / 1000;
-
-	var stringToSign = buildStringToSign('POST',
-		options.endpoint,
-		options.access_key,
-		options.data_type,
-		options.signature_version,
-		timestamp);
-
-	var signature = sign(stringToSign, options.access_secret);
-
-	var form = new FormData();
-	form.append('sample', data);
-	form.append('sample_bytes', data.length);
-	form.append('access_key', options.access_key);
-	form.append('data_type', options.data_type);
-	form.append('signature_version', options.signature_version);
-	form.append('signature', signature);
-	form.append('timestamp', timestamp);
-
-	fetch("http://" + options.host + options.endpoint,
-		{ method: 'POST', body: form })
-		.then((res) => { return res.text() })
-		.then((res) => { cb(res, null) })
-		.catch((err) => { cb(null, err) });
-}
-
-module.exports = {identify}
+module.exports = { identify, submitConfiguration}
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":199}],188:[function(require,module,exports){
 module.exports={
@@ -26818,7 +26851,7 @@ class FlowVisualier {
         currentSong.style.color = newColour;
         controls.style.color = newColour;
         button.style.color = newColour;
-        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%)`;
+        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
 
         controls.childNodes.forEach(element => {
             if (element.nodeName === 'LABEL') {
@@ -26835,10 +26868,10 @@ class FlowVisualier {
         let profileElements = document.querySelector('#profiles');
         for (let i = 0;  i < profiles.profiles.length; i++) {
             let button = document.createElement('button'); 
-            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%)`;
+            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-'+profileNumber+'-button';
-            button.textContent = 'profile '+profileNumber;
+            button.textContent = profileNumber;
             profileElements.appendChild(button);
             button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
@@ -26909,13 +26942,13 @@ const barVisualiser = require('./barVisualiser')
 
 const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
-const visualiserOnly = true;
+const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser; 
+var flowVisualiser;
 
-function startVisualiser() { 
+function startVisualiser() {
 	//barVisualiser.main(audioPromise);
 	if (visualiserOnly) {
 		document.querySelector('#updateButton').disabled = true;
@@ -26931,7 +26964,7 @@ function updateSong() {
 		return;
 	}
 
-	fade('#mic-icon');
+	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
 
@@ -26957,7 +26990,7 @@ function updateSong() {
 			// convert blob to buffer
 			let fileReader = new FileReader();
 			let arrayBuffer;
-			fileReader.onloadend = () => { 
+			fileReader.onloadend = () => {
 
 				arrayBuffer = fileReader.result;
 				// Create an audio context and decode the array buffer into an audio buffer
@@ -26982,7 +27015,7 @@ function updateSong() {
 								processResponse(body)
 
 							});
-							fade('#mic-icon')
+							fadeOut('#mic-icon')
 						});
 				});
 			}
@@ -27014,7 +27047,7 @@ function processResponse(response) {
 			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
 			detectDelay = delay + 5000;
 			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => fade('#current-song'), delay)
+			setTimeout(() => fadeIn('#current-song'), delay)
 			setTimeout(() => updateSong(), detectDelay);
 		}
 	} else {
@@ -27059,20 +27092,37 @@ document.onkeyup = function (e) {
 	}
 }
 
+function fadeIn(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 1
+}
+
+function fadeOut(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 0
+}
+
 function fade(elementId) {
 	let element = document.querySelector(elementId);
 	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '1' ? '0' : '1'}
+	element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+}
 
 function changeProfile(value) {
-	flowVisualiser.changeProfile(value.split(' ')[1] - 1);
+	flowVisualiser.changeProfile(value - 1);
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, Number(document.querySelector('#'+option).value))
+	flowVisualiser.changeOption(option, Number(document.querySelector('#' + option).value))
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto}
+function submitCredentials() {
+	acrCloud.submitConfiguration();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, submitCredentials }
 
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
