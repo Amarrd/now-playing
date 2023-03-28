@@ -26355,39 +26355,14 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
+const clearLocal = false;
+
 function identify(data, cb) {
 
-	let accessKey = localStorage.getItem('accessKey');
-	let accessSecret = localStorage.getItem('accessSecret');
-
-	if (!accessKey || !accessSecret) {
-		let prompt = document.createElement('div');
-		let keyInput = document.createElement('input')
-		let secretInput = document.createElement('input')
-		let submit = document.createElement('button');
-		prompt.className = 'credentialsPrompt';
-		prompt.id = 'credentialsPrompt';
-		keyInput.id = 'keyInput';
-		secretInput.id = 'secretInput';
-		prompt.innerHTML = 'Enter ACRCloud credentials';
-		keyInput.placeholder = 'Access Key';
-		secretInput.placeholder = 'Access Secret';
-		submit.innerHTML = 'Submit';
-		submit.id = 'submitCredentials';
-		submit.setAttribute('onclick', 'myBundle.submitCredentials()');
-
-		prompt.appendChild(keyInput);
-		prompt.appendChild(secretInput);
-		prompt.appendChild(submit);
-		document.body.appendChild(prompt);
-		return;
-	}
-
-	console.log(accessKey);
-	console.log(accessSecret);
-
-	var current_data = new Date();
-	var timestamp = current_data.getTime() / 1000;
+	const accessKey = localStorage.getItem('accessKey');
+	const accessSecret = localStorage.getItem('accessSecret');
+	const current_date = new Date();
+	const timestamp = current_date.getTime() / 1000;
 
 	var stringToSign = buildStringToSign('POST',
 		options.endpoint,
@@ -26419,8 +26394,69 @@ function submitConfiguration() {
 	let accessSecret = document.querySelector('#secretInput').value;
 	localStorage.setItem('accessKey', accessKey);
 	localStorage.setItem('accessSecret', accessSecret);
-	document.querySelector('#submitCredentials').innerHTML = 'Testing Credentials';
-	document.body.removeChild(document.querySelector('#credentialsPrompt'))
+	const audio = new Audio("test.wav")
+
+	identify(audio, function (body, err) {
+		if (err) {
+			console.log("Error:")
+			console.log(err);
+			return;
+		}
+		if (JSON.parse(body).status.code === 3001) {
+			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOut('#current-song'), 3000)
+		} else {
+			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			document.querySelector('#current-song').innerHTML = 'Credentials saved';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOut('#current-song'), 3000)
+		}
+
+	});
+}
+
+function credentialsRequired() {
+	if (clearLocal) {
+		localStorage.removeItem('accessKey');
+		localStorage.removeItem('accessSecret');
+		return true;
+	}
+
+	let accessKey = localStorage.getItem('accessKey');
+	let accessSecret = localStorage.getItem('accessSecret');
+	console.log(accessKey + ',' + accessSecret);
+
+	return !accessKey || !accessSecret;
+}
+
+function createCredentialsDialogue() {
+	let prompt = document.createElement('div');
+	let keyInput = document.createElement('input')
+	let secretInput = document.createElement('input')
+	let submit = document.createElement('button');
+	const colour = document.querySelector('#controls').style.color;
+
+	prompt.className = 'credentialsPrompt';
+	prompt.id = 'credentialsPrompt';
+	prompt.innerHTML = 'Enter ACRCloud credentials';
+	prompt.style.color = colour;
+	keyInput.id = 'keyInput';
+	keyInput.placeholder = 'Access Key';
+	keyInput.style.color = colour;
+	secretInput.id = 'secretInput';
+	secretInput.placeholder = 'Access Secret';
+	secretInput.style.color = colour;
+	submit.innerHTML = 'Submit';
+	submit.id = 'submitCredentials';
+	submit.style.color = colour;
+	submit.setAttribute('onclick', 'myBundle.submitCredentials()');
+
+	prompt.appendChild(keyInput);
+	prompt.appendChild(secretInput);
+	prompt.appendChild(submit);
+	document.body.appendChild(prompt);
+	return;
 }
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
@@ -26433,7 +26469,19 @@ function sign(signString, accessSecret) {
 		.digest().toString('base64');
 }
 
-module.exports = { identify, submitConfiguration}
+function fadeIn(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 1
+}
+
+function fadeOut(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 0
+}
+
+module.exports = { identify, credentialsRequired, createCredentialsDialogue, submitConfiguration }
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":199}],188:[function(require,module,exports){
 module.exports={
@@ -26964,6 +27012,11 @@ function updateSong() {
 		return;
 	}
 
+	if (acrCloud.credentialsRequired()) {
+		acrCloud.createCredentialsDialogue();
+		return;
+	}
+
 	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
@@ -27060,25 +27113,20 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); // create a blob URL
-	var a = document.createElement("a"); // create an anchor element
-	a.href = blobUrl; // set the href attribute to the blob URL
-	a.download = name + ".wav"; // set the download attribute to your desired file name
-	a.click(); // click the anchor element to trigger the download
+	var blobUrl = URL.createObjectURL(audioBlob); 
+	var a = document.createElement("a"); 
+	a.href = blobUrl; 
+	a.download = name + ".wav"; 
+	a.click(); 
 }
 
 function toggleAuto() {
 	const autoToggle = document.querySelector('#autoToggle');
-	let updateButton = document.querySelector('#updateButton');
 	if (autoToggle.checked == true) {
-		// start auto mode
 		updateSong();
 		autoMode = true;
-		updateButton.style.visibility = 'hidden'
 	} else {
-		// stop auto mode
 		autoMode = false;
-		updateButton.style.visibility = 'visible'
 	}
 }
 

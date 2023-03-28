@@ -27,6 +27,11 @@ function updateSong() {
 		return;
 	}
 
+	if (acrCloud.credentialsRequired()) {
+		acrCloud.createCredentialsDialogue();
+		return;
+	}
+
 	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
@@ -123,25 +128,20 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); // create a blob URL
-	var a = document.createElement("a"); // create an anchor element
-	a.href = blobUrl; // set the href attribute to the blob URL
-	a.download = name + ".wav"; // set the download attribute to your desired file name
-	a.click(); // click the anchor element to trigger the download
+	var blobUrl = URL.createObjectURL(audioBlob); 
+	var a = document.createElement("a"); 
+	a.href = blobUrl; 
+	a.download = name + ".wav"; 
+	a.click(); 
 }
 
 function toggleAuto() {
 	const autoToggle = document.querySelector('#autoToggle');
-	let updateButton = document.querySelector('#updateButton');
 	if (autoToggle.checked == true) {
-		// start auto mode
 		updateSong();
 		autoMode = true;
-		updateButton.style.visibility = 'hidden'
 	} else {
-		// stop auto mode
 		autoMode = false;
-		updateButton.style.visibility = 'visible'
 	}
 }
 

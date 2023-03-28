@@ -16,7 +16,7 @@
 	</div>
 	<div class="profiles" id="profiles"></div>
 	<div class="controls" id="controls">
-		<h4 id="controls-title">profile 1</h4>
+		<h4 id="controls-title"></h4>
 		<label for="hue"> hue
 			<input type="number" id="hue" name="hue" min="1" max="360" onchange="myBundle.changeOption(this.name)">
 		</label>
@@ -50,6 +50,7 @@
 		<button id="updateButton" onclick="myBundle.updateSong()">update Song</button>
 	</div>
 	<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
+	<audio id="sample" src="test.wav"></audio>
 </body>
 
 </html>
