@@ -56,8 +56,8 @@ class FlowVisualier {
             this.maxV = volume;
         }
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMin = Math.floor(volumes[0] * this.options.volume) / 10;
-        let adjMax = Math.floor(volumes[1] * this.options.volume) / 10;
+        let adjMin = Math.floor(volumes[0] * this.options.volume * 0.8) / 10;
+        let adjMax = Math.floor(volumes[1] * this.options.volume * 1.3) / 10;
         //let adjMaxV = this.maxV * 1.2
         //let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         let normVolume = (adjVolume - adjMin) / (adjMax - adjMin) || 0.01;
