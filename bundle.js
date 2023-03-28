@@ -26531,7 +26531,7 @@ module.exports={
         {
             "hue": 10,
             "hueShift": 4,
-            "volume": 100,
+            "volume": 70,
             "curve": 10,
             "zoom": 7,
             "xAdjustment": 0,
@@ -26543,7 +26543,7 @@ module.exports={
         {
             "hue": 40,
             "hueShift": 2,
-            "volume": 100,
+            "volume": 70,
             "curve": 30,
             "zoom": 10,
             "xAdjustment": -1,
@@ -26555,7 +26555,7 @@ module.exports={
         {
             "hue": 90,
             "hueShift": 15,
-            "volume": 100,
+            "volume": 70,
             "curve": 60,
             "zoom": 50,
             "xAdjustment": 1,
@@ -26567,7 +26567,7 @@ module.exports={
         {
             "hue": 170,
             "hueShift": 20,
-            "volume": 100,
+            "volume": 70,
             "curve": 5,
             "zoom": 10,
             "xAdjustment": 1,
@@ -26579,7 +26579,7 @@ module.exports={
         {
             "hue": 220,
             "hueShift": 15,
-            "volume": 100,
+            "volume": 70,
             "curve": 70,
             "zoom": 10,
             "xAdjustment": 0,
@@ -26591,7 +26591,7 @@ module.exports={
         {
             "hue": 330,
             "hueShift": 10,
-            "volume": 100,
+            "volume": 70,
             "curve": 50,
             "zoom": 100,
             "xAdjustment": 0,
