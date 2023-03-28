@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = false;
+const clearLocal = true;
 
 function identify(data, cb) {
 
@@ -49,7 +49,8 @@ function submitConfiguration() {
 			console.log(err);
 			return;
 		}
-		if (JSON.parse(body).status.code === 3001) {
+		console.log(body);
+		if (JSON.parse(body).status.code === (3001 || 3014)) {
 			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
 			fadeIn('#current-song');
 			setTimeout(() => fadeOut('#current-song'), 3000)
