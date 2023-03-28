@@ -82,6 +82,7 @@ class FlowVisualier {
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
         document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+        document.querySelector('#controls').style.opacity = 1;
     }
     
     updateColours() {
@@ -111,6 +112,7 @@ class FlowVisualier {
     
     setupProfiles() {
         let profileElements = document.querySelector('#profiles');
+        profileElements.style.opacity = 1;
         for (let i = 0;  i < profiles.profiles.length; i++) {
             let button = document.createElement('button'); 
             let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
