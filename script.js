@@ -9,14 +9,14 @@ const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser;
+var flowVisualiser; 
 
 function startVisualiser() {
-	//barVisualiser.main(audioPromise);
 	if (visualiserOnly) {
 		document.querySelector('#updateButton').disabled = true;
 		document.querySelector('#autoToggleLabel').disabled = true;
 	}
+	//barVisualiser.main(audioPromise);
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
@@ -170,7 +170,7 @@ function fadeOut(elementId) {
 function fade(elementId) {
 	let element = document.querySelector(elementId);
 	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+	element.style.opacity = element.style.opacity === '0' ? '1' : '0'
 }
 
 function changeProfile(value) {

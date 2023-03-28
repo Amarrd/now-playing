@@ -26454,16 +26454,19 @@ class Bar {
     this.width = width
     this.height = height;
     this.colour = colour;
-
     }
 
-    update(micInput, volume) {
-        //const sound = volume * 1000;
+    update(micInput, beat) {
         const sound = micInput * 500;
         if (sound > this.height) {
             this.height = sound;
         } else {
             this.height -= this.height * 0.03
+        }
+        if (beat) {
+            this.colour = 'white';
+        } else {
+            this.colour = 'orange';
         }
         
     }
@@ -26494,12 +26497,22 @@ function main(audioPromise) {
         let canvasMidX = canvas.width/ 2;
         let canvasMidY = canvas.height * 0.75;
         let barWidth = 10;
-        let frequencyBinCount = 512/4;
+        let frequencyBinCount = 512/6;
         let barStart = canvasMidX - ((frequencyBinCount/2) * barWidth);
 
         for (let i = 0; i < frequencyBinCount; i++) {
             bars.push(new Bar(barStart + i*barWidth, canvasMidY, barWidth, 20, 'orange'));
         }
+        let volumes = document.createElement('div');
+        let averageVolume = document.createElement('h3');
+        let currentVolume = document.createElement('h3');
+        volumes.className = 'volumes';
+        volumes.className = 'volumes';
+        averageVolume.id = 'averageVolume';
+        currentVolume.id = 'currentVolume';
+        volumes.appendChild(currentVolume);
+        volumes.appendChild(averageVolume);
+        document.body.appendChild(volumes);
     }
 
 
@@ -26508,8 +26521,15 @@ function main(audioPromise) {
             ctx.clearRect(0,0, canvas.width, canvas.height);
             const samples = microphone.getSamples();
             const volume = microphone.getVolume();
+            const averageVolume = microphone.getSecondAveragedVolume(volume) || 0;
+            document.querySelector('#currentVolume').innerHTML = 'current: ' + volume;
+            document.querySelector('#averageVolume').innerHTML = 'average: ' + averageVolume;
+            let beat = volume > averageVolume * 1.3;
+            if (beat) {
+                console.log('BEAT');
+            }
             bars.forEach(function(bar, i) {
-                bar.update(samples[i], volume);
+                bar.update(samples[i], beat);
                 bar.draw(ctx);
             });
         }
@@ -26645,7 +26665,7 @@ class FlowEffect {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
                 let angle = (Math.cos((x + this.counter * -this.options.xAdjustment) * adjustedZoom)
-                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 100);
+                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 10);
                 this.flowField.push(angle);
             }
         }
@@ -26719,7 +26739,7 @@ class FlowParticle {
             this.speedX = Math.cos(this.angle);
             this.speedY = Math.sin(this.angle);
 
-            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
+            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed * 10) + 10;
             this.x += this.speedX * (volume * randomSpeed + 0.5)
             this.y += this.speedY * (volume * randomSpeed + 0.5)
 
@@ -26741,7 +26761,7 @@ class FlowParticle {
     reset(volume) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
+        this.hue = volume * 10 * this.effect.options.hueShift + this.effect.options.hue
         //console.log(`volume:${volume}, hue:${this.hue}`)
         this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
@@ -26801,6 +26821,7 @@ class FlowVisualier {
         }
         else {
             var volume = microphone.getVolume();
+            var volumes = microphone.getMinAndMaxVolume(volume);
         }
         let minV = 0;
         if (this.maxV < volume) {
@@ -26810,9 +26831,14 @@ class FlowVisualier {
             this.maxV = volume;
         }
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMaxV = this.maxV * 1.2
-        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        let adjMin = Math.floor(volumes[0] * this.options.volume) / 10;
+        let adjMax = Math.floor(volumes[1] * this.options.volume) / 10;
+        //let adjMaxV = this.maxV * 1.2
+        //let normVolume = (adjVolume - minV) / (adjMaxV - minV);
+        let normVolume = (adjVolume - adjMin) / (adjMax - adjMin) || 0.01;
+        //console.log()
+      //  console.log('vol:%f, max:%f, min:%f, norm: %f', adjVolume, adjMax, adjMin, normVolume);
+       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, this.maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
@@ -26899,7 +26925,7 @@ module.exports = {FlowVisualier};
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
-        audioPromise.then(function(stream) {
+        audioPromise.then(function (stream) {
             this.audioContext = new AudioContext();
             this.microphone = this.audioContext.createMediaStreamSource(stream);
             this.analyser = this.audioContext.createAnalyser();
@@ -26908,6 +26934,9 @@ class Microphone {
             this.dataArray = new Uint8Array(bufferLength);
             this.microphone.connect(this.analyser);
             this.initialised = true;
+            this.volumeArray = [];
+            this.volumes = [0.1, 0];
+            this.intervalCounter = 0;
         }.bind(this)).catch(error => {
             console.log(error);
             alert(error);
@@ -26917,23 +26946,66 @@ class Microphone {
     getSamples() {
         this.analyser.getByteFrequencyData(this.dataArray);
         let conversion = this.analyser.frequencyBinCount / 2;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
+        let normSamples = [...this.dataArray].map(e => e / conversion - 1);
         return normSamples;
     }
 
     getVolume() {
         this.analyser.getByteTimeDomainData(this.dataArray);
-        let conversion = this.analyser.frequencyBinCount/2;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
+        let conversion = this.analyser.frequencyBinCount / 2;
+        let normSamples = [...this.dataArray].map(e => e / conversion - 1);
         let sum = 0;
-        for (let i = 0; i< normSamples.length; i++){
+        for (let i = 0; i < normSamples.length; i++) {
             sum += normSamples[i] * normSamples[i]
         }
         return Math.sqrt(sum / normSamples.length)
     }
+
+    getSecondAveragedVolume(currentVolume) {
+        const interval = 60;
+        let sum = 0;
+        if (this.intervalCounter < interval) {
+            this.volumeArray.push(currentVolume);
+        } else {
+            this.volumeArray.shift();
+            this.volumeArray.push(currentVolume);
+        }
+        for (let i = 0; i < this.volumeArray.length; i++) {
+            sum += this.volumeArray[i];
+        }
+        this.intervalCounter++;
+        return Math.sqrt(sum / this.volumeArray.length)
+    }
+
+    getMinAndMaxVolume(currentVolume) {
+        const interval = 60;
+        if (this.volumeArray.length < interval) {
+            this.volumeArray.push(currentVolume);
+        } else {
+            this.volumeArray.shift();
+            this.volumeArray.push(currentVolume);
+        }
+        for (let i = 0; i < this.volumeArray.length; i++) {
+            if (this.volumeArray[i] > this.volumes[1]) {
+                this.volumes[1] = this.volumeArray[i];
+            };
+            if (this.volumeArray[i] < this.volumes[0]) {
+                this.volumes[0] = this.volumeArray[i];
+            };
+        }
+        let returnedVolumes = this.volumes;
+        if (this.intervalCounter = interval) {
+        //    console.log(this.volumes)
+            this.intervalCounter = 0;
+            this.volumes = [0.1,0];
+        }
+      //  console.log(returnedVolumes)
+        this.intervalCounter++
+        return returnedVolumes;
+    }
 }
 
-module.exports = {Microphone}
+module.exports = { Microphone }
 },{}],195:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
@@ -26946,14 +27018,14 @@ const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser;
+var flowVisualiser; 
 
 function startVisualiser() {
-	//barVisualiser.main(audioPromise);
 	if (visualiserOnly) {
 		document.querySelector('#updateButton').disabled = true;
 		document.querySelector('#autoToggleLabel').disabled = true;
 	}
+	//barVisualiser.main(audioPromise);
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
@@ -27107,7 +27179,7 @@ function fadeOut(elementId) {
 function fade(elementId) {
 	let element = document.querySelector(elementId);
 	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+	element.style.opacity = element.style.opacity === '0' ? '1' : '0'
 }
 
 function changeProfile(value) {

@@ -40,7 +40,7 @@ class FlowParticle {
             this.speedX = Math.cos(this.angle);
             this.speedY = Math.sin(this.angle);
 
-            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
+            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed * 10) + 10;
             this.x += this.speedX * (volume * randomSpeed + 0.5)
             this.y += this.speedY * (volume * randomSpeed + 0.5)
 
@@ -62,7 +62,7 @@ class FlowParticle {
     reset(volume) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
+        this.hue = volume * 10 * this.effect.options.hueShift + this.effect.options.hue
         //console.log(`volume:${volume}, hue:${this.hue}`)
         this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]

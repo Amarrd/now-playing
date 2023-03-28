@@ -2,11 +2,30 @@
     margin: 0;
     box-sizing: border-box;
 }
+h3 {
+    color: white;
+}
 canvas {
     position:absolute;
     background: black;
     padding: 0;
     bottom:0
+}
+div.volumes {
+    border-radius: 20px;
+    background-color:rgba(0,0,0,0.5);
+    position:fixed;
+    top:0;
+    font-size: 18px;
+    left:calc(50% - 150px); 
+    right:auto;
+    padding: 20px;
+    color:white;
+    font-family: ‘Roboto’, sans-serif;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap; 
+    gap: 5px;
 }
 div.credentialsPrompt {
     border-radius: 20px;
@@ -48,7 +67,7 @@ div.controls {
     flex-direction: column;
     flex-wrap: wrap;
     gap: 5px;
-    opacity: 1;
+    opacity: '1';
 }
 div.profiles {
     /* border-radius: 20px; */
@@ -64,7 +83,7 @@ div.profiles {
     flex-direction: column;
     flex-wrap: wrap;
     gap: 5px;
-    opacity: 1;
+    opacity: '1';
 }
 button {
     background-color: black;
