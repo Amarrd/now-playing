@@ -182,7 +182,12 @@ function changeOption(option) {
 }
 
 function submitCredentials() {
-	acrCloud.submitConfiguration();
+	acrCloud.submitCredentials();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, submitCredentials }
+function cancelCredentials() {
+	acrCloud.cancelCredentials();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, changeOption, 
+	toggleAuto, submitCredentials, cancelCredentials }

@@ -36,7 +36,7 @@ function identify(data, cb) {
 		.catch((err) => { cb(null, err) });
 }
 
-function submitConfiguration() {
+function submitCredentials() {
 	let accessKey = document.querySelector('#keyInput').value;
 	let accessSecret = document.querySelector('#secretInput').value;
 	localStorage.setItem('accessKey', accessKey);
@@ -80,9 +80,11 @@ function credentialsRequired() {
 
 function createCredentialsDialogue() {
 	let prompt = document.createElement('div');
-	let keyInput = document.createElement('input')
-	let secretInput = document.createElement('input')
+	let keyInput = document.createElement('input');
+	let secretInput = document.createElement('input');
+	let buttons = document.createElement('div');
 	let submit = document.createElement('button');
+	let cancel = document.createElement('button');
 	const colour = document.querySelector('#controls').style.color;
 
 	prompt.className = 'credentialsPrompt';
@@ -95,16 +97,27 @@ function createCredentialsDialogue() {
 	secretInput.id = 'secretInput';
 	secretInput.placeholder = 'Access Secret';
 	secretInput.style.color = colour;
+	buttons.className = 'credentialsButtons'
 	submit.innerHTML = 'Submit';
 	submit.id = 'submitCredentials';
 	submit.style.color = colour;
 	submit.setAttribute('onclick', 'myBundle.submitCredentials()');
+	cancel.innerHTML = 'Cancel';
+	cancel.id = 'cancelCredentials';
+	cancel.style.color = colour;
+	cancel.setAttribute('onclick', 'myBundle.cancelCredentials()');
 
+	buttons.appendChild(submit);
+	buttons.appendChild(cancel);
 	prompt.appendChild(keyInput);
 	prompt.appendChild(secretInput);
-	prompt.appendChild(submit);
+	prompt.appendChild(buttons);
 	document.body.appendChild(prompt);
 	return;
+}
+
+function cancelCredentials() {
+	document.body.removeChild(document.querySelector('#credentialsPrompt'))
 }
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {
@@ -129,4 +142,4 @@ function fadeOut(elementId) {
 	element.style.opacity = 0
 }
 
-module.exports = { identify, credentialsRequired, createCredentialsDialogue, submitConfiguration }
+module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
