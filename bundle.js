@@ -26402,19 +26402,19 @@ function submitCredentials() {
 			console.log(err);
 			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
 			fadeIn('#current-song');
-			setTimeout(() => fadeOut('#current-song'), 3000)
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
 			return;
 		}
 		console.log(body);
 		if (JSON.parse(body).status.code === (3001 || 3014)) {
 			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
 			fadeIn('#current-song');
-			setTimeout(() => fadeOut('#current-song'), 3000)
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
 		} else {
 			document.body.removeChild(document.querySelector('#credentialsPrompt'))
 			document.querySelector('#current-song').innerHTML = 'Credentials saved';
 			fadeIn('#current-song');
-			setTimeout(() => fadeOut('#current-song'), 3000)
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
 		}
 
 	});
@@ -26496,6 +26496,14 @@ function fadeOut(elementId) {
 	let element = document.querySelector(elementId);
 	element.style.transition = 'opacity 0.2s linear 0s';
 	element.style.opacity = 0
+}
+
+function fadeOutAndClear(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 0
+	setTimeout(() => element.innerHTML = '', 200);
+
 }
 
 module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
