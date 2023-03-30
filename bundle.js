@@ -26400,6 +26400,9 @@ function submitCredentials() {
 		if (err) {
 			console.log("Error:")
 			console.log(err);
+			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOut('#current-song'), 3000)
 			return;
 		}
 		console.log(body);
@@ -26442,7 +26445,7 @@ function createCredentialsDialogue() {
 
 	prompt.className = 'credentialsPrompt';
 	prompt.id = 'credentialsPrompt';
-	prompt.innerHTML = 'Enter ACRCloud credentials';
+	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
@@ -26822,17 +26825,19 @@ const profiles = require("./flowDefaultProfiles.json");
 class FlowVisualier {
 
     constructor(audioPromise) {
+        this.defaultProfiles = JSON.parse(JSON.stringify(profiles.profiles));
         this.canvas = document.querySelector('#myCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.options = profiles.profiles[0]
+        this.options = profiles.profiles[0];
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
 
+        this.loadProfiles();
         this.setupProfiles();
-        // loadOptions()
+        this.changeProfile(0);
         this.setOptions(this.options);
         this.updateColours();
 
@@ -26845,8 +26850,8 @@ class FlowVisualier {
     animate() {
         if (this.microphone.initialised) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            let normVolume = this.getNormalisedVolume(this.microphone)
-            this.effect.updateEffect(false, normVolume, this.options)
+            let normVolume = this.getNormalisedVolume(this.microphone);
+            this.effect.updateEffect(false, normVolume, this.options);
             this.effect.render(this.ctx, normVolume);
         }
         requestAnimationFrame(this.animate.bind(this));
@@ -26854,7 +26859,7 @@ class FlowVisualier {
 
     getNormalisedVolume(microphone) {
         if (this.options.bassMode) {
-            let samples = microphone.getSamples()
+            let samples = microphone.getSamples();
             let sum = 0;
             for (let i = 0; i < samples.length / 10; i++) {
                 sum += samples[i];
@@ -26878,17 +26883,17 @@ class FlowVisualier {
         return normVolume
     }
 
-    loadOptions() {
-        options.hue = Number(localStorage.getItem('hue') || options.hue);
-        options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
-        options.volume = Number(localStorage.getItem('volume') || options.volume);
-        options.curve = Number(localStorage.getItem('curve') || options.curve);
-        options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
-        options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
-        options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
-        options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
+    loadProfiles() {
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            const savedProfile = localStorage.getItem('profile_' + (i + 1));
+            console.log('loading profile ' + (i + 1));
+            console.log(savedProfile);
+            if (savedProfile) {
+                profiles.profiles[i] = JSON.parse(savedProfile);
+            }
+        }
     }
-    
+
     setOptions(options) {
         document.querySelector('#controls-title').innerHTML = 'profile ' + this.profileNumber;
         document.querySelector('#hue').value = options.hue;
@@ -26901,47 +26906,63 @@ class FlowVisualier {
         document.querySelector('#scrollSpeed').value = options.scrollSpeed;
         document.querySelector('#controls').style.opacity = 1;
     }
-    
-    updateColours() {
-        let micIcon = document.querySelector('#mic-icon');
-        let currentSong = document.querySelector('#current-song');
-        let controls = document.querySelector('#controls');
-        let button = document.querySelector('#updateButton');
-        let profileButton = document.querySelector('#profile-'+this.profileNumber+'-button')
-        let newColour = `hsl( ${this.options.hue}, 100%, 80%)`;
-    
-        micIcon.style.color = newColour;
-        currentSong.style.color = newColour;
-        controls.style.color = newColour;
-        button.style.color = newColour;
-        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
 
+    updateColours() {
+        let controlColour = `hsl( ${this.options.hue}, 100%, 80%)`;
+        let profileColour = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
+
+        document.querySelector('#mic-icon').style.color = controlColour;
+        document.querySelector('#current-song').style.color = controlColour;
+        document.querySelector('#updateButton').style.color = controlColour;
+        document.querySelector('#saveProfile').style.backgroundColor = profileColour;
+        document.querySelector('#resetProfile').style.backgroundColor = profileColour;
+        document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;
+
+        let controls = document.querySelector('#controls');
+        controls.style.color = controlColour;
         controls.childNodes.forEach(element => {
             if (element.nodeName === 'LABEL') {
                 element.childNodes.forEach(input => {
-                    if (input.nodeName === 'INPUT') input.style.color = newColour;
+                    if (input.nodeName === 'INPUT') input.style.color = controlColour;
                 })
             }
         })
 
 
     }
-    
+
     setupProfiles() {
         let profileElements = document.querySelector('#profiles');
         profileElements.style.opacity = 1;
-        for (let i = 0;  i < profiles.profiles.length; i++) {
-            let button = document.createElement('button'); 
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            let button = document.createElement('button');
             let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
-            button.id = 'profile-'+profileNumber+'-button';
+            button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
-            profileElements.appendChild(button);
             button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+            profileElements.appendChild(button);
         }
+
+        let saveProfile = document.createElement('button');
+        saveProfile.id = 'saveProfile';
+        saveProfile.className = 'fa fa-save';
+        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
+        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        let resetProfile = document.createElement('button');
+        resetProfile.id = 'resetProfile';
+        resetProfile.className = 'fa fa-undo';
+        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
+        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        profileElements.appendChild(document.createElement('br'));
+        profileElements.appendChild(saveProfile);
+        profileElements.appendChild(resetProfile);
+
     }
-    
+
     changeProfile(index) {
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
@@ -26950,15 +26971,40 @@ class FlowVisualier {
         this.updateColours();
     }
 
+    saveProfile() {
+        let itemName = 'profile_' + this.profileNumber;
+        let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
+        localStorage.setItem(itemName, profile);
+        console.log('Saved profile ' + this.profileNumber)
+        console.log(localStorage.getItem(itemName));
+    }
+
+    resetProfile() {
+        console.log('options:')
+        console.log(this.options)
+        console.log('profile:')
+        console.log(profiles.profiles[this.profileNumber - 1]);
+        console.log('default:')
+        console.log(this.defaultProfiles[this.profileNumber - 1]);
+
+        profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
+        this.changeProfile(this.profileNumber - 1);
+        let itemName = 'profile_' + this.profileNumber;
+        localStorage.removeItem(itemName);
+        console.log('Reset profile ' + this.profileNumber)
+
+        console.log('profile after:')
+        console.log(profiles.profiles[this.profileNumber - 1]);
+    }
+
     changeOption(option, value) {
         this.options[option] = value;
         console.log('changeOption: ' + this.options.hue);
-      //  localStorage.setItem(option, value);
         this.updateColours();
     }
 }
 
-module.exports = {FlowVisualier};
+module.exports = { FlowVisualier };
 },{"./flowDefaultProfiles.json":190,"./flowEffect":191,"./microphone":194}],194:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
@@ -27146,6 +27192,11 @@ function toggleAuto() {
 	}
 }
 
+function canvasClicked() {
+	fade('#controls');
+	fade('#profiles');
+}
+
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
@@ -27190,8 +27241,16 @@ function cancelCredentials() {
 	acrCloud.cancelCredentials();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, 
-	toggleAuto, submitCredentials, cancelCredentials }
+function saveProfile() {
+	flowVisualiser.saveProfile();
+}
+
+function resetProfile() {
+	flowVisualiser.resetProfile();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
 
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');

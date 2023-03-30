@@ -10,7 +10,7 @@
 </head>
 
 <body onload="myBundle.startVisualiser()">
-	<canvas id='myCanvas'></canvas>
+	<canvas id='myCanvas' onclick="myBundle.canvasClicked()"></canvas>
 	<div class="currentSong" id="current-song">
 		<p class="albumYear" id="albumYear" ></p>
 	</div>
@@ -47,7 +47,7 @@
 		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
 			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify
 		</label>
-		<button id="updateButton" onclick="myBundle.updateSong()">update Song</button>
+		<button id="updateButton" onclick="myBundle.updateSong()">identify song</button>
 	</div>
 	<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
 	<audio id="sample" src="test.wav"></audio>

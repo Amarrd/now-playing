@@ -145,6 +145,11 @@ function toggleAuto() {
 	}
 }
 
+function canvasClicked() {
+	fade('#controls');
+	fade('#profiles');
+}
+
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
@@ -189,5 +194,13 @@ function cancelCredentials() {
 	acrCloud.cancelCredentials();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, 
-	toggleAuto, submitCredentials, cancelCredentials }
+function saveProfile() {
+	flowVisualiser.saveProfile();
+}
+
+function resetProfile() {
+	flowVisualiser.resetProfile();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }

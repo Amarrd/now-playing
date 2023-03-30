@@ -59,7 +59,7 @@ div.profiles {
     /* border-radius: 20px; */
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
-    bottom: calc(40%);
+    bottom: calc(50% - 200px);
     font-size: 18px;
     left: 0px;
     right: auto;

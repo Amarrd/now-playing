@@ -47,6 +47,9 @@ function submitCredentials() {
 		if (err) {
 			console.log("Error:")
 			console.log(err);
+			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOut('#current-song'), 3000)
 			return;
 		}
 		console.log(body);
@@ -89,7 +92,7 @@ function createCredentialsDialogue() {
 
 	prompt.className = 'credentialsPrompt';
 	prompt.id = 'credentialsPrompt';
-	prompt.innerHTML = 'Enter ACRCloud credentials';
+	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
