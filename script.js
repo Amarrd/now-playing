@@ -148,12 +148,14 @@ function toggleAuto() {
 function canvasClicked() {
 	fade('#controls');
 	fade('#profiles');
+	fade('#credentialsPrompt')
 }
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
 		fade('#profiles');
+		fade('#credentialsPrompt')
 	}
 	if (e.key === "s") {
 		fade('#current-song');

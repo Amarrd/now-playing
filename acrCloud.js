@@ -94,6 +94,7 @@ function createCredentialsDialogue() {
 	prompt.id = 'credentialsPrompt';
 	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
+	prompt.style.opacity = 1
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
 	keyInput.style.color = colour;

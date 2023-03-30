@@ -26447,6 +26447,7 @@ function createCredentialsDialogue() {
 	prompt.id = 'credentialsPrompt';
 	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
+	prompt.style.opacity = 1
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
 	keyInput.style.color = colour;
@@ -27203,12 +27204,14 @@ function toggleAuto() {
 function canvasClicked() {
 	fade('#controls');
 	fade('#profiles');
+	fade('#credentialsPrompt')
 }
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
 		fade('#profiles');
+		fade('#credentialsPrompt')
 	}
 	if (e.key === "s") {
 		fade('#current-song');
