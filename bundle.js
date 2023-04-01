@@ -26608,6 +26608,8 @@ module.exports={
             "volume": 70,
             "curve": 10,
             "zoom": 7,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
             "scrollSpeed": 0,
@@ -26620,6 +26622,8 @@ module.exports={
             "volume": 70,
             "curve": 30,
             "zoom": 10,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": -1,
             "yAdjustment": -1,
             "scrollSpeed": 1,
@@ -26632,6 +26636,8 @@ module.exports={
             "volume": 70,
             "curve": 60,
             "zoom": 50,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 1,
             "yAdjustment": 0,
             "scrollSpeed": 0.1,
@@ -26644,6 +26650,8 @@ module.exports={
             "volume": 70,
             "curve": 5,
             "zoom": 10,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 1,
             "yAdjustment": -1,
             "scrollSpeed": 1,
@@ -26656,6 +26664,8 @@ module.exports={
             "volume": 70,
             "curve": 70,
             "zoom": 10,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
             "scrollSpeed": 0,
@@ -26668,6 +26678,8 @@ module.exports={
             "volume": 70,
             "curve": 50,
             "zoom": 100,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": -1,
             "scrollSpeed": 1,
@@ -26686,7 +26698,7 @@ class FlowEffect {
         this.height = canvas.height;
         this.options = options;
         this.particles = [];
-        this.numberOfParticles = 2000;
+        this.numberOfParticles = options.particles;
         this.cellSize = 20;
         this.rows;
         this.cols;
@@ -26707,14 +26719,11 @@ class FlowEffect {
         })
     }
 
-    updateEffect(createParticles, volume, options) {
-        // console.log('effect:');
-        // console.log(this.options);
+    updateEffect(createParticles, volume, options, particleDiff) {
         this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
-        //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
@@ -26724,12 +26733,21 @@ class FlowEffect {
             }
         }
         this.counter += this.options.scrollSpeed / 10;
-        // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
         if (createParticles) {
-            for (let i = 0; i < this.numberOfParticles; i++) {
-                this.particles.push(new Particle.FlowParticle(this));
+            let newParticles;
+            if (particleDiff || particleDiff === 0) {
+                newParticles = particleDiff < 0 ? -particleDiff : 0;
+            } else {
+                newParticles = options.particles;
             }
+            console.log('New particles:' + newParticles)
+            for (let i = 0; i < newParticles; i++) {
+                let particle = new Particle.FlowParticle(this);
+                particle.reset(volume, options)
+                this.particles.push(particle);
+            }
+            console.log('particleCount: ' + (this.particles.length));
         }
     }
 
@@ -26740,12 +26758,13 @@ class FlowEffect {
         })
     }
 
-    clearAll() {
-        this.particles.forEach(particle => {
-            particle.history = [];
-        })
-        this.particles = [];
-        this.flowField = [];
+    clearParticles(particleDiff) {
+        if (particleDiff > 0) {
+            for (let i = 0; i < particleDiff; i++) {
+                let particle = this.particles.shift();
+                particle.history = [];
+            }
+        }
     }
 }
 
@@ -26767,16 +26786,17 @@ class FlowParticle {
         this.hue = this.effect.options.hue;
         this.colours;
         this.colour;
+        this.lineWidth = this.effect.options.lineWidth;
     }
 
     draw(context) {
+        context.lineWidth = this.lineWidth;
+        context.strokeStyle = this.colour;
         context.beginPath();
         context.moveTo(this.history[0].x, this.history[0].y)
         for (let i = 0; i < this.history.length; i++) {
             context.lineTo(this.history[i].x, this.history[i].y);
         }
-
-        context.strokeStyle = this.colour;
         context.stroke();
 
     }
@@ -26807,20 +26827,20 @@ class FlowParticle {
             this.history.shift();
 
         } else {
-            this.reset(volume);
+            this.reset(volume, options);
         }
 
     }
 
-    reset(volume) {
+    reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
         this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
-        //console.log(`volume:${volume}, hue:${this.hue}`)
         this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
         this.timer = this.maxLength;
+        this.lineWidth = options.lineWidth;
     }
 
 }
@@ -26839,14 +26859,13 @@ class FlowVisualier {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.options = profiles.profiles[0];
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
 
         this.loadProfiles();
         this.setupProfiles();
-        this.changeProfile(0);
+        this.options = profiles.profiles[0];
         this.setOptions(this.options);
         this.updateColours();
 
@@ -26858,6 +26877,8 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
+            this.ctx.lineCap = "round";
+            this.ctx.lineJoin = "round";
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone);
             this.effect.updateEffect(false, normVolume, this.options);
@@ -26895,8 +26916,6 @@ class FlowVisualier {
     loadProfiles() {
         for (let i = 0; i < profiles.profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
-            console.log('loading profile ' + (i + 1));
-            console.log(savedProfile);
             if (savedProfile) {
                 profiles.profiles[i] = JSON.parse(savedProfile);
             }
@@ -26910,6 +26929,8 @@ class FlowVisualier {
         document.querySelector('#volume').value = options.volume;
         document.querySelector('#curve').value = options.curve;
         document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#particles').value = options.particles;
+        document.querySelector('#lineWidth').value = options.lineWidth;
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
         document.querySelector('#scrollSpeed').value = options.scrollSpeed;
@@ -26973,11 +26994,15 @@ class FlowVisualier {
     }
 
     changeProfile(index) {
+        let previousParticleCount = this.options.particles;
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
-        console.log('changeProfile: ' + this.options.hue);
+        console.log('changeProfile: ' + this.profileNumber);
         this.setOptions(this.options)
         this.updateColours();
+        let particleDiff = previousParticleCount - this.options.particles;
+        this.effect.clearParticles(particleDiff);
+        this.effect.updateEffect(true, 0, this.options, particleDiff)
     }
 
     saveProfile() {
@@ -27007,8 +27032,14 @@ class FlowVisualier {
     }
 
     changeOption(option, value) {
-        this.options[option] = value;
-        console.log('changeOption: ' + this.options.hue);
+        if (option === 'particles') {
+            let particleDiff = this.options[option] - value;
+            this.options[option] = value;
+            this.effect.clearParticles(particleDiff);
+            this.effect.updateEffect(true, 0, this.options, particleDiff)
+        } else {
+            this.options[option] = value;
+        }
         this.updateColours();
     }
 }

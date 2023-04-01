@@ -7,7 +7,7 @@ class FlowEffect {
         this.height = canvas.height;
         this.options = options;
         this.particles = [];
-        this.numberOfParticles = 2000;
+        this.numberOfParticles = options.particles;
         this.cellSize = 20;
         this.rows;
         this.cols;
@@ -28,14 +28,11 @@ class FlowEffect {
         })
     }
 
-    updateEffect(createParticles, volume, options) {
-        // console.log('effect:');
-        // console.log(this.options);
+    updateEffect(createParticles, volume, options, particleDiff) {
         this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
-        //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
@@ -45,12 +42,21 @@ class FlowEffect {
             }
         }
         this.counter += this.options.scrollSpeed / 10;
-        // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
 
         if (createParticles) {
-            for (let i = 0; i < this.numberOfParticles; i++) {
-                this.particles.push(new Particle.FlowParticle(this));
+            let newParticles;
+            if (particleDiff || particleDiff === 0) {
+                newParticles = particleDiff < 0 ? -particleDiff : 0;
+            } else {
+                newParticles = options.particles;
             }
+            console.log('New particles:' + newParticles)
+            for (let i = 0; i < newParticles; i++) {
+                let particle = new Particle.FlowParticle(this);
+                particle.reset(volume, options)
+                this.particles.push(particle);
+            }
+            console.log('particleCount: ' + (this.particles.length));
         }
     }
 
@@ -61,12 +67,13 @@ class FlowEffect {
         })
     }
 
-    clearAll() {
-        this.particles.forEach(particle => {
-            particle.history = [];
-        })
-        this.particles = [];
-        this.flowField = [];
+    clearParticles(particleDiff) {
+        if (particleDiff > 0) {
+            for (let i = 0; i < particleDiff; i++) {
+                let particle = this.particles.shift();
+                particle.history = [];
+            }
+        }
     }
 }
 

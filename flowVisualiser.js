@@ -10,14 +10,13 @@ class FlowVisualier {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.options = profiles.profiles[0];
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
 
         this.loadProfiles();
         this.setupProfiles();
-        this.changeProfile(0);
+        this.options = profiles.profiles[0];
         this.setOptions(this.options);
         this.updateColours();
 
@@ -29,6 +28,8 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
+            this.ctx.lineCap = "round";
+            this.ctx.lineJoin = "round";
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone);
             this.effect.updateEffect(false, normVolume, this.options);
@@ -66,8 +67,6 @@ class FlowVisualier {
     loadProfiles() {
         for (let i = 0; i < profiles.profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
-            console.log('loading profile ' + (i + 1));
-            console.log(savedProfile);
             if (savedProfile) {
                 profiles.profiles[i] = JSON.parse(savedProfile);
             }
@@ -81,6 +80,8 @@ class FlowVisualier {
         document.querySelector('#volume').value = options.volume;
         document.querySelector('#curve').value = options.curve;
         document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#particles').value = options.particles;
+        document.querySelector('#lineWidth').value = options.lineWidth;
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
         document.querySelector('#scrollSpeed').value = options.scrollSpeed;
@@ -144,11 +145,15 @@ class FlowVisualier {
     }
 
     changeProfile(index) {
+        let previousParticleCount = this.options.particles;
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
-        console.log('changeProfile: ' + this.options.hue);
+        console.log('changeProfile: ' + this.profileNumber);
         this.setOptions(this.options)
         this.updateColours();
+        let particleDiff = previousParticleCount - this.options.particles;
+        this.effect.clearParticles(particleDiff);
+        this.effect.updateEffect(true, 0, this.options, particleDiff)
     }
 
     saveProfile() {
@@ -178,8 +183,14 @@ class FlowVisualier {
     }
 
     changeOption(option, value) {
-        this.options[option] = value;
-        console.log('changeOption: ' + this.options.hue);
+        if (option === 'particles') {
+            let particleDiff = this.options[option] - value;
+            this.options[option] = value;
+            this.effect.clearParticles(particleDiff);
+            this.effect.updateEffect(true, 0, this.options, particleDiff)
+        } else {
+            this.options[option] = value;
+        }
         this.updateColours();
     }
 }

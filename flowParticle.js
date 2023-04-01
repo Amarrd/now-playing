@@ -14,16 +14,17 @@ class FlowParticle {
         this.hue = this.effect.options.hue;
         this.colours;
         this.colour;
+        this.lineWidth = this.effect.options.lineWidth;
     }
 
     draw(context) {
+        context.lineWidth = this.lineWidth;
+        context.strokeStyle = this.colour;
         context.beginPath();
         context.moveTo(this.history[0].x, this.history[0].y)
         for (let i = 0; i < this.history.length; i++) {
             context.lineTo(this.history[i].x, this.history[i].y);
         }
-
-        context.strokeStyle = this.colour;
         context.stroke();
 
     }
@@ -54,20 +55,20 @@ class FlowParticle {
             this.history.shift();
 
         } else {
-            this.reset(volume);
+            this.reset(volume, options);
         }
 
     }
 
-    reset(volume) {
+    reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
         this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
-        //console.log(`volume:${volume}, hue:${this.hue}`)
         this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
         this.timer = this.maxLength;
+        this.lineWidth = options.lineWidth;
     }
 
 }
