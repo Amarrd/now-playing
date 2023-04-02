@@ -1,6 +1,7 @@
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const profiles = require("./flowDefaultProfiles.json");
+//const Snackbar = require('node-snackbar');
 
 class FlowVisualier {
 
@@ -163,6 +164,11 @@ class FlowVisualier {
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber)
         console.log(localStorage.getItem(itemName));
+        var snackbar = document.getElementById("snackbar");
+        snackbar.innerHTML = 'Saved Profile'
+        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
+        snackbar.className = "show";
+        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     resetProfile() {
@@ -178,9 +184,11 @@ class FlowVisualier {
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
         console.log('Reset profile ' + this.profileNumber)
-
-        console.log('profile after:')
-        console.log(profiles.profiles[this.profileNumber - 1]);
+        var snackbar = document.getElementById("snackbar");
+        snackbar.innerHTML = 'Reset Profile'
+        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
+        snackbar.className = "show";
+        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     changeOption(option, value) {

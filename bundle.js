@@ -26622,22 +26622,22 @@ module.exports={
             "volume": 70,
             "curve": 30,
             "zoom": 10,
-            "particles": 2000,
-            "lineWidth": 1,
-            "xAdjustment": -5,
-            "yAdjustment": -5,
+            "particles": 1000,
+            "lineWidth": 2,
+            "xAdjustment": -2,
+            "yAdjustment": -2,
             "direction": "left",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 90,
-            "hueShift": 15,
-            "volume": 70,
-            "curve": 60,
-            "zoom": 50,
-            "particles": 2000,
-            "lineWidth": 1,
+            "hueShift": 20,
+            "volume": 50,
+            "curve": 20,
+            "zoom": 30,
+            "particles": 1000,
+            "lineWidth": 2,
             "xAdjustment": 1,
             "yAdjustment": 0,
             "direction": "right",
@@ -26645,15 +26645,15 @@ module.exports={
             "bassMode": false
         },
         {
-            "hue": 170,
-            "hueShift": 20,
-            "volume": 70,
+            "hue": 180,
+            "hueShift": 10,
+            "volume": 30,
             "curve": 5,
             "zoom": 10,
-            "particles": 2000,
-            "lineWidth": 1,
+            "particles": 500,
+            "lineWidth": 10,
             "xAdjustment": 2,
-            "yAdjustment": -2,
+            "yAdjustment": 0,
             "direction": "down",
             "speed": 2,
             "bassMode": false
@@ -26668,21 +26668,21 @@ module.exports={
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "direction": "up",
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
         {
-            "hue": 330,
+            "hue": 300,
             "hueShift": 10,
             "volume": 70,
-            "curve": 50,
-            "zoom": 100,
-            "particles": 2000,
-            "lineWidth": 1,
-            "xAdjustment": 0,
-            "yAdjustment": -1,
-            "direction": "right",
+            "curve": 4,
+            "zoom": 20,
+            "particles": 750,
+            "lineWidth": 3,
+            "xAdjustment": -5,
+            "yAdjustment": 0,
+            "direction": "up",
             "speed": 2,
             "bassMode": false
         }
@@ -26866,6 +26866,7 @@ module.exports = { FlowParticle }
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const profiles = require("./flowDefaultProfiles.json");
+//const Snackbar = require('node-snackbar');
 
 class FlowVisualier {
 
@@ -27028,6 +27029,11 @@ class FlowVisualier {
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber)
         console.log(localStorage.getItem(itemName));
+        var snackbar = document.getElementById("snackbar");
+        snackbar.innerHTML = 'Saved Profile'
+        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
+        snackbar.className = "show";
+        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     resetProfile() {
@@ -27043,9 +27049,11 @@ class FlowVisualier {
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
         console.log('Reset profile ' + this.profileNumber)
-
-        console.log('profile after:')
-        console.log(profiles.profiles[this.profileNumber - 1]);
+        var snackbar = document.getElementById("snackbar");
+        snackbar.innerHTML = 'Reset Profile'
+        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
+        snackbar.className = "show";
+        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     changeOption(option, value) {
@@ -27214,13 +27222,14 @@ function processResponse(response) {
 		currentSong.appendChild(albumYear);
 		currentSong.style.transition = 'opacity 0.5s linear 0s';
 		currentSong.style.opacity = 1;
+		delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
+		setTimeout(() => fadeOut('#current-song'), delay)
 		if (autoMode) {
-			var jsonObject = JSON.parse(response);
-			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
-			detectDelay = delay + 5000;
+			detectDelay = delay + 15000;
 			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => fadeIn('#current-song'), delay)
 			setTimeout(() => updateSong(), detectDelay);
+		} else {
+
 		}
 	} else {
 		if (autoMode) {

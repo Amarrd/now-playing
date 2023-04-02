@@ -110,13 +110,14 @@ function processResponse(response) {
 		currentSong.appendChild(albumYear);
 		currentSong.style.transition = 'opacity 0.5s linear 0s';
 		currentSong.style.opacity = 1;
+		delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
+		setTimeout(() => fadeOut('#current-song'), delay)
 		if (autoMode) {
-			var jsonObject = JSON.parse(response);
-			delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
-			detectDelay = delay + 5000;
+			detectDelay = delay + 15000;
 			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => fadeIn('#current-song'), delay)
 			setTimeout(() => updateSong(), detectDelay);
+		} else {
+
 		}
 	} else {
 		if (autoMode) {
