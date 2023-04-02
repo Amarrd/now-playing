@@ -26883,6 +26883,7 @@ class FlowVisualier {
 
         this.loadProfiles();
         this.setupProfiles();
+        document.querySelector('#controls').style.opacity = 1;
         this.options = profiles.profiles[0];
         this.setOptions(this.options);
         this.updateColours();
@@ -26952,7 +26953,6 @@ class FlowVisualier {
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
         document.querySelector('#direction').value = options.direction;
-        document.querySelector('#controls').style.opacity = 1;
     }
 
     updateColours() {
