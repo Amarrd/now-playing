@@ -26355,7 +26355,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = true;
+const clearLocal = false;
 
 function credentialsRequired() {
 	if (clearLocal) {
@@ -26433,6 +26433,9 @@ function submitCredentials() {
 			addSnackbar('Invalid credentials', colour);
 		} else {
 			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			document.querySelector('#autoToggle').style.display = 'inline';
+			document.querySelector('#autoToggleLabel').style.display = 'inline';
+			document.querySelector('#updateButton').innerHTML = 'identify song';
 			addSnackbar('Credentials saved', colour);
 		}
 
@@ -27134,6 +27137,12 @@ function startVisualiser() {
 	}
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 	toggleTransition();
+
+	if (acrCloud.credentialsRequired()) {
+		document.querySelector('#autoToggle').style.display = 'none';
+		document.querySelector('#autoToggleLabel').style.display = 'none';
+		document.querySelector('#updateButton').innerHTML = 'Input ACR credentials';
+	}
 }
 
 function updateSong() {

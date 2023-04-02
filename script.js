@@ -19,6 +19,12 @@ function startVisualiser() {
 	}
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 	toggleTransition();
+
+	if (acrCloud.credentialsRequired()) {
+		document.querySelector('#autoToggle').style.display = 'none';
+		document.querySelector('#autoToggleLabel').style.display = 'none';
+		document.querySelector('#updateButton').innerHTML = 'Input ACR credentials';
+	}
 }
 
 function updateSong() {

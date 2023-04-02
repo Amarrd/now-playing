@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = true;
+const clearLocal = false;
 
 function credentialsRequired() {
 	if (clearLocal) {
@@ -80,6 +80,9 @@ function submitCredentials() {
 			addSnackbar('Invalid credentials', colour);
 		} else {
 			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			document.querySelector('#autoToggle').style.display = 'inline';
+			document.querySelector('#autoToggleLabel').style.display = 'inline';
+			document.querySelector('#updateButton').innerHTML = 'identify song';
 			addSnackbar('Credentials saved', colour);
 		}
 
