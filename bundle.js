@@ -26852,7 +26852,7 @@ class FlowParticle {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
         this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
-        this.colours = [`hsl( ${this.hue}, 100%, 30%, 1)`, `hsl( ${this.hue},100%,40%, 0.8)`, `hsl( ${this.hue},100%, 50%, 0.5)`];
+        this.colours = [`hsl( ${this.hue}, 100%, 30%, 0.9)`, `hsl( ${this.hue},100%,40%, 0.9)`, `hsl( ${this.hue},100%, 50%, 0.9)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
         this.timer = this.maxLength;
