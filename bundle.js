@@ -26871,7 +26871,7 @@ class FlowParticle {
     reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
+        this.hue = volume * 10 * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
         this.colours = [`hsl( ${this.hue}, 100%, 30%, 0.9)`, `hsl( ${this.hue},100%,40%, 0.9)`, `hsl( ${this.hue},100%, 50%, 0.9)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
@@ -26944,8 +26944,8 @@ class FlowVisualier {
             this.maxV = volume;
         }
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMin = Math.floor(volumes[0] * this.options.volume) / 10;
-        let adjMax = Math.floor(volumes[1] * this.options.volume) / 10;
+        let adjMin = Math.floor(volumes[0] * this.options.volume * 0.8) / 10;
+        let adjMax = Math.floor(volumes[1] * this.options.volume * 1.3) / 10;
         //let adjMaxV = this.maxV * 1.2
         //let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         let normVolume = (adjVolume - adjMin) / (adjMax - adjMin) || 0.01;
