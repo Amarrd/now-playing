@@ -26849,7 +26849,7 @@ class FlowParticle {
                     break;
             }
 
-            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed * 10) + 10;
+            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed) + 8;
             this.x += this.speedX * (volume * randomSpeed + 0.5)
             this.y += this.speedY * (volume * randomSpeed + 0.5)
 
