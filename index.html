@@ -10,13 +10,13 @@
 </head>
 
 <body onload="myBundle.startVisualiser()">
-	<canvas id='myCanvas'></canvas>
+	<canvas id='myCanvas' onclick="myBundle.canvasClicked()"></canvas>
 	<div class="currentSong" id="current-song">
 		<p class="albumYear" id="albumYear" ></p>
 	</div>
 	<div class="profiles" id="profiles"></div>
 	<div class="controls" id="controls">
-		<h4 id="controls-title">profile 1</h4>
+		<h4 id="controls-title"></h4>
 		<label for="hue"> hue
 			<input type="number" id="hue" name="hue" min="1" max="360" onchange="myBundle.changeOption(this.name)">
 		</label>
@@ -32,24 +32,38 @@
 		<label for="zoom"> zoom
 			<input type="number" id="zoom" name="zoom" min="0" max="100" onchange="myBundle.changeOption(this.name)">
 		</label>
+		<label for="particles"> particles
+			<input type="number" id="particles" name="particles" min="1" max="3000" onchange="myBundle.changeOption(this.name)">
+		</label>
+		<label for="lineWidth"> line width
+			<input type="number" id="lineWidth" name="lineWidth" min="1" max="10" onchange="myBundle.changeOption(this.name)">
+		</label>
 		<label for="xAdjustment"> horizontal scroll
-			<input type="number" id="xAdjustment" name="xAdjustment" min="-1" max="1" onchange="myBundle.changeOption(this.name)">
+			<input type="number" id="xAdjustment" name="xAdjustment" min="-10" max="10" onchange="myBundle.changeOption(this.name)">
 		</label>
 		<label for="yAdjustment"> vertical scroll
-			<input type="number" id="yAdjustment" name="yAdjustment" min="-1" max="1" onchange="myBundle.changeOption(this.name)">
+			<input type="number" id="yAdjustment" name="yAdjustment" min="-10" max="10" onchange="myBundle.changeOption(this.name)">
 		</label>
-		<label for="scrollSpeed"> scroll speed
-			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="100" onchange="myBundle.changeOption(this.name)">
+		<label for="direction"> direction
+			<select id="direction" name="direction" onchange="myBundle.changeOption(this.name)">
+				<option value="up">up</option>
+				<option value="down">down</option>
+				<option value="left">left</option>
+				<option value="right">right</option>
+			</select>
 		</label>
 		<!-- <label class="bassMode" for="bassMode" id="baseModeLabel">
 			<input type="checkbox" id="bassMode" name="bassMode" onclick="myBundle.changeOption(this.name)"> bass mode
 		</label> -->
+		<br>
 		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
 			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify
+			<span class="checkmark"></span>
 		</label>
-		<button id="updateButton" onclick="myBundle.updateSong()">update Song</button>
+		<button id="updateButton" onclick="myBundle.updateSong()">identify song</button>
 	</div>
 	<i class="fa fa-microphone fa-2x mic-icon" id='mic-icon' style="font-size: 75%;"></i>
+	<audio id="sample" src="test.wav"></audio>
 </body>
 
 </html>

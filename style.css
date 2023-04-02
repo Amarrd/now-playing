@@ -1,15 +1,16 @@
-*{
+* {
     margin: 0;
     box-sizing: border-box;
 }
 h3 {
     color: white;
 }
+
 canvas {
-    position:absolute;
+    position: absolute;
     background: black;
     padding: 0;
-    bottom:0
+    bottom: 0
 }
 div.volumes {
     border-radius: 20px;
@@ -29,38 +30,40 @@ div.volumes {
 }
 div.credentialsPrompt {
     border-radius: 20px;
-    background-color:rgba(0,0,0,0.5);
-    position:fixed;
-    bottom:calc(50% + 50px);
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    bottom: calc(50% - 50px);
     font-size: 18px;
-    left:calc(50% - 150px); 
-    right:auto;
+    left: calc(50% - 150px);
+    right: auto;
     padding: 20px;
-    color:white;
+    color: white;
     font-family: ‘Roboto’, sans-serif;
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
     gap: 5px;
 }
+
 div.currentSong {
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
-    position:fixed;
-    padding:10px 15px 10px 15px;
+    position: fixed;
+    padding: 10px 15px 10px 15px;
     bottom: calc(4%);
     left: calc(2%);
     opacity: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
 }
+
 div.controls {
     border-radius: 20px;
-    background-color: rgba(0,0,0,0.5);
-    position:fixed;
-    bottom:calc(50% - 100px);
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    bottom: calc(50% - 200px);
     font-size: 18px;
-    left:auto;
-    right:0px;
+    left: auto;
+    right: 0px;
     padding: 20px;
     font-family: ‘Roboto’, sans-serif;
     display: flex;
@@ -69,33 +72,42 @@ div.controls {
     gap: 5px;
     opacity: '1';
 }
+
 div.profiles {
     /* border-radius: 20px; */
-    background-color: rgba(0,0,0,0.5);
-    position:fixed;
-    bottom:calc(40%);
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    bottom: calc(50% - 210px);
     font-size: 18px;
-    left:0px;
-    right:auto;
+    left: 0px;
+    right: auto;
     padding: 20px;
     font-family: ‘Roboto’, sans-serif;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     gap: 5px;
-    opacity: '1';
+    opacity: 1;
 }
+
+select {
+  background: black;  
+  color: white;
+}
+
 button {
     background-color: black;
-    color:white;
+    color: white;
     border: none;
     border-radius: 5px;
     padding: 15px
 }
+
 input {
-    background-color: black; 
-    color:white;
+    background-color: black;
+    color: white;
 }
+
 body {
     background-color: black;
     color: white;
@@ -105,18 +117,25 @@ body {
     bottom: 0;
     left: 0;
     margin: 0;
-    font-family: ‘Roboto’, sans-serif; 
+    font-family: ‘Roboto’, sans-serif;
     overflow: hidden;
 }
+
 label.autoToggle {
     background-color: transparent;
     font-family: ‘Roboto’, sans-serif;
 }
+
 .mic-icon {
     background-color: transparent;
     position: fixed;
     bottom: 10px;
-    opacity:0;
+    opacity: 0;
 
-    left: calc(50% - 15px);  /*50% - half of icon width*/
-  }
+    left: calc(50% - 15px);
+}
+
+
+input[type='checkbox'] {
+    accent-color: black;
+}

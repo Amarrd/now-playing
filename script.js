@@ -27,6 +27,11 @@ function updateSong() {
 		return;
 	}
 
+	if (acrCloud.credentialsRequired()) {
+		acrCloud.createCredentialsDialogue();
+		return;
+	}
+
 	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
@@ -123,32 +128,34 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); // create a blob URL
-	var a = document.createElement("a"); // create an anchor element
-	a.href = blobUrl; // set the href attribute to the blob URL
-	a.download = name + ".wav"; // set the download attribute to your desired file name
-	a.click(); // click the anchor element to trigger the download
+	var blobUrl = URL.createObjectURL(audioBlob); 
+	var a = document.createElement("a"); 
+	a.href = blobUrl; 
+	a.download = name + ".wav"; 
+	a.click(); 
 }
 
 function toggleAuto() {
 	const autoToggle = document.querySelector('#autoToggle');
-	let updateButton = document.querySelector('#updateButton');
 	if (autoToggle.checked == true) {
-		// start auto mode
 		updateSong();
 		autoMode = true;
-		updateButton.style.visibility = 'hidden'
 	} else {
-		// stop auto mode
 		autoMode = false;
-		updateButton.style.visibility = 'visible'
 	}
+}
+
+function canvasClicked() {
+	fade('#controls');
+	fade('#profiles');
+	fade('#credentialsPrompt')
 }
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
 		fade('#profiles');
+		fade('#credentialsPrompt')
 	}
 	if (e.key === "s") {
 		fade('#current-song');
@@ -169,8 +176,12 @@ function fadeOut(elementId) {
 
 function fade(elementId) {
 	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '0' ? '1' : '0'
+	if (element) {
+		element.style.transition = 'opacity 0.2s linear 0s';
+		element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+	} else {
+		console.log('Element %s could not be faded', elementId)
+	}
 }
 
 function changeProfile(value) {
@@ -178,11 +189,24 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, Number(document.querySelector('#' + option).value))
+	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
 }
 
 function submitCredentials() {
-	acrCloud.submitConfiguration();
+	acrCloud.submitCredentials();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, submitCredentials }
+function cancelCredentials() {
+	acrCloud.cancelCredentials();
+}
+
+function saveProfile() {
+	flowVisualiser.saveProfile();
+}
+
+function resetProfile() {
+	flowVisualiser.resetProfile();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }

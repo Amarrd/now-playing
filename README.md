@@ -2,6 +2,6 @@
 
 A JS visualiser that can optionally provide song information via an integration with ACRCloud.
 
-An access key & access secret will be required to use the identification functionality, with ACRCloud offering a free trial + a limited number of free requests per month.
+An access key & access secret will be required to use the identification functionality.
 
-Access credentials will stored in your browsers local storage.
+Access credentials and saved profiles are stored in your browser's local storage.

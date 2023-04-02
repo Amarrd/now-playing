@@ -26355,39 +26355,14 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
+const clearLocal = false;
+
 function identify(data, cb) {
 
-	let accessKey = localStorage.getItem('accessKey');
-	let accessSecret = localStorage.getItem('accessSecret');
-
-	if (!accessKey || !accessSecret) {
-		let prompt = document.createElement('div');
-		let keyInput = document.createElement('input')
-		let secretInput = document.createElement('input')
-		let submit = document.createElement('button');
-		prompt.className = 'credentialsPrompt';
-		prompt.id = 'credentialsPrompt';
-		keyInput.id = 'keyInput';
-		secretInput.id = 'secretInput';
-		prompt.innerHTML = 'Enter ACRCloud credentials';
-		keyInput.placeholder = 'Access Key';
-		secretInput.placeholder = 'Access Secret';
-		submit.innerHTML = 'Submit';
-		submit.id = 'submitCredentials';
-		submit.setAttribute('onclick', 'myBundle.submitCredentials()');
-
-		prompt.appendChild(keyInput);
-		prompt.appendChild(secretInput);
-		prompt.appendChild(submit);
-		document.body.appendChild(prompt);
-		return;
-	}
-
-	console.log(accessKey);
-	console.log(accessSecret);
-
-	var current_data = new Date();
-	var timestamp = current_data.getTime() / 1000;
+	const accessKey = localStorage.getItem('accessKey');
+	const accessSecret = localStorage.getItem('accessSecret');
+	const current_date = new Date();
+	const timestamp = current_date.getTime() / 1000;
 
 	var stringToSign = buildStringToSign('POST',
 		options.endpoint,
@@ -26414,12 +26389,91 @@ function identify(data, cb) {
 		.catch((err) => { cb(null, err) });
 }
 
-function submitConfiguration() {
+function submitCredentials() {
 	let accessKey = document.querySelector('#keyInput').value;
 	let accessSecret = document.querySelector('#secretInput').value;
 	localStorage.setItem('accessKey', accessKey);
 	localStorage.setItem('accessSecret', accessSecret);
-	document.querySelector('#submitCredentials').innerHTML = 'Testing Credentials';
+	const audio = new Audio("test.wav")
+
+	identify(audio, function (body, err) {
+		if (err) {
+			console.log("Error:")
+			console.log(err);
+			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
+			return;
+		}
+		console.log(body);
+		if (JSON.parse(body).status.code === (3001 || 3014)) {
+			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
+		} else {
+			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			document.querySelector('#current-song').innerHTML = 'Credentials saved';
+			fadeIn('#current-song');
+			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
+		}
+
+	});
+}
+
+function credentialsRequired() {
+	if (clearLocal) {
+		localStorage.removeItem('accessKey');
+		localStorage.removeItem('accessSecret');
+		return true;
+	}
+
+	let accessKey = localStorage.getItem('accessKey');
+	let accessSecret = localStorage.getItem('accessSecret');
+	console.log(accessKey + ',' + accessSecret);
+
+	return !accessKey || !accessSecret;
+}
+
+function createCredentialsDialogue() {
+	let prompt = document.createElement('div');
+	let keyInput = document.createElement('input');
+	let secretInput = document.createElement('input');
+	let buttons = document.createElement('div');
+	let submit = document.createElement('button');
+	let cancel = document.createElement('button');
+	const colour = document.querySelector('#controls').style.color;
+
+	prompt.className = 'credentialsPrompt';
+	prompt.id = 'credentialsPrompt';
+	prompt.innerHTML = 'Enter ACRCloud Credentials';
+	prompt.style.color = colour;
+	prompt.style.opacity = 1
+	keyInput.id = 'keyInput';
+	keyInput.placeholder = 'Access Key';
+	keyInput.style.color = colour;
+	secretInput.id = 'secretInput';
+	secretInput.placeholder = 'Access Secret';
+	secretInput.style.color = colour;
+	buttons.className = 'credentialsButtons'
+	submit.innerHTML = 'Submit';
+	submit.id = 'submitCredentials';
+	submit.style.color = colour;
+	submit.setAttribute('onclick', 'myBundle.submitCredentials()');
+	cancel.innerHTML = 'Cancel';
+	cancel.id = 'cancelCredentials';
+	cancel.style.color = colour;
+	cancel.setAttribute('onclick', 'myBundle.cancelCredentials()');
+
+	buttons.appendChild(submit);
+	buttons.appendChild(cancel);
+	prompt.appendChild(keyInput);
+	prompt.appendChild(secretInput);
+	prompt.appendChild(buttons);
+	document.body.appendChild(prompt);
+	return;
+}
+
+function cancelCredentials() {
 	document.body.removeChild(document.querySelector('#credentialsPrompt'))
 }
 
@@ -26433,7 +26487,27 @@ function sign(signString, accessSecret) {
 		.digest().toString('base64');
 }
 
-module.exports = { identify, submitConfiguration}
+function fadeIn(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 1
+}
+
+function fadeOut(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 0
+}
+
+function fadeOutAndClear(elementId) {
+	let element = document.querySelector(elementId);
+	element.style.transition = 'opacity 0.2s linear 0s';
+	element.style.opacity = 0
+	setTimeout(() => element.innerHTML = '', 200);
+
+}
+
+module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":199}],188:[function(require,module,exports){
 module.exports={
@@ -26551,72 +26625,84 @@ module.exports={
         {
             "hue": 10,
             "hueShift": 4,
-            "volume": 100,
+            "volume": 70,
             "curve": 10,
             "zoom": 7,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 40,
             "hueShift": 2,
-            "volume": 100,
+            "volume": 70,
             "curve": 30,
             "zoom": 10,
-            "xAdjustment": -1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "particles": 2000,
+            "lineWidth": 1,
+            "xAdjustment": -5,
+            "yAdjustment": -5,
+            "direction": "left",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 90,
             "hueShift": 15,
-            "volume": 100,
+            "volume": 70,
             "curve": 60,
             "zoom": 50,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 1,
             "yAdjustment": 0,
-            "scrollSpeed": 0.1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 170,
             "hueShift": 20,
-            "volume": 100,
+            "volume": 70,
             "curve": 5,
             "zoom": 10,
-            "xAdjustment": 1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "particles": 2000,
+            "lineWidth": 1,
+            "xAdjustment": 2,
+            "yAdjustment": -2,
+            "direction": "down",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 220,
             "hueShift": 15,
-            "volume": 100,
+            "volume": 70,
             "curve": 70,
             "zoom": 10,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "up",
             "speed": 2,
             "bassMode": false
         },
         {
             "hue": 330,
             "hueShift": 10,
-            "volume": 100,
+            "volume": 70,
             "curve": 50,
             "zoom": 100,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         }
@@ -26632,7 +26718,7 @@ class FlowEffect {
         this.height = canvas.height;
         this.options = options;
         this.particles = [];
-        this.numberOfParticles = 2000;
+        this.numberOfParticles = options.particles;
         this.cellSize = 20;
         this.rows;
         this.cols;
@@ -26653,14 +26739,11 @@ class FlowEffect {
         })
     }
 
-    updateEffect(createParticles, volume, options) {
-        // console.log('effect:');
-        // console.log(this.options);
+    updateEffect(createParticles, volume, options, particleDiff) {
         this.options = options;
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
-        //console.log('x:%d, y:%d', options.xAdjustment, options.yAdjustment)
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
@@ -26669,13 +26752,22 @@ class FlowEffect {
                 this.flowField.push(angle);
             }
         }
-        this.counter += this.options.scrollSpeed / 10;
-        // console.log('scrollSpeed: %f, counter:%f', options.scrollSpeed, this.counter)
+        this.counter += 0.01;
 
         if (createParticles) {
-            for (let i = 0; i < this.numberOfParticles; i++) {
-                this.particles.push(new Particle.FlowParticle(this));
+            let newParticles;
+            if (particleDiff || particleDiff === 0) {
+                newParticles = particleDiff < 0 ? -particleDiff : 0;
+            } else {
+                newParticles = options.particles;
             }
+            console.log('New particles:' + newParticles)
+            for (let i = 0; i < newParticles; i++) {
+                let particle = new Particle.FlowParticle(this);
+                particle.reset(volume, options)
+                this.particles.push(particle);
+            }
+            console.log('particleCount: ' + (this.particles.length));
         }
     }
 
@@ -26686,12 +26778,13 @@ class FlowEffect {
         })
     }
 
-    clearAll() {
-        this.particles.forEach(particle => {
-            particle.history = [];
-        })
-        this.particles = [];
-        this.flowField = [];
+    clearParticles(particleDiff) {
+        if (particleDiff > 0) {
+            for (let i = 0; i < particleDiff; i++) {
+                let particle = this.particles.shift();
+                particle.history = [];
+            }
+        }
     }
 }
 
@@ -26713,16 +26806,17 @@ class FlowParticle {
         this.hue = this.effect.options.hue;
         this.colours;
         this.colour;
+        this.lineWidth = this.effect.options.lineWidth;
     }
 
     draw(context) {
+        context.lineWidth = this.lineWidth;
+        context.strokeStyle = this.colour;
         context.beginPath();
         context.moveTo(this.history[0].x, this.history[0].y)
         for (let i = 0; i < this.history.length; i++) {
             context.lineTo(this.history[i].x, this.history[i].y);
         }
-
-        context.strokeStyle = this.colour;
         context.stroke();
 
     }
@@ -26736,8 +26830,24 @@ class FlowParticle {
             let index = y * this.effect.cols + x;
             this.angle = this.effect.flowField[index];
 
-            this.speedX = Math.cos(this.angle);
-            this.speedY = Math.sin(this.angle);
+            switch (options.direction) {
+                case 'up':
+                    this.speedX = Math.sin(this.angle);
+                    this.speedY = -Math.cos(this.angle);
+                    break;
+                case 'down':
+                    this.speedX = Math.sin(this.angle);
+                    this.speedY = Math.cos(this.angle);
+                    break;
+                case 'left':
+                    this.speedX = -Math.cos(this.angle);
+                    this.speedY = Math.sin(this.angle);
+                    break;
+                case 'right':
+                    this.speedX = Math.cos(this.angle);
+                    this.speedY = Math.sin(this.angle);
+                    break;
+            }
 
             let randomSpeed = Math.floor(Math.random() * this.effect.options.speed * 10) + 10;
             this.x += this.speedX * (volume * randomSpeed + 0.5)
@@ -26753,20 +26863,20 @@ class FlowParticle {
             this.history.shift();
 
         } else {
-            this.reset(volume);
+            this.reset(volume, options);
         }
 
     }
 
-    reset(volume) {
+    reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * 10 * this.effect.options.hueShift + this.effect.options.hue
-        //console.log(`volume:${volume}, hue:${this.hue}`)
-        this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
+        this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
+        this.colours = [`hsl( ${this.hue}, 100%, 30%, 0.9)`, `hsl( ${this.hue},100%,40%, 0.9)`, `hsl( ${this.hue},100%, 50%, 0.9)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
         this.timer = this.maxLength;
+        this.lineWidth = options.lineWidth;
     }
 
 }
@@ -26780,17 +26890,18 @@ const profiles = require("./flowDefaultProfiles.json");
 class FlowVisualier {
 
     constructor(audioPromise) {
+        this.defaultProfiles = JSON.parse(JSON.stringify(profiles.profiles));
         this.canvas = document.querySelector('#myCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.options = profiles.profiles[0]
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
 
+        this.loadProfiles();
         this.setupProfiles();
-        // loadOptions()
+        this.options = profiles.profiles[0];
         this.setOptions(this.options);
         this.updateColours();
 
@@ -26802,9 +26913,11 @@ class FlowVisualier {
 
     animate() {
         if (this.microphone.initialised) {
+            this.ctx.lineCap = "round";
+            this.ctx.lineJoin = "round";
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            let normVolume = this.getNormalisedVolume(this.microphone)
-            this.effect.updateEffect(false, normVolume, this.options)
+            let normVolume = this.getNormalisedVolume(this.microphone);
+            this.effect.updateEffect(false, normVolume, this.options);
             this.effect.render(this.ctx, normVolume);
         }
         requestAnimationFrame(this.animate.bind(this));
@@ -26812,7 +26925,7 @@ class FlowVisualier {
 
     getNormalisedVolume(microphone) {
         if (this.options.bassMode) {
-            let samples = microphone.getSamples()
+            let samples = microphone.getSamples();
             let sum = 0;
             for (let i = 0; i < samples.length / 10; i++) {
                 sum += samples[i];
@@ -26842,17 +26955,15 @@ class FlowVisualier {
         return normVolume
     }
 
-    loadOptions() {
-        options.hue = Number(localStorage.getItem('hue') || options.hue);
-        options.hueShift = Number(localStorage.getItem('hueShift') || options.hueShift);
-        options.volume = Number(localStorage.getItem('volume') || options.volume);
-        options.curve = Number(localStorage.getItem('curve') || options.curve);
-        options.zoom = Number(localStorage.getItem('zoom') || options.zoom);
-        options.xAdjustment = Number(localStorage.getItem('xAdjustment') || options.xAdjustment);
-        options.yAdjustment = Number(localStorage.getItem('yAdjustment') || options.yAdjustment);
-        options.scrollSpeed = Number(localStorage.getItem('scrollSpeed') || options.scrollSpeed);
+    loadProfiles() {
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            const savedProfile = localStorage.getItem('profile_' + (i + 1));
+            if (savedProfile) {
+                profiles.profiles[i] = JSON.parse(savedProfile);
+            }
+        }
     }
-    
+
     setOptions(options) {
         document.querySelector('#controls-title').innerHTML = 'profile ' + this.profileNumber;
         document.querySelector('#hue').value = options.hue;
@@ -26860,67 +26971,123 @@ class FlowVisualier {
         document.querySelector('#volume').value = options.volume;
         document.querySelector('#curve').value = options.curve;
         document.querySelector('#zoom').value = options.zoom;
+        document.querySelector('#particles').value = options.particles;
+        document.querySelector('#lineWidth').value = options.lineWidth;
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
-        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+        document.querySelector('#direction').value = options.direction;
+        document.querySelector('#controls').style.opacity = 1;
     }
-    
-    updateColours() {
-        let micIcon = document.querySelector('#mic-icon');
-        let currentSong = document.querySelector('#current-song');
-        let controls = document.querySelector('#controls');
-        let button = document.querySelector('#updateButton');
-        let profileButton = document.querySelector('#profile-'+this.profileNumber+'-button')
-        let newColour = `hsl( ${this.options.hue}, 100%, 80%)`;
-    
-        micIcon.style.color = newColour;
-        currentSong.style.color = newColour;
-        controls.style.color = newColour;
-        button.style.color = newColour;
-        if (profileButton) profileButton.style.backgroundColor = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
 
+    updateColours() {
+        let controlColour = `hsl( ${this.options.hue}, 100%, 80%)`;
+        let profileColour = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
+
+        document.querySelector('#mic-icon').style.color = controlColour;
+        document.querySelector('#current-song').style.color = controlColour;
+        document.querySelector('#updateButton').style.color = controlColour;
+        document.querySelector('#direction').style.color = controlColour;
+        document.querySelector('#saveProfile').style.backgroundColor = profileColour;
+        document.querySelector('#resetProfile').style.backgroundColor = profileColour;
+        document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;
+
+        let controls = document.querySelector('#controls');
+        controls.style.color = controlColour;
         controls.childNodes.forEach(element => {
             if (element.nodeName === 'LABEL') {
                 element.childNodes.forEach(input => {
-                    if (input.nodeName === 'INPUT') input.style.color = newColour;
+                    if (input.nodeName === 'INPUT') input.style.color = controlColour;
                 })
             }
         })
 
 
     }
-    
+
     setupProfiles() {
         let profileElements = document.querySelector('#profiles');
-        for (let i = 0;  i < profiles.profiles.length; i++) {
-            let button = document.createElement('button'); 
+        profileElements.style.opacity = 1;
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            let button = document.createElement('button');
             let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
-            button.id = 'profile-'+profileNumber+'-button';
+            button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
-            profileElements.appendChild(button);
             button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+            profileElements.appendChild(button);
         }
+
+        let saveProfile = document.createElement('button');
+        saveProfile.id = 'saveProfile';
+        saveProfile.className = 'fa fa-save';
+        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
+        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        let resetProfile = document.createElement('button');
+        resetProfile.id = 'resetProfile';
+        resetProfile.className = 'fa fa-undo';
+        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
+        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        profileElements.appendChild(document.createElement('br'));
+        profileElements.appendChild(saveProfile);
+        profileElements.appendChild(resetProfile);
+
     }
-    
+
     changeProfile(index) {
+        let previousParticleCount = this.options.particles;
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
-        console.log('changeProfile: ' + this.options.hue);
+        console.log('changeProfile: ' + this.profileNumber);
         this.setOptions(this.options)
         this.updateColours();
+        let particleDiff = previousParticleCount - this.options.particles;
+        this.effect.clearParticles(particleDiff);
+        this.effect.updateEffect(true, 0, this.options, particleDiff)
+    }
+
+    saveProfile() {
+        let itemName = 'profile_' + this.profileNumber;
+        let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
+        localStorage.setItem(itemName, profile);
+        console.log('Saved profile ' + this.profileNumber)
+        console.log(localStorage.getItem(itemName));
+    }
+
+    resetProfile() {
+        console.log('options:')
+        console.log(this.options)
+        console.log('profile:')
+        console.log(profiles.profiles[this.profileNumber - 1]);
+        console.log('default:')
+        console.log(this.defaultProfiles[this.profileNumber - 1]);
+
+        profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
+        this.changeProfile(this.profileNumber - 1);
+        let itemName = 'profile_' + this.profileNumber;
+        localStorage.removeItem(itemName);
+        console.log('Reset profile ' + this.profileNumber)
+
+        console.log('profile after:')
+        console.log(profiles.profiles[this.profileNumber - 1]);
     }
 
     changeOption(option, value) {
-        this.options[option] = value;
-        console.log('changeOption: ' + this.options.hue);
-      //  localStorage.setItem(option, value);
+        if (option === 'particles') {
+            let particleDiff = this.options[option] - value;
+            this.options[option] = value;
+            this.effect.clearParticles(particleDiff);
+            this.effect.updateEffect(true, 0, this.options, particleDiff)
+        } else {
+            this.options[option] = value;
+        }
         this.updateColours();
     }
 }
 
-module.exports = {FlowVisualier};
+module.exports = { FlowVisualier };
 },{"./flowDefaultProfiles.json":190,"./flowEffect":191,"./microphone":194}],194:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
@@ -27036,6 +27203,11 @@ function updateSong() {
 		return;
 	}
 
+	if (acrCloud.credentialsRequired()) {
+		acrCloud.createCredentialsDialogue();
+		return;
+	}
+
 	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
@@ -27132,32 +27304,34 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); // create a blob URL
-	var a = document.createElement("a"); // create an anchor element
-	a.href = blobUrl; // set the href attribute to the blob URL
-	a.download = name + ".wav"; // set the download attribute to your desired file name
-	a.click(); // click the anchor element to trigger the download
+	var blobUrl = URL.createObjectURL(audioBlob); 
+	var a = document.createElement("a"); 
+	a.href = blobUrl; 
+	a.download = name + ".wav"; 
+	a.click(); 
 }
 
 function toggleAuto() {
 	const autoToggle = document.querySelector('#autoToggle');
-	let updateButton = document.querySelector('#updateButton');
 	if (autoToggle.checked == true) {
-		// start auto mode
 		updateSong();
 		autoMode = true;
-		updateButton.style.visibility = 'hidden'
 	} else {
-		// stop auto mode
 		autoMode = false;
-		updateButton.style.visibility = 'visible'
 	}
+}
+
+function canvasClicked() {
+	fade('#controls');
+	fade('#profiles');
+	fade('#credentialsPrompt')
 }
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
 		fade('#controls');
 		fade('#profiles');
+		fade('#credentialsPrompt')
 	}
 	if (e.key === "s") {
 		fade('#current-song');
@@ -27178,8 +27352,12 @@ function fadeOut(elementId) {
 
 function fade(elementId) {
 	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = element.style.opacity === '0' ? '1' : '0'
+	if (element) {
+		element.style.transition = 'opacity 0.2s linear 0s';
+		element.style.opacity = element.style.opacity === '1' ? '0' : '1'
+	} else {
+		console.log('Element %s could not be faded', elementId)
+	}
 }
 
 function changeProfile(value) {
@@ -27187,14 +27365,27 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, Number(document.querySelector('#' + option).value))
+	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
 }
 
 function submitCredentials() {
-	acrCloud.submitConfiguration();
+	acrCloud.submitCredentials();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, changeOption, toggleAuto, submitCredentials }
+function cancelCredentials() {
+	acrCloud.cancelCredentials();
+}
+
+function saveProfile() {
+	flowVisualiser.saveProfile();
+}
+
+function resetProfile() {
+	flowVisualiser.resetProfile();
+}
+
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
 
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
