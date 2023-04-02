@@ -37,7 +37,7 @@ class FlowEffect {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
                 let angle = (Math.cos((x + this.counter * -this.options.xAdjustment) * adjustedZoom)
-                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 100);
+                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 10);
                 this.flowField.push(angle);
             }
         }

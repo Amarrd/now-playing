@@ -49,6 +49,7 @@ class FlowVisualier {
         }
         else {
             var volume = microphone.getVolume();
+            var volumes = microphone.getMinAndMaxVolume(volume);
         }
         let minV = 0;
         if (this.maxV < volume) {
@@ -58,9 +59,14 @@ class FlowVisualier {
             this.maxV = volume;
         }
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMaxV = this.maxV * 1.2
-        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        let adjMin = Math.floor(volumes[0] * this.options.volume * 0.8) / 10;
+        let adjMax = Math.floor(volumes[1] * this.options.volume * 1.3) / 10;
+        //let adjMaxV = this.maxV * 1.2
+        //let normVolume = (adjVolume - minV) / (adjMaxV - minV);
+        let normVolume = (adjVolume - adjMin) / (adjMax - adjMin) || 0.01;
+        //console.log()
+      //  console.log('vol:%f, max:%f, min:%f, norm: %f', adjVolume, adjMax, adjMin, normVolume);
+       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, this.maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 

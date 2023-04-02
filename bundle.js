@@ -26528,16 +26528,19 @@ class Bar {
     this.width = width
     this.height = height;
     this.colour = colour;
-
     }
 
-    update(micInput, volume) {
-        //const sound = volume * 1000;
+    update(micInput, beat) {
         const sound = micInput * 500;
         if (sound > this.height) {
             this.height = sound;
         } else {
             this.height -= this.height * 0.03
+        }
+        if (beat) {
+            this.colour = 'white';
+        } else {
+            this.colour = 'orange';
         }
         
     }
@@ -26568,12 +26571,22 @@ function main(audioPromise) {
         let canvasMidX = canvas.width/ 2;
         let canvasMidY = canvas.height * 0.75;
         let barWidth = 10;
-        let frequencyBinCount = 512/4;
+        let frequencyBinCount = 512/6;
         let barStart = canvasMidX - ((frequencyBinCount/2) * barWidth);
 
         for (let i = 0; i < frequencyBinCount; i++) {
             bars.push(new Bar(barStart + i*barWidth, canvasMidY, barWidth, 20, 'orange'));
         }
+        let volumes = document.createElement('div');
+        let averageVolume = document.createElement('h3');
+        let currentVolume = document.createElement('h3');
+        volumes.className = 'volumes';
+        volumes.className = 'volumes';
+        averageVolume.id = 'averageVolume';
+        currentVolume.id = 'currentVolume';
+        volumes.appendChild(currentVolume);
+        volumes.appendChild(averageVolume);
+        document.body.appendChild(volumes);
     }
 
 
@@ -26582,8 +26595,15 @@ function main(audioPromise) {
             ctx.clearRect(0,0, canvas.width, canvas.height);
             const samples = microphone.getSamples();
             const volume = microphone.getVolume();
+            const averageVolume = microphone.getSecondAveragedVolume(volume) || 0;
+            document.querySelector('#currentVolume').innerHTML = 'current: ' + volume;
+            document.querySelector('#averageVolume').innerHTML = 'average: ' + averageVolume;
+            let beat = volume > averageVolume * 1.3;
+            if (beat) {
+                console.log('BEAT');
+            }
             bars.forEach(function(bar, i) {
-                bar.update(samples[i], volume);
+                bar.update(samples[i], beat);
                 bar.draw(ctx);
             });
         }
@@ -26728,7 +26748,7 @@ class FlowEffect {
             for (let x = 0; x < this.cols; x++) {
                 let adjustedZoom = this.options.zoom / 100
                 let angle = (Math.cos((x + this.counter * -this.options.xAdjustment) * adjustedZoom)
-                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 100);
+                    + Math.sin((y + this.counter * this.options.yAdjustment) * adjustedZoom)) * (volume * this.options.curve / 10);
                 this.flowField.push(angle);
             }
         }
@@ -26829,7 +26849,7 @@ class FlowParticle {
                     break;
             }
 
-            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
+            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed) + 8;
             this.x += this.speedX * (volume * randomSpeed + 0.5)
             this.y += this.speedY * (volume * randomSpeed + 0.5)
 
@@ -26851,7 +26871,7 @@ class FlowParticle {
     reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
+        this.hue = volume * 10 * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
         this.colours = [`hsl( ${this.hue}, 100%, 30%, 0.9)`, `hsl( ${this.hue},100%,40%, 0.9)`, `hsl( ${this.hue},100%, 50%, 0.9)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
@@ -26914,6 +26934,7 @@ class FlowVisualier {
         }
         else {
             var volume = microphone.getVolume();
+            var volumes = microphone.getMinAndMaxVolume(volume);
         }
         let minV = 0;
         if (this.maxV < volume) {
@@ -26923,9 +26944,14 @@ class FlowVisualier {
             this.maxV = volume;
         }
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMaxV = this.maxV * 1.2
-        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
+        let adjMin = Math.floor(volumes[0] * this.options.volume * 0.8) / 10;
+        let adjMax = Math.floor(volumes[1] * this.options.volume * 1.3) / 10;
+        //let adjMaxV = this.maxV * 1.2
+        //let normVolume = (adjVolume - minV) / (adjMaxV - minV);
+        let normVolume = (adjVolume - adjMin) / (adjMax - adjMin) || 0.01;
+        //console.log()
+      //  console.log('vol:%f, max:%f, min:%f, norm: %f', adjVolume, adjMax, adjMin, normVolume);
+       // console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, this.maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
@@ -27066,7 +27092,7 @@ module.exports = { FlowVisualier };
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
-        audioPromise.then(function(stream) {
+        audioPromise.then(function (stream) {
             this.audioContext = new AudioContext();
             this.microphone = this.audioContext.createMediaStreamSource(stream);
             this.analyser = this.audioContext.createAnalyser();
@@ -27075,6 +27101,9 @@ class Microphone {
             this.dataArray = new Uint8Array(bufferLength);
             this.microphone.connect(this.analyser);
             this.initialised = true;
+            this.volumeArray = [];
+            this.volumes = [0.1, 0];
+            this.intervalCounter = 0;
         }.bind(this)).catch(error => {
             console.log(error);
             alert(error);
@@ -27084,43 +27113,88 @@ class Microphone {
     getSamples() {
         this.analyser.getByteFrequencyData(this.dataArray);
         let conversion = this.analyser.frequencyBinCount / 2;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
+        let normSamples = [...this.dataArray].map(e => e / conversion - 1);
         return normSamples;
     }
 
     getVolume() {
         this.analyser.getByteTimeDomainData(this.dataArray);
-        let conversion = this.analyser.frequencyBinCount/2;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
+        let conversion = this.analyser.frequencyBinCount / 2;
+        let normSamples = [...this.dataArray].map(e => e / conversion - 1);
         let sum = 0;
-        for (let i = 0; i< normSamples.length; i++){
+        for (let i = 0; i < normSamples.length; i++) {
             sum += normSamples[i] * normSamples[i]
         }
         return Math.sqrt(sum / normSamples.length)
     }
+
+    getSecondAveragedVolume(currentVolume) {
+        const interval = 60;
+        let sum = 0;
+        if (this.intervalCounter < interval) {
+            this.volumeArray.push(currentVolume);
+        } else {
+            this.volumeArray.shift();
+            this.volumeArray.push(currentVolume);
+        }
+        for (let i = 0; i < this.volumeArray.length; i++) {
+            sum += this.volumeArray[i];
+        }
+        this.intervalCounter++;
+        return Math.sqrt(sum / this.volumeArray.length)
+    }
+
+    getMinAndMaxVolume(currentVolume) {
+        const interval = 60;
+        if (this.volumeArray.length < interval) {
+            this.volumeArray.push(currentVolume);
+        } else {
+            this.volumeArray.shift();
+            this.volumeArray.push(currentVolume);
+        }
+        for (let i = 0; i < this.volumeArray.length; i++) {
+            if (this.volumeArray[i] > this.volumes[1]) {
+                this.volumes[1] = this.volumeArray[i];
+            };
+            if (this.volumeArray[i] < this.volumes[0]) {
+                this.volumes[0] = this.volumeArray[i];
+            };
+        }
+        let returnedVolumes = this.volumes;
+        if (this.intervalCounter = interval) {
+        //    console.log(this.volumes)
+            this.intervalCounter = 0;
+            this.volumes = [0.1,0];
+        }
+      //  console.log(returnedVolumes)
+        this.intervalCounter++
+        return returnedVolumes;
+    }
 }
 
-module.exports = {Microphone}
+module.exports = { Microphone }
 },{}],195:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
-const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; 
+//'{"cost_time":1.5520000457764,"metadata":{"music":[{"db_begin_time_offset_ms":55440,"db_end_time_offset_ms":61320,"sample_begin_time_offset_ms":0,"sample_end_time_offset_ms":5880,"play_offset_ms":62160,"title":"Shepherd Song","label":"Ahead Of Our Time","release_date":"2020-07-03","score":100,"acrid":"811e950350d2fd63a32deba6eff0549e","external_ids":{"isrc":"GBCFB2000141","upc":"5054429142426"},"external_metadata":{"spotify":{"track":{"name":"Shepherd Song","id":"76gCm37tYGt1d6z9iC4CHt"},"album":{"name":"Keleketla!","id":"0sqETr5mwDf494FaWzjnGD"},"artists":[{"name":"Keleketla!","id":"7jIuM7cuEe0bBfoNhISVXU"},{"name":"Coldcut","id":"5wnhqlZzXIq8aO9awQO2ND"},{"name":"Tony Allen","id":"6JpZEemWmunccsrHXFUOgi"},{"name":"Nono Nkoane","id":"6U6mRi1Ggv5x8ZMMVkpyUm"},{"name":"Thabang Tabane","id":"2kJc29uqdxbvvH670LozXy"},{"name":"Gally Ngoveni","id":"1E99VOe0iWh1CMVBJ17sf6"},{"name":"Sibusile Xaba","id":"3UZ496XnQSGebDZ8jQqtIJ"},{"name":"Afla Sackey","id":"6HbtkYhKlvY9R1m2PkW6YS"},{"name":"Antibalas","id":"2KGF6IKZfVGCKfyqcNVGfh"}]},"deezer":{"track":{"name":"Shepherd Song","id":"967789912"},"album":{"name":"Keleketla!","id":149758672},"artists":[{"name":"Keleketla!","id":"91445892"},{"name":"Coldcut","id":"3902"},{"name":"Nono Nkoane","id":"8264380"},{"name":"Thabang Tabane","id":"6759669"},{"name":"Tony Allen","id":"665"},{"name":"Gally Ngoveni","id":"68664962"},{"name":"Sibusile Xaba","id":"12237420"},{"name":"Afla Sackey","id":"4717126"},{"name":"Antibalas","id":"63046"},{"name":"Afla Sackey & Afrik Bawantu","id":"6949539"}]}},"result_from":3,"album":{"name":"Keleketla!"},"artists":[{"name":"Tony Allen;Coldcut;Antibalas;Nono Nkoane;Thabang Tabane;Gally Ngoveni;Afla Sackey;Keleketla!;Sibusile Xaba"}],"duration_ms":492000}],"timestamp_utc":"2023-04-02 18:11:40"},"result_type":0,"status":{"msg":"Success","code":0,"version":"1.0"}}'; 
+// '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser;
+var flowVisualiser; 
 
 function startVisualiser() {
-	//barVisualiser.main(audioPromise);
 	if (visualiserOnly) {
 		document.querySelector('#updateButton').disabled = true;
 		document.querySelector('#autoToggleLabel').disabled = true;
 	}
+	//barVisualiser.main(audioPromise);
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 }
 
@@ -27203,7 +27277,7 @@ function processResponse(response) {
 	var currentSong = document.getElementById('current-song');
 	var albumYear = document.querySelector('#albumYear');
 	if (jsonObject.status.code === 0) {
-		var artist = jsonObject.metadata.music[0].artists[0].name;
+		var artist = jsonObject.metadata.music[0].artists[0].name.split(';')[0];
 		var title = jsonObject.metadata.music[0].title;
 		var album = jsonObject.metadata.music[0].album.name;
 		var releaseDate = jsonObject.metadata.music[0].release_date.split('-')[0];
