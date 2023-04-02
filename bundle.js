@@ -26810,8 +26810,8 @@ class FlowParticle {
             let index = y * this.effect.cols + x;
             this.angle = this.effect.flowField[index];
 
-            this.speedX = Math.cos(this.angle);
-            this.speedY = Math.sin(this.angle);
+            this.speedX = Math.sin(this.angle);
+            this.speedY = Math.cos(this.angle);
 
             let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
             this.x += this.speedX * (volume * randomSpeed + 0.5)
