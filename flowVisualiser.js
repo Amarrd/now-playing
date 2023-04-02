@@ -91,8 +91,9 @@ class FlowVisualier {
     }
 
     updateColours() {
-        let controlColour = `hsl( ${this.options.hue}, 100%, 80%)`;
-        let profileColour = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
+        let hue = Number(this.options.hue) + Number(this.options.hueShift);
+        let controlColour = `hsl( ${hue}, 100%, 80%)`;
+        let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
         document.querySelector('#mic-icon').style.color = controlColour;
         document.querySelector('#current-song').style.color = controlColour;
@@ -120,7 +121,7 @@ class FlowVisualier {
         profileElements.style.opacity = 1;
         for (let i = 0; i < profiles.profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue)+ Number(profiles.profiles[i].hueShift)}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -151,7 +152,7 @@ class FlowVisualier {
         let previousParticleCount = this.options.particles;
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
-        console.log('changeProfile: ' + this.profileNumber);
+        console.log('changed to profile ' + this.profileNumber);
         this.setOptions(this.options)
         this.updateColours();
         let particleDiff = previousParticleCount - this.options.particles;
@@ -164,29 +165,23 @@ class FlowVisualier {
         let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber)
-        console.log(localStorage.getItem(itemName));
+
         var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Saved Profile'
+        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' saved'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
         setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     resetProfile() {
-        console.log('options:')
-        console.log(this.options)
-        console.log('profile:')
-        console.log(profiles.profiles[this.profileNumber - 1]);
-        console.log('default:')
-        console.log(this.defaultProfiles[this.profileNumber - 1]);
-
         profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
         this.changeProfile(this.profileNumber - 1);
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
         console.log('Reset profile ' + this.profileNumber)
+
         var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Reset Profile'
+        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' reset'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
         setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
@@ -208,21 +203,21 @@ class FlowVisualier {
         clearInterval(this.intervalFunction);
         this.transitionInterval = value * 1000;
         if (this.transitionInterval > 0) {
-            console.log('triggering auto toggle: ' + this.transitionInterval);
+            console.log('triggering profile transitions every ' + this.transitionInterval + 'ms');
             this.intervalFunction = setInterval(() => this.transitionProfile(this.transitionInterval), this.transitionInterval);
+        } else {
+            console.log('stopping profile transitions');
         }
     }
 
     transitionProfile(currentInterval) {
         if (this.transitionInterval > 0 && currentInterval === this.transitionInterval) {
-            console.log('transitioning profile after');
             let index;
             if (this.profileNumber === this.defaultProfiles.length) {
                 index = 0;
             } else {
                 index = this.profileNumber;
             }
-            console.log(index);
             this.changeProfile(index);
         }
     }

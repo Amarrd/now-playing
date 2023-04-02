@@ -26355,70 +26355,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = false;
-
-function identify(data, cb) {
-
-	const accessKey = localStorage.getItem('accessKey');
-	const accessSecret = localStorage.getItem('accessSecret');
-	const current_date = new Date();
-	const timestamp = current_date.getTime() / 1000;
-
-	var stringToSign = buildStringToSign('POST',
-		options.endpoint,
-		accessKey,
-		options.data_type,
-		options.signature_version,
-		timestamp);
-
-	var signature = sign(stringToSign, accessSecret);
-
-	var form = new FormData();
-	form.append('sample', data);
-	form.append('sample_bytes', data.length);
-	form.append('access_key', accessKey);
-	form.append('data_type', options.data_type);
-	form.append('signature_version', options.signature_version);
-	form.append('signature', signature);
-	form.append('timestamp', timestamp);
-
-	fetch("https://" + options.host + options.endpoint,
-		{ method: 'POST', body: form })
-		.then((res) => { return res.text() })
-		.then((res) => { cb(res, null) })
-		.catch((err) => { cb(null, err) });
-}
-
-function submitCredentials() {
-	let accessKey = document.querySelector('#keyInput').value;
-	let accessSecret = document.querySelector('#secretInput').value;
-	localStorage.setItem('accessKey', accessKey);
-	localStorage.setItem('accessSecret', accessSecret);
-	const audio = new Audio("test.wav")
-
-	identify(audio, function (body, err) {
-		if (err) {
-			console.log("Error:")
-			console.log(err);
-			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-			return;
-		}
-		console.log(body);
-		if (JSON.parse(body).status.code === (3001 || 3014)) {
-			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-		} else {
-			document.body.removeChild(document.querySelector('#credentialsPrompt'))
-			document.querySelector('#current-song').innerHTML = 'Credentials saved';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-		}
-
-	});
-}
+const clearLocal = true;
 
 function credentialsRequired() {
 	if (clearLocal) {
@@ -26429,7 +26366,6 @@ function credentialsRequired() {
 
 	let accessKey = localStorage.getItem('accessKey');
 	let accessSecret = localStorage.getItem('accessSecret');
-	console.log(accessKey + ',' + accessSecret);
 
 	return !accessKey || !accessSecret;
 }
@@ -26473,6 +26409,76 @@ function createCredentialsDialogue() {
 	return;
 }
 
+function submitCredentials() {
+	let accessKey = document.querySelector('#keyInput').value;
+	let accessSecret = document.querySelector('#secretInput').value;
+	localStorage.setItem('accessKey', accessKey);
+	localStorage.setItem('accessSecret', accessSecret);
+	const audio = new Audio("test.wav")
+
+	identify(audio, function (body, err) {
+		let colour = document.querySelector('#current-song').style.color;
+		if (err) {
+			console.log("Error:")
+			console.log(err);
+			localStorage.removeItem('accessKey', accessKey);
+			localStorage.removeItem('accessSecret', accessSecret);
+			addSnackbar('Error checking credentials', colour);
+			return;
+		}
+		console.log(body);
+		if (JSON.parse(body).status.code === (3001 || 3014)) {
+			localStorage.removeItem('accessKey', accessKey);
+			localStorage.removeItem('accessSecret', accessSecret);
+			addSnackbar('Invalid credentials', colour);
+		} else {
+			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			addSnackbar('Credentials saved', colour);
+		}
+
+	});
+}
+
+function identify(data, cb) {
+
+	const accessKey = localStorage.getItem('accessKey');
+	const accessSecret = localStorage.getItem('accessSecret');
+	const current_date = new Date();
+	const timestamp = current_date.getTime() / 1000;
+
+	var stringToSign = buildStringToSign('POST',
+		options.endpoint,
+		accessKey,
+		options.data_type,
+		options.signature_version,
+		timestamp);
+
+	var signature = sign(stringToSign, accessSecret);
+
+	var form = new FormData();
+	form.append('sample', data);
+	form.append('sample_bytes', data.length);
+	form.append('access_key', accessKey);
+	form.append('data_type', options.data_type);
+	form.append('signature_version', options.signature_version);
+	form.append('signature', signature);
+	form.append('timestamp', timestamp);
+
+	fetch("https://" + options.host + options.endpoint,
+		{ method: 'POST', body: form })
+		.then((res) => { return res.text() })
+		.then((res) => { cb(res, null) })
+		.catch((err) => { cb(null, err) });
+}
+
+function addSnackbar(text, colour) {
+	var snackbar = document.getElementById("snackbar");
+	snackbar.innerHTML = text;
+	snackbar.style.color = colour;
+	snackbar.className = "show";
+	setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+}
+
 function cancelCredentials() {
 	document.body.removeChild(document.querySelector('#credentialsPrompt'))
 }
@@ -26485,26 +26491,6 @@ function sign(signString, accessSecret) {
 	return crypto.createHmac('sha1', accessSecret)
 		.update(Buffer.from(signString, 'utf-8'))
 		.digest().toString('base64');
-}
-
-function fadeIn(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 1
-}
-
-function fadeOut(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 0
-}
-
-function fadeOutAndClear(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 0
-	setTimeout(() => element.innerHTML = '', 200);
-
 }
 
 module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
@@ -26741,13 +26727,11 @@ class FlowEffect {
             } else {
                 newParticles = options.particles;
             }
-            console.log('New particles:' + newParticles)
             for (let i = 0; i < newParticles; i++) {
                 let particle = new Particle.FlowParticle(this);
                 particle.reset(volume, options)
                 this.particles.push(particle);
             }
-            console.log('particleCount: ' + (this.particles.length));
         }
     }
 
@@ -26956,8 +26940,9 @@ class FlowVisualier {
     }
 
     updateColours() {
-        let controlColour = `hsl( ${this.options.hue}, 100%, 80%)`;
-        let profileColour = `hsl( ${this.options.hue}, 100%, 30%, 0.7)`;
+        let hue = Number(this.options.hue) + Number(this.options.hueShift);
+        let controlColour = `hsl( ${hue}, 100%, 80%)`;
+        let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
         document.querySelector('#mic-icon').style.color = controlColour;
         document.querySelector('#current-song').style.color = controlColour;
@@ -26985,7 +26970,7 @@ class FlowVisualier {
         profileElements.style.opacity = 1;
         for (let i = 0; i < profiles.profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${profiles.profiles[i].hue}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue)+ Number(profiles.profiles[i].hueShift)}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -27016,7 +27001,7 @@ class FlowVisualier {
         let previousParticleCount = this.options.particles;
         this.options = profiles.profiles[index];
         this.profileNumber = index + 1;
-        console.log('changeProfile: ' + this.profileNumber);
+        console.log('changed to profile ' + this.profileNumber);
         this.setOptions(this.options)
         this.updateColours();
         let particleDiff = previousParticleCount - this.options.particles;
@@ -27029,29 +27014,23 @@ class FlowVisualier {
         let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber)
-        console.log(localStorage.getItem(itemName));
+
         var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Saved Profile'
+        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' saved'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
         setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     resetProfile() {
-        console.log('options:')
-        console.log(this.options)
-        console.log('profile:')
-        console.log(profiles.profiles[this.profileNumber - 1]);
-        console.log('default:')
-        console.log(this.defaultProfiles[this.profileNumber - 1]);
-
         profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
         this.changeProfile(this.profileNumber - 1);
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
         console.log('Reset profile ' + this.profileNumber)
+
         var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Reset Profile'
+        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' reset'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
         setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
@@ -27073,21 +27052,21 @@ class FlowVisualier {
         clearInterval(this.intervalFunction);
         this.transitionInterval = value * 1000;
         if (this.transitionInterval > 0) {
-            console.log('triggering auto toggle: ' + this.transitionInterval);
+            console.log('triggering profile transitions every ' + this.transitionInterval + 'ms');
             this.intervalFunction = setInterval(() => this.transitionProfile(this.transitionInterval), this.transitionInterval);
+        } else {
+            console.log('stopping profile transitions');
         }
     }
 
     transitionProfile(currentInterval) {
         if (this.transitionInterval > 0 && currentInterval === this.transitionInterval) {
-            console.log('transitioning profile after');
             let index;
             if (this.profileNumber === this.defaultProfiles.length) {
                 index = 0;
             } else {
                 index = this.profileNumber;
             }
-            console.log(index);
             this.changeProfile(index);
         }
     }
@@ -27139,7 +27118,7 @@ const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
 const barVisualiser = require('./barVisualiser')
 
-const testResponse = false; '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false;'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 const visualiserOnly = false;
 
@@ -27154,6 +27133,7 @@ function startVisualiser() {
 		document.querySelector('#autoToggleLabel').disabled = true;
 	}
 	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
+	toggleTransition();
 }
 
 function updateSong() {
@@ -27282,7 +27262,6 @@ function toggleAuto() {
 }
 
 function toggleTransition() {
-	console.log(document.querySelector('#profileTransition').value)
 	flowVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
 }
 
@@ -27320,9 +27299,7 @@ function fade(elementId) {
 	if (element) {
 		element.style.transition = 'opacity 0.2s linear 0s';
 		element.style.opacity = element.style.opacity === '1' ? '0' : '1'
-	} else {
-		console.log('Element %s could not be faded', elementId)
-	}
+	} 
 }
 
 function changeProfile(value) {

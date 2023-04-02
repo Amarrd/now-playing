@@ -50,13 +50,11 @@ class FlowEffect {
             } else {
                 newParticles = options.particles;
             }
-            console.log('New particles:' + newParticles)
             for (let i = 0; i < newParticles; i++) {
                 let particle = new Particle.FlowParticle(this);
                 particle.reset(volume, options)
                 this.particles.push(particle);
             }
-            console.log('particleCount: ' + (this.particles.length));
         }
     }
 

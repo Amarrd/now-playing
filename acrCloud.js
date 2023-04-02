@@ -2,70 +2,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = false;
-
-function identify(data, cb) {
-
-	const accessKey = localStorage.getItem('accessKey');
-	const accessSecret = localStorage.getItem('accessSecret');
-	const current_date = new Date();
-	const timestamp = current_date.getTime() / 1000;
-
-	var stringToSign = buildStringToSign('POST',
-		options.endpoint,
-		accessKey,
-		options.data_type,
-		options.signature_version,
-		timestamp);
-
-	var signature = sign(stringToSign, accessSecret);
-
-	var form = new FormData();
-	form.append('sample', data);
-	form.append('sample_bytes', data.length);
-	form.append('access_key', accessKey);
-	form.append('data_type', options.data_type);
-	form.append('signature_version', options.signature_version);
-	form.append('signature', signature);
-	form.append('timestamp', timestamp);
-
-	fetch("https://" + options.host + options.endpoint,
-		{ method: 'POST', body: form })
-		.then((res) => { return res.text() })
-		.then((res) => { cb(res, null) })
-		.catch((err) => { cb(null, err) });
-}
-
-function submitCredentials() {
-	let accessKey = document.querySelector('#keyInput').value;
-	let accessSecret = document.querySelector('#secretInput').value;
-	localStorage.setItem('accessKey', accessKey);
-	localStorage.setItem('accessSecret', accessSecret);
-	const audio = new Audio("test.wav")
-
-	identify(audio, function (body, err) {
-		if (err) {
-			console.log("Error:")
-			console.log(err);
-			document.querySelector('#current-song').innerHTML = 'Error checking credentials';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-			return;
-		}
-		console.log(body);
-		if (JSON.parse(body).status.code === (3001 || 3014)) {
-			document.querySelector('#current-song').innerHTML = 'Invalid credentials';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-		} else {
-			document.body.removeChild(document.querySelector('#credentialsPrompt'))
-			document.querySelector('#current-song').innerHTML = 'Credentials saved';
-			fadeIn('#current-song');
-			setTimeout(() => fadeOutAndClear('#current-song'), 3000);
-		}
-
-	});
-}
+const clearLocal = true;
 
 function credentialsRequired() {
 	if (clearLocal) {
@@ -76,7 +13,6 @@ function credentialsRequired() {
 
 	let accessKey = localStorage.getItem('accessKey');
 	let accessSecret = localStorage.getItem('accessSecret');
-	console.log(accessKey + ',' + accessSecret);
 
 	return !accessKey || !accessSecret;
 }
@@ -120,6 +56,76 @@ function createCredentialsDialogue() {
 	return;
 }
 
+function submitCredentials() {
+	let accessKey = document.querySelector('#keyInput').value;
+	let accessSecret = document.querySelector('#secretInput').value;
+	localStorage.setItem('accessKey', accessKey);
+	localStorage.setItem('accessSecret', accessSecret);
+	const audio = new Audio("test.wav")
+
+	identify(audio, function (body, err) {
+		let colour = document.querySelector('#current-song').style.color;
+		if (err) {
+			console.log("Error:")
+			console.log(err);
+			localStorage.removeItem('accessKey', accessKey);
+			localStorage.removeItem('accessSecret', accessSecret);
+			addSnackbar('Error checking credentials', colour);
+			return;
+		}
+		console.log(body);
+		if (JSON.parse(body).status.code === (3001 || 3014)) {
+			localStorage.removeItem('accessKey', accessKey);
+			localStorage.removeItem('accessSecret', accessSecret);
+			addSnackbar('Invalid credentials', colour);
+		} else {
+			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			addSnackbar('Credentials saved', colour);
+		}
+
+	});
+}
+
+function identify(data, cb) {
+
+	const accessKey = localStorage.getItem('accessKey');
+	const accessSecret = localStorage.getItem('accessSecret');
+	const current_date = new Date();
+	const timestamp = current_date.getTime() / 1000;
+
+	var stringToSign = buildStringToSign('POST',
+		options.endpoint,
+		accessKey,
+		options.data_type,
+		options.signature_version,
+		timestamp);
+
+	var signature = sign(stringToSign, accessSecret);
+
+	var form = new FormData();
+	form.append('sample', data);
+	form.append('sample_bytes', data.length);
+	form.append('access_key', accessKey);
+	form.append('data_type', options.data_type);
+	form.append('signature_version', options.signature_version);
+	form.append('signature', signature);
+	form.append('timestamp', timestamp);
+
+	fetch("https://" + options.host + options.endpoint,
+		{ method: 'POST', body: form })
+		.then((res) => { return res.text() })
+		.then((res) => { cb(res, null) })
+		.catch((err) => { cb(null, err) });
+}
+
+function addSnackbar(text, colour) {
+	var snackbar = document.getElementById("snackbar");
+	snackbar.innerHTML = text;
+	snackbar.style.color = colour;
+	snackbar.className = "show";
+	setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+}
+
 function cancelCredentials() {
 	document.body.removeChild(document.querySelector('#credentialsPrompt'))
 }
@@ -132,26 +138,6 @@ function sign(signString, accessSecret) {
 	return crypto.createHmac('sha1', accessSecret)
 		.update(Buffer.from(signString, 'utf-8'))
 		.digest().toString('base64');
-}
-
-function fadeIn(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 1
-}
-
-function fadeOut(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 0
-}
-
-function fadeOutAndClear(elementId) {
-	let element = document.querySelector(elementId);
-	element.style.transition = 'opacity 0.2s linear 0s';
-	element.style.opacity = 0
-	setTimeout(() => element.innerHTML = '', 200);
-
 }
 
 module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
