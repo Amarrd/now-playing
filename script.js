@@ -189,7 +189,7 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, Number(document.querySelector('#' + option).value))
+	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
 }
 
 function submitCredentials() {

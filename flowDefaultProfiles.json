@@ -10,7 +10,7 @@
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
@@ -22,9 +22,9 @@
             "zoom": 10,
             "particles": 2000,
             "lineWidth": 1,
-            "xAdjustment": -1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "xAdjustment": -5,
+            "yAdjustment": -5,
+            "direction": "left",
             "speed": 2,
             "bassMode": false
         },
@@ -38,7 +38,7 @@
             "lineWidth": 1,
             "xAdjustment": 1,
             "yAdjustment": 0,
-            "scrollSpeed": 0.1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
@@ -50,9 +50,9 @@
             "zoom": 10,
             "particles": 2000,
             "lineWidth": 1,
-            "xAdjustment": 1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "xAdjustment": 2,
+            "yAdjustment": -2,
+            "direction": "down",
             "speed": 2,
             "bassMode": false
         },
@@ -66,7 +66,7 @@
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "up",
             "speed": 2,
             "bassMode": false
         },
@@ -80,7 +80,7 @@
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         }

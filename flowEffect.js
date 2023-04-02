@@ -41,7 +41,7 @@ class FlowEffect {
                 this.flowField.push(angle);
             }
         }
-        this.counter += this.options.scrollSpeed / 10;
+        this.counter += 0.01;
 
         if (createParticles) {
             let newParticles;

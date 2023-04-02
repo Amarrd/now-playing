@@ -44,14 +44,21 @@
 		<label for="yAdjustment"> vertical scroll
 			<input type="number" id="yAdjustment" name="yAdjustment" min="-1" max="1" onchange="myBundle.changeOption(this.name)">
 		</label>
-		<label for="scrollSpeed"> scroll speed
-			<input type="number" id="scrollSpeed" name="scrollSpeed" min="0.0" max="100" onchange="myBundle.changeOption(this.name)">
+		<label for="direction"> direction
+			<select id="direction" name="direction" onchange="myBundle.changeOption(this.name)">
+				<option value="up">up</option>
+				<option value="down">down</option>
+				<option value="left">left</option>
+				<option value="right">right</option>
+			</select>
 		</label>
 		<!-- <label class="bassMode" for="bassMode" id="baseModeLabel">
 			<input type="checkbox" id="bassMode" name="bassMode" onclick="myBundle.changeOption(this.name)"> bass mode
 		</label> -->
+		<br>
 		<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
 			<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify
+			<span class="checkmark"></span>
 		</label>
 		<button id="updateButton" onclick="myBundle.updateSong()">identify song</button>
 	</div>

@@ -84,7 +84,7 @@ class FlowVisualier {
         document.querySelector('#lineWidth').value = options.lineWidth;
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
-        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+        document.querySelector('#direction').value = options.direction;
         document.querySelector('#controls').style.opacity = 1;
     }
 
@@ -95,6 +95,7 @@ class FlowVisualier {
         document.querySelector('#mic-icon').style.color = controlColour;
         document.querySelector('#current-song').style.color = controlColour;
         document.querySelector('#updateButton').style.color = controlColour;
+        document.querySelector('#direction').style.color = controlColour;
         document.querySelector('#saveProfile').style.backgroundColor = profileColour;
         document.querySelector('#resetProfile').style.backgroundColor = profileColour;
         document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;

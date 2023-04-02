@@ -26612,7 +26612,7 @@ module.exports={
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
@@ -26624,9 +26624,9 @@ module.exports={
             "zoom": 10,
             "particles": 2000,
             "lineWidth": 1,
-            "xAdjustment": -1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "xAdjustment": -5,
+            "yAdjustment": -5,
+            "direction": "left",
             "speed": 2,
             "bassMode": false
         },
@@ -26640,7 +26640,7 @@ module.exports={
             "lineWidth": 1,
             "xAdjustment": 1,
             "yAdjustment": 0,
-            "scrollSpeed": 0.1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         },
@@ -26652,9 +26652,9 @@ module.exports={
             "zoom": 10,
             "particles": 2000,
             "lineWidth": 1,
-            "xAdjustment": 1,
-            "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "xAdjustment": 2,
+            "yAdjustment": -2,
+            "direction": "down",
             "speed": 2,
             "bassMode": false
         },
@@ -26668,7 +26668,7 @@ module.exports={
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "scrollSpeed": 0,
+            "direction": "up",
             "speed": 2,
             "bassMode": false
         },
@@ -26682,7 +26682,7 @@ module.exports={
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": -1,
-            "scrollSpeed": 1,
+            "direction": "right",
             "speed": 2,
             "bassMode": false
         }
@@ -26732,7 +26732,7 @@ class FlowEffect {
                 this.flowField.push(angle);
             }
         }
-        this.counter += this.options.scrollSpeed / 10;
+        this.counter += 0.01;
 
         if (createParticles) {
             let newParticles;
@@ -26810,8 +26810,24 @@ class FlowParticle {
             let index = y * this.effect.cols + x;
             this.angle = this.effect.flowField[index];
 
-            this.speedX = Math.sin(this.angle);
-            this.speedY = Math.cos(this.angle);
+            switch (options.direction) {
+                case 'up':
+                    this.speedX = Math.sin(this.angle);
+                    this.speedY = -Math.cos(this.angle);
+                    break;
+                case 'down':
+                    this.speedX = Math.sin(this.angle);
+                    this.speedY = Math.cos(this.angle);
+                    break;
+                case 'left':
+                    this.speedX = -Math.cos(this.angle);
+                    this.speedY = Math.sin(this.angle);
+                    break;
+                case 'right':
+                    this.speedX = Math.cos(this.angle);
+                    this.speedY = Math.sin(this.angle);
+                    break;
+            }
 
             let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
             this.x += this.speedX * (volume * randomSpeed + 0.5)
@@ -26835,7 +26851,7 @@ class FlowParticle {
     reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * this.effect.options.hueShift + this.effect.options.hue
+        this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
         this.colours = [`hsl( ${this.hue}, 100%, 30%)`, `hsl( ${this.hue},100%,40%)`, `hsl( ${this.hue},100%, 50%)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];
@@ -26933,7 +26949,7 @@ class FlowVisualier {
         document.querySelector('#lineWidth').value = options.lineWidth;
         document.querySelector('#xAdjustment').value = options.xAdjustment;
         document.querySelector('#yAdjustment').value = options.yAdjustment;
-        document.querySelector('#scrollSpeed').value = options.scrollSpeed;
+        document.querySelector('#direction').value = options.direction;
         document.querySelector('#controls').style.opacity = 1;
     }
 
@@ -26944,6 +26960,7 @@ class FlowVisualier {
         document.querySelector('#mic-icon').style.color = controlColour;
         document.querySelector('#current-song').style.color = controlColour;
         document.querySelector('#updateButton').style.color = controlColour;
+        document.querySelector('#direction').style.color = controlColour;
         document.querySelector('#saveProfile').style.backgroundColor = profileColour;
         document.querySelector('#resetProfile').style.backgroundColor = profileColour;
         document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;
@@ -27276,7 +27293,7 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, Number(document.querySelector('#' + option).value))
+	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
 }
 
 function submitCredentials() {
