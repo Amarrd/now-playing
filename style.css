@@ -42,7 +42,7 @@ div.controls {
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
-    bottom: calc(50% - 220px);
+    bottom: calc(50% - 200px);
     font-size: 18px;
     left: auto;
     right: 0px;
