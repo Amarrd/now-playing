@@ -98,6 +98,7 @@ function processResponse(response) {
 	var jsonObject = JSON.parse(response);
 	var currentSong = document.getElementById('current-song');
 	var albumYear = document.querySelector('#albumYear');
+	var delay;
 	if (jsonObject.status.code === 0) {
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
@@ -113,17 +114,15 @@ function processResponse(response) {
 		delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
 		setTimeout(() => fadeOut('#current-song'), delay)
 		if (autoMode) {
-			detectDelay = delay + 15000;
-			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => updateSong(), detectDelay);
-		} else {
-
-		}
+			delay = delay + 15000;
+			console.log('Setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
+		} 
 	} else {
 		if (autoMode) {
-			var detectDelay = 60000
-			console.log('Not found, setting delay to: ' + detectDelay)
-			setTimeout(() => updateSong(), detectDelay);
+			delay = 60000
+			console.log('Not found, setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
 		}
 	}
 }
@@ -144,6 +143,11 @@ function toggleAuto() {
 	} else {
 		autoMode = false;
 	}
+}
+
+function toggleTransition() {
+	console.log(document.querySelector('#profileTransition').value)
+	flowVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
@@ -209,5 +213,5 @@ function resetProfile() {
 	flowVisualiser.resetProfile();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
 	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }

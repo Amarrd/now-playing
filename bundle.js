@@ -26622,8 +26622,8 @@ module.exports={
             "volume": 70,
             "curve": 30,
             "zoom": 10,
-            "particles": 1000,
-            "lineWidth": 2,
+            "particles": 2000,
+            "lineWidth": 1,
             "xAdjustment": -2,
             "yAdjustment": -2,
             "direction": "left",
@@ -26866,7 +26866,6 @@ module.exports = { FlowParticle }
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const profiles = require("./flowDefaultProfiles.json");
-//const Snackbar = require('node-snackbar');
 
 class FlowVisualier {
 
@@ -26879,6 +26878,8 @@ class FlowVisualier {
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
+        this.transitionInterval = 0;
+        this.intervalFunction;
 
         this.loadProfiles();
         this.setupProfiles();
@@ -27067,6 +27068,29 @@ class FlowVisualier {
         }
         this.updateColours();
     }
+
+    toggleProfileTransition(value) {
+        clearInterval(this.intervalFunction);
+        this.transitionInterval = value * 1000;
+        if (this.transitionInterval > 0) {
+            console.log('triggering auto toggle: ' + this.transitionInterval);
+            this.intervalFunction = setInterval(() => this.transitionProfile(this.transitionInterval), this.transitionInterval);
+        }
+    }
+
+    transitionProfile(currentInterval) {
+        if (this.transitionInterval > 0 && currentInterval === this.transitionInterval) {
+            console.log('transitioning profile after');
+            let index;
+            if (this.profileNumber === this.defaultProfiles.length) {
+                index = 0;
+            } else {
+                index = this.profileNumber;
+            }
+            console.log(index);
+            this.changeProfile(index);
+        }
+    }
 }
 
 module.exports = { FlowVisualier };
@@ -27210,6 +27234,7 @@ function processResponse(response) {
 	var jsonObject = JSON.parse(response);
 	var currentSong = document.getElementById('current-song');
 	var albumYear = document.querySelector('#albumYear');
+	var delay;
 	if (jsonObject.status.code === 0) {
 		var artist = jsonObject.metadata.music[0].artists[0].name;
 		var title = jsonObject.metadata.music[0].title;
@@ -27225,17 +27250,15 @@ function processResponse(response) {
 		delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
 		setTimeout(() => fadeOut('#current-song'), delay)
 		if (autoMode) {
-			detectDelay = delay + 15000;
-			console.log('Setting delay to: ' + detectDelay)
-			setTimeout(() => updateSong(), detectDelay);
-		} else {
-
-		}
+			delay = delay + 15000;
+			console.log('Setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
+		} 
 	} else {
 		if (autoMode) {
-			var detectDelay = 60000
-			console.log('Not found, setting delay to: ' + detectDelay)
-			setTimeout(() => updateSong(), detectDelay);
+			delay = 60000
+			console.log('Not found, setting delay to: ' + delay)
+			setTimeout(() => updateSong(), delay);
 		}
 	}
 }
@@ -27256,6 +27279,11 @@ function toggleAuto() {
 	} else {
 		autoMode = false;
 	}
+}
+
+function toggleTransition() {
+	console.log(document.querySelector('#profileTransition').value)
+	flowVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
@@ -27321,7 +27349,7 @@ function resetProfile() {
 	flowVisualiser.resetProfile();
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, resetProfile, 
+module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
 	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
 
 },{"./acrCloud":187,"./barVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){

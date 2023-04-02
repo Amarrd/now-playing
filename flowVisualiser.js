@@ -1,7 +1,6 @@
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const profiles = require("./flowDefaultProfiles.json");
-//const Snackbar = require('node-snackbar');
 
 class FlowVisualier {
 
@@ -14,6 +13,8 @@ class FlowVisualier {
         this.profileNumber = 1;
         this.maxV = 0;
         this.ctx.lineWidth = 1;
+        this.transitionInterval = 0;
+        this.intervalFunction;
 
         this.loadProfiles();
         this.setupProfiles();
@@ -201,6 +202,29 @@ class FlowVisualier {
             this.options[option] = value;
         }
         this.updateColours();
+    }
+
+    toggleProfileTransition(value) {
+        clearInterval(this.intervalFunction);
+        this.transitionInterval = value * 1000;
+        if (this.transitionInterval > 0) {
+            console.log('triggering auto toggle: ' + this.transitionInterval);
+            this.intervalFunction = setInterval(() => this.transitionProfile(this.transitionInterval), this.transitionInterval);
+        }
+    }
+
+    transitionProfile(currentInterval) {
+        if (this.transitionInterval > 0 && currentInterval === this.transitionInterval) {
+            console.log('transitioning profile after');
+            let index;
+            if (this.profileNumber === this.defaultProfiles.length) {
+                index = 0;
+            } else {
+                index = this.profileNumber;
+            }
+            console.log(index);
+            this.changeProfile(index);
+        }
     }
 }
 
