@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const options = require('./acrConfig.json');
 
-const clearLocal = true;
+const clearLocal = false;
 
 function identify(data, cb) {
 
