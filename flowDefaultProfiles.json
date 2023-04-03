@@ -2,7 +2,7 @@
     "profiles": [
         {
             "hue": 10,
-            "hueShift": 4,
+            "hueShift": 20,
             "volume": 70,
             "curve": 10,
             "zoom": 7,
@@ -10,27 +10,23 @@
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "direction": "right",
-            "speed": 2,
-            "bassMode": false
+            "direction": "right"
         },
         {
             "hue": 40,
-            "hueShift": 2,
+            "hueShift": -160,
             "volume": 70,
             "curve": 30,
             "zoom": 10,
             "particles": 2000,
             "lineWidth": 1,
-            "xAdjustment": -2,
-            "yAdjustment": -2,
-            "direction": "left",
-            "speed": 2,
-            "bassMode": false
+            "xAdjustment": -4,
+            "yAdjustment": -4,
+            "direction": "left"
         },
         {
             "hue": 90,
-            "hueShift": 20,
+            "hueShift": 120,
             "volume": 50,
             "curve": 20,
             "zoom": 30,
@@ -38,27 +34,23 @@
             "lineWidth": 2,
             "xAdjustment": 1,
             "yAdjustment": 0,
-            "direction": "right",
-            "speed": 2,
-            "bassMode": false
+            "direction": "right"
         },
         {
             "hue": 180,
-            "hueShift": 10,
-            "volume": 30,
-            "curve": 5,
+            "hueShift": 40,
+            "volume": 50,
+            "curve": 10,
             "zoom": 10,
-            "particles": 500,
-            "lineWidth": 10,
+            "particles": 750,
+            "lineWidth": 5,
             "xAdjustment": 2,
             "yAdjustment": 0,
-            "direction": "down",
-            "speed": 2,
-            "bassMode": false
+            "direction": "down"
         },
         {
             "hue": 220,
-            "hueShift": 15,
+            "hueShift": 60,
             "volume": 70,
             "curve": 70,
             "zoom": 10,
@@ -66,13 +58,11 @@
             "lineWidth": 1,
             "xAdjustment": 0,
             "yAdjustment": 0,
-            "direction": "right",
-            "speed": 2,
-            "bassMode": false
+            "direction": "right"
         },
         {
             "hue": 300,
-            "hueShift": 10,
+            "hueShift": 60,
             "volume": 70,
             "curve": 4,
             "zoom": 20,
@@ -80,9 +70,7 @@
             "lineWidth": 3,
             "xAdjustment": -5,
             "yAdjustment": 0,
-            "direction": "up",
-            "speed": 2,
-            "bassMode": false
+            "direction": "up"
         }
     ]
 }

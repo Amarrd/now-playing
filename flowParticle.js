@@ -57,7 +57,7 @@ class FlowParticle {
                     break;
             }
 
-            let randomSpeed = Math.floor(Math.random() * this.effect.options.speed + 1);
+            let randomSpeed = Math.floor(Math.random() * 2 + 1);
             this.x += this.speedX * (volume * randomSpeed + 0.5)
             this.y += this.speedY * (volume * randomSpeed + 0.5)
 
@@ -79,7 +79,7 @@ class FlowParticle {
     reset(volume, options) {
         this.x = Math.floor(Math.random() * this.effect.width);
         this.y = Math.floor(Math.random() * this.effect.height);
-        this.hue = volume * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
+        this.hue = volume /4.5 * Number(this.effect.options.hueShift) + Number(this.effect.options.hue)
         this.colours = [`hsl( ${this.hue}, 100%, 30%, 0.9)`, `hsl( ${this.hue},100%,40%, 0.9)`, `hsl( ${this.hue},100%, 50%, 0.9)`];
         this.colour = this.colours[Math.floor(Math.random() * this.colours.length)]
         this.history = [{ x: this.x, y: this.y }];

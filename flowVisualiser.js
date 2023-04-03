@@ -42,17 +42,7 @@ class FlowVisualier {
     }
 
     getNormalisedVolume(microphone) {
-        if (this.options.bassMode) {
-            let samples = microphone.getSamples();
-            let sum = 0;
-            for (let i = 0; i < samples.length / 10; i++) {
-                sum += samples[i];
-            }
-            var volume = sum / (samples.length / 10);
-        }
-        else {
-            var volume = microphone.getVolume();
-        }
+        var volume = microphone.getVolume();
         let minV = 0;
         if (this.maxV < volume) {
             this.maxV = volume;
@@ -63,7 +53,6 @@ class FlowVisualier {
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
         let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        //  console.log('vol:%f, max:%f, adj:%f, adjMax: %f, norm:%f', volume, maxV, adjVolume, adjMaxV, normVolume);
         return normVolume
     }
 
@@ -91,7 +80,7 @@ class FlowVisualier {
     }
 
     updateColours() {
-        let hue = Number(this.options.hue) + Number(this.options.hueShift);
+        let hue = Number(this.options.hue) + Number(this.options.hueShift)/2;
         let controlColour = `hsl( ${hue}, 100%, 80%)`;
         let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
@@ -121,7 +110,7 @@ class FlowVisualier {
         profileElements.style.opacity = 1;
         for (let i = 0; i < profiles.profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue)+ Number(profiles.profiles[i].hueShift)}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -158,6 +147,7 @@ class FlowVisualier {
         let particleDiff = previousParticleCount - this.options.particles;
         this.effect.clearParticles(particleDiff);
         this.effect.updateEffect(true, 0, this.options, particleDiff)
+        this.toggleProfileTransition(document.querySelector('#profileTransition').value)
     }
 
     saveProfile() {
@@ -170,7 +160,7 @@ class FlowVisualier {
         snackbar.innerHTML = 'Profile ' + this.profileNumber + ' saved'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
-        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+        setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     resetProfile() {
@@ -184,7 +174,7 @@ class FlowVisualier {
         snackbar.innerHTML = 'Profile ' + this.profileNumber + ' reset'
         snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
         snackbar.className = "show";
-        setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+        setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
     }
 
     changeOption(option, value) {

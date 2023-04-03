@@ -1,5 +1,9 @@
 const Microphone = require("./microphone");
 
+
+/**
+ * Not currently in use
+ */
 class Bar {
     constructor(x , y, width, height, colour) {
     this.x = x
