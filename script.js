@@ -9,6 +9,7 @@ const visualiserOnly = false;
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var flowVisualiser;
+var identifyFunction;
 
 function startVisualiser() {
 	if (visualiserOnly) {
@@ -37,6 +38,7 @@ function updateSong() {
 		return;
 	}
 
+	clearTimeout(identifyFunction);
 	fadeIn('#mic-icon');
 	console.log('Request access to microphone');
 	audioPromise.then(stream => {
@@ -109,20 +111,20 @@ function processResponse(response) {
 		albumYear.style.fontStyle = 'italic';
 		albumYear.style.fontSize = '18px';
 		currentSong.appendChild(albumYear);
-		currentSong.style.transition = 'opacity 0.5s linear 0s';
-		currentSong.style.opacity = 1;
+		fadeIn('#current-song')
 		delay = jsonObject.metadata.music[0].duration_ms - jsonObject.metadata.music[0].play_offset_ms;
 		setTimeout(() => fadeOut('#current-song'), delay)
 		if (autoMode) {
 			delay = delay + 15000;
-			console.log('Setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			console.log('Setting detection delay to ' + delay + 'ms');
+			identifyFunction = setTimeout(() => updateSong(), delay);
 		} 
 	} else {
 		if (autoMode) {
 			delay = 60000
-			console.log('Not found, setting delay to: ' + delay)
-			setTimeout(() => updateSong(), delay);
+			fadeOut('#current-song')
+			console.log('Not found, setting detection delay to ' + delay + 'ms');
+			identifyFunction = setTimeout(() => updateSong(), delay);
 		}
 	}
 }
