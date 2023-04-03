@@ -26550,7 +26550,7 @@ module.exports={
             "hue": 180,
             "hueShift": 40,
             "volume": 50,
-            "curve": 10,
+            "curve": 5,
             "zoom": 10,
             "particles": 750,
             "lineWidth": 5,
