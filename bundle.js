@@ -26830,12 +26830,12 @@ class FlowVisualier {
                 profiles.profiles[i] = JSON.parse(savedProfile);
             }
         }
-        
+
         let profileContainer = document.querySelector('#profiles');
         profileContainer.style.opacity = 1;
         for (let i = 0; i < profiles.profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -26860,7 +26860,7 @@ class FlowVisualier {
         profileContainer.appendChild(saveProfile);
         profileContainer.appendChild(resetProfile);
 
-        let height = (window.innerHeight - profileContainer.offsetHeight)/2;
+        let height = (window.innerHeight - profileContainer.offsetHeight) / 2;
         profileContainer.style.top = height + 'px'
 
     }
@@ -26875,17 +26875,17 @@ class FlowVisualier {
         this.createNumberInput('line width', 'lineWidth', 1, 10)
         this.createNumberInput('horizontal scroll', 'xAdjustment', -10, 10)
         this.createNumberInput('vertical scroll', 'yAdjustment', -10, 10)
-        
+
         let directionId = 'direction';
         let labelElement = document.createElement('label');
         labelElement.innerHTML = directionId;
         labelElement.htmlFor = directionId;
-        
+
         let inputElement = document.createElement('select');
         inputElement.id = directionId;
-        inputElement.setAttribute('onchange', 'myBundle.changeOption('+directionId+')')
-        
-        let directions = ['up','down','left','right'];
+        inputElement.setAttribute('onchange', 'myBundle.changeOption(' + directionId + ')')
+
+        let directions = ['up', 'down', 'left', 'right'];
         directions.forEach(direction => {
             let option = document.createElement('option');
             option.id = direction;
@@ -26893,14 +26893,14 @@ class FlowVisualier {
             option.innerHTML = direction;
             inputElement.appendChild(option);
         })
-        
+
         let controls = document.querySelector('#controls');
         labelElement.appendChild(inputElement);
         controls.appendChild(labelElement);
 
         let container = document.querySelector('#controls-container');
         container.style.opacity = 1;
-        let height = (window.innerHeight - container.offsetHeight)/2;
+        let height = (window.innerHeight - container.offsetHeight) / 2;
         container.style.top = height + 'px';
     }
 
@@ -26917,7 +26917,7 @@ class FlowVisualier {
         inputElement.setAttribute('name', id);
         inputElement.setAttribute('min', min)
         inputElement.setAttribute('max', max)
-        inputElement.setAttribute('onchange', 'myBundle.changeOption('+id+')')
+        inputElement.setAttribute('onchange', 'myBundle.changeOption(' + id + ')')
 
         labelElement.appendChild(inputElement);
         controls.appendChild(labelElement);
@@ -26938,7 +26938,7 @@ class FlowVisualier {
     }
 
     updateColours() {
-        let hue = Number(this.options.hue) + Number(this.options.hueShift)/2;
+        let hue = Number(this.options.hue) + Number(this.options.hueShift) / 2;
         let controlColour = `hsl( ${hue}, 100%, 80%)`;
         let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
@@ -26982,13 +26982,8 @@ class FlowVisualier {
         let itemName = 'profile_' + this.profileNumber;
         let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
         localStorage.setItem(itemName, profile);
-        console.log('Saved profile ' + this.profileNumber)
-
-        var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' saved'
-        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
-        snackbar.className = "show";
-        setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+        console.log('Saved profile ' + this.profileNumber);
+        this.createSnackBar('saved');
     }
 
     resetProfile() {
@@ -26996,13 +26991,17 @@ class FlowVisualier {
         this.changeProfile(this.profileNumber - 1);
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
-        console.log('Reset profile ' + this.profileNumber)
+        console.log('Reset profile ' + this.profileNumber);
+        this.createSnackBar('reset');
+    }
 
-        var snackbar = document.getElementById("snackbar");
-        snackbar.innerHTML = 'Profile ' + this.profileNumber + ' reset'
-        snackbar.style.color = `hsl( ${this.options.hue}, 100%, 80%)`
-        snackbar.className = "show";
-        setTimeout(function () { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+    createSnackBar(action) {
+        let snackbar = document.querySelector('#snackbar');
+        let hue = Number(this.options.hue) + Number(this.options.hueShift) / 2;
+        snackbar.innerHTML = 'profile ' + this.profileNumber + ' ' + action;
+        snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+        snackbar.className = 'show';
+        setTimeout(function () { snackbar.className = snackbar.className.replace('show', ''); }, 3000);
     }
 
     changeOption(option, value) {
