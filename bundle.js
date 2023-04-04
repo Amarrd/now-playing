@@ -27001,7 +27001,7 @@ class FlowVisualier {
         snackbar.innerHTML = 'profile ' + this.profileNumber + ' ' + action;
         snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
         snackbar.className = 'show';
-        setTimeout(function () { snackbar.className = snackbar.className.replace('show', ''); }, 3000);
+        setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
     }
 
     changeOption(option, value) {
