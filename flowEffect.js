@@ -24,6 +24,14 @@ class FlowEffect {
             canvas.height = newHeight;
             this.width = canvas.width;
             this.height = canvas.height;
+
+            let containers = ['#profiles', '#controls-container'];
+            containers.forEach(id => {
+                let container = document.querySelector(id);
+                let height = (window.innerHeight - container.offsetHeight)/2;
+                container.style.top = height + 'px'
+            })
+            
             this.updateEffect(false, 0, this.options);
         })
     }

@@ -26611,6 +26611,14 @@ class FlowEffect {
             canvas.height = newHeight;
             this.width = canvas.width;
             this.height = canvas.height;
+
+            let containers = ['#profiles', '#controls-container'];
+            containers.forEach(id => {
+                let container = document.querySelector(id);
+                let height = (window.innerHeight - container.offsetHeight)/2;
+                container.style.top = height + 'px'
+            })
+            
             this.updateEffect(false, 0, this.options);
         })
     }
@@ -26774,18 +26782,17 @@ class FlowVisualier {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-
-        this.loadProfiles();
-        this.setupProfiles();
-        document.querySelector('#controls').style.opacity = 1;
         this.options = profiles.profiles[0];
-        this.setOptions(this.options);
-        this.updateColours();
-
         this.microphone = new Microphone.Microphone(audioPromise);
         this.effect = new Effect.FlowEffect(this.canvas, this.options);
+
+        this.setupProfiles();
+        this.setupControls();
+        this.setOptions(this.options);
+        this.updateColours();
         this.effect.render(this.ctx, 5);
         this.animate();
+        this.toggleProfileTransition(document.querySelector('#profileTransition').value);
     }
 
     animate() {
@@ -26799,6 +26806,7 @@ class FlowVisualier {
         }
         requestAnimationFrame(this.animate.bind(this));
     }
+
 
     getNormalisedVolume(microphone) {
         var volume = microphone.getVolume();
@@ -26815,13 +26823,104 @@ class FlowVisualier {
         return normVolume
     }
 
-    loadProfiles() {
+    setupProfiles() {
         for (let i = 0; i < profiles.profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
             if (savedProfile) {
                 profiles.profiles[i] = JSON.parse(savedProfile);
             }
         }
+        
+        let profileContainer = document.querySelector('#profiles');
+        profileContainer.style.opacity = 1;
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            let button = document.createElement('button');
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
+            let profileNumber = i + 1;
+            button.id = 'profile-' + profileNumber + '-button';
+            button.textContent = profileNumber;
+            button.style.backgroundColor = profileColour;
+            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+            profileContainer.appendChild(button);
+        }
+
+        let saveProfile = document.createElement('button');
+        saveProfile.id = 'saveProfile';
+        saveProfile.className = 'fa fa-save';
+        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
+        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        let resetProfile = document.createElement('button');
+        resetProfile.id = 'resetProfile';
+        resetProfile.className = 'fa fa-undo';
+        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
+        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        profileContainer.appendChild(document.createElement('br'));
+        profileContainer.appendChild(saveProfile);
+        profileContainer.appendChild(resetProfile);
+
+        let height = (window.innerHeight - profileContainer.offsetHeight)/2;
+        profileContainer.style.top = height + 'px'
+
+    }
+
+    setupControls() {
+        this.createNumberInput('hue', 'hue', 1, 360)
+        this.createNumberInput('hue shift', 'hueShift', 1, 360)
+        this.createNumberInput('volume', 'volume', 1, 200)
+        this.createNumberInput('curve', 'curve', 0, 100)
+        this.createNumberInput('zoom', 'zoom', 0, 100)
+        this.createNumberInput('particles', 'particles', 1, 3000)
+        this.createNumberInput('line width', 'lineWidth', 1, 10)
+        this.createNumberInput('horizontal scroll', 'xAdjustment', -10, 10)
+        this.createNumberInput('vertical scroll', 'yAdjustment', -10, 10)
+        
+        let directionId = 'direction';
+        let labelElement = document.createElement('label');
+        labelElement.innerHTML = directionId;
+        labelElement.htmlFor = directionId;
+        
+        let inputElement = document.createElement('select');
+        inputElement.id = directionId;
+        inputElement.setAttribute('onchange', 'myBundle.changeOption('+directionId+')')
+        
+        let directions = ['up','down','left','right'];
+        directions.forEach(direction => {
+            let option = document.createElement('option');
+            option.id = direction;
+            option.value = direction;
+            option.innerHTML = direction;
+            inputElement.appendChild(option);
+        })
+        
+        let controls = document.querySelector('#controls');
+        labelElement.appendChild(inputElement);
+        controls.appendChild(labelElement);
+
+        let container = document.querySelector('#controls-container');
+        container.style.opacity = 1;
+        let height = (window.innerHeight - container.offsetHeight)/2;
+        container.style.top = height + 'px';
+    }
+
+    createNumberInput(label, id, min, max) {
+        let controls = document.querySelector('#controls');
+
+        let labelElement = document.createElement('label');
+        labelElement.innerHTML = label;
+        labelElement.htmlFor = id;
+
+        let inputElement = document.createElement('input');
+        inputElement.setAttribute('type', 'number');
+        inputElement.id = id;
+        inputElement.setAttribute('name', id);
+        inputElement.setAttribute('min', min)
+        inputElement.setAttribute('max', max)
+        inputElement.setAttribute('onchange', 'myBundle.changeOption('+id+')')
+
+        labelElement.appendChild(inputElement);
+        controls.appendChild(labelElement);
     }
 
     setOptions(options) {
@@ -26851,49 +26950,19 @@ class FlowVisualier {
         document.querySelector('#resetProfile').style.backgroundColor = profileColour;
         document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;
 
-        let controls = document.querySelector('#controls');
-        controls.style.color = controlColour;
-        controls.childNodes.forEach(element => {
-            if (element.nodeName === 'LABEL') {
-                element.childNodes.forEach(input => {
-                    if (input.nodeName === 'INPUT') input.style.color = controlColour;
-                })
-            }
+        let controlsToUpdate = ['#controls', '#global-controls']
+
+        controlsToUpdate.forEach(controls => {
+            let controlElement = document.querySelector(controls);
+            controlElement.style.color = controlColour;
+            controlElement.childNodes.forEach(element => {
+                if (element.nodeName === 'LABEL') {
+                    element.childNodes.forEach(input => {
+                        if (input.nodeName === 'INPUT') input.style.color = controlColour;
+                    })
+                }
+            })
         })
-
-
-    }
-
-    setupProfiles() {
-        let profileElements = document.querySelector('#profiles');
-        profileElements.style.opacity = 1;
-        for (let i = 0; i < profiles.profiles.length; i++) {
-            let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
-            let profileNumber = i + 1;
-            button.id = 'profile-' + profileNumber + '-button';
-            button.textContent = profileNumber;
-            button.style.backgroundColor = profileColour;
-            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
-            profileElements.appendChild(button);
-        }
-
-        let saveProfile = document.createElement('button');
-        saveProfile.id = 'saveProfile';
-        saveProfile.className = 'fa fa-save';
-        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
-        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
-
-        let resetProfile = document.createElement('button');
-        resetProfile.id = 'resetProfile';
-        resetProfile.className = 'fa fa-undo';
-        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
-        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
-
-        profileElements.appendChild(document.createElement('br'));
-        profileElements.appendChild(saveProfile);
-        profileElements.appendChild(resetProfile);
-
     }
 
     changeProfile(index) {
@@ -27017,22 +27086,16 @@ const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
 
-const testResponse = false;'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
-const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser;
+var currentVisualiser;
 var identifyFunction;
 
 function startVisualiser() {
-	if (visualiserOnly) {
-		document.querySelector('#updateButton').disabled = true;
-		document.querySelector('#autoToggleLabel').disabled = true;
-	}
-	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
-	toggleTransition();
+	currentVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
@@ -27163,18 +27226,18 @@ function toggleAuto() {
 }
 
 function toggleTransition() {
-	flowVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
+	currentVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
-	fade('#controls');
+	fade('#controls-container');
 	fade('#profiles');
 	fade('#credentialsPrompt')
 }
 
 document.onkeyup = function (e) {
 	if (e.key === "c") {
-		fade('#controls');
+		fade('#controls-container');
 		fade('#profiles');
 		fade('#credentialsPrompt')
 	}
@@ -27204,11 +27267,11 @@ function fade(elementId) {
 }
 
 function changeProfile(value) {
-	flowVisualiser.changeProfile(value - 1);
+	currentVisualiser.changeProfile(value - 1);
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
+	currentVisualiser.changeOption(option.id, option.value)
 }
 
 function submitCredentials() {
@@ -27220,11 +27283,11 @@ function cancelCredentials() {
 }
 
 function saveProfile() {
-	flowVisualiser.saveProfile();
+	currentVisualiser.saveProfile();
 }
 
 function resetProfile() {
-	flowVisualiser.resetProfile();
+	currentVisualiser.resetProfile();
 }
 
 module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
