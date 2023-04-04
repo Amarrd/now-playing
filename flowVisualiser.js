@@ -25,6 +25,7 @@ class FlowVisualier {
         this.updateColours();
         this.effect.render(this.ctx, 5);
         this.animate();
+        this.toggleProfileTransition(document.querySelector('#profileTransition').value);
     }
 
     animate() {
