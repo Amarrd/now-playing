@@ -152,14 +152,14 @@ function toggleTransition() {
 }
 
 function canvasClicked() {
-	fade('#controls');
+	fade('#controls-container');
 	fade('#profiles');
 	fade('#credentialsPrompt')
 }
 
-document.onkeyup = function (e) {
+document.onkeyup = function (e) {c
 	if (e.key === "c") {
-		fade('#controls');
+		fade('#controls-container');
 		fade('#profiles');
 		fade('#credentialsPrompt')
 	}

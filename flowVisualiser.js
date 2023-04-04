@@ -27,6 +27,34 @@ class FlowVisualier {
         this.animate();
     }
 
+    animate() {
+        if (this.microphone.initialised) {
+            this.ctx.lineCap = "round";
+            this.ctx.lineJoin = "round";
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            let normVolume = this.getNormalisedVolume(this.microphone);
+            this.effect.updateEffect(false, normVolume, this.options);
+            this.effect.render(this.ctx, normVolume);
+        }
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
+
+    getNormalisedVolume(microphone) {
+        var volume = microphone.getVolume();
+        let minV = 0;
+        if (this.maxV < volume) {
+            this.maxV = volume;
+        }
+        if (volume < this.maxV * 0.2) {
+            this.maxV = volume;
+        }
+        let adjVolume = Math.floor(volume * this.options.volume) / 10;
+        let adjMaxV = this.maxV * 1.2
+        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
+        return normVolume
+    }
+
     setupProfiles() {
         for (let i = 0; i < profiles.profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
@@ -35,8 +63,8 @@ class FlowVisualier {
             }
         }
         
-        let profileElements = document.querySelector('#profiles');
-        profileElements.style.opacity = 1;
+        let profileContainer = document.querySelector('#profiles');
+        profileContainer.style.opacity = 1;
         for (let i = 0; i < profiles.profiles.length; i++) {
             let button = document.createElement('button');
             let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
@@ -45,7 +73,7 @@ class FlowVisualier {
             button.textContent = profileNumber;
             button.style.backgroundColor = profileColour;
             button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
-            profileElements.appendChild(button);
+            profileContainer.appendChild(button);
         }
 
         let saveProfile = document.createElement('button');
@@ -60,22 +88,13 @@ class FlowVisualier {
         resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
         resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
 
-        profileElements.appendChild(document.createElement('br'));
-        profileElements.appendChild(saveProfile);
-        profileElements.appendChild(resetProfile);
+        profileContainer.appendChild(document.createElement('br'));
+        profileContainer.appendChild(saveProfile);
+        profileContainer.appendChild(resetProfile);
 
-    }
+        let height = (window.innerHeight - profileContainer.offsetHeight)/2;
+        profileContainer.style.top = height + 'px'
 
-    animate() {
-        if (this.microphone.initialised) {
-            this.ctx.lineCap = "round";
-            this.ctx.lineJoin = "round";
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            let normVolume = this.getNormalisedVolume(this.microphone);
-            this.effect.updateEffect(false, normVolume, this.options);
-            this.effect.render(this.ctx, normVolume);
-        }
-        requestAnimationFrame(this.animate.bind(this));
     }
 
     setupControls() {
@@ -111,7 +130,10 @@ class FlowVisualier {
         labelElement.appendChild(inputElement);
         controls.appendChild(labelElement);
 
-        controls.style.opacity = 1;
+        let container = document.querySelector('#controls-container');
+        container.style.opacity = 1;
+        let height = (window.innerHeight - container.offsetHeight)/2;
+        container.style.top = height + 'px';
     }
 
     createNumberInput(label, id, min, max) {
@@ -160,32 +182,19 @@ class FlowVisualier {
         document.querySelector('#resetProfile').style.backgroundColor = profileColour;
         document.querySelector('#profile-' + this.profileNumber + '-button').style.backgroundColor = profileColour;
 
-        let controls = document.querySelector('#controls');
-        controls.style.color = controlColour;
-        controls.childNodes.forEach(element => {
-            if (element.nodeName === 'LABEL') {
-                element.childNodes.forEach(input => {
-                    if (input.nodeName === 'INPUT') input.style.color = controlColour;
-                })
-            }
+        let controlsToUpdate = ['#controls', '#global-controls']
+
+        controlsToUpdate.forEach(controls => {
+            let controlElement = document.querySelector(controls);
+            controlElement.style.color = controlColour;
+            controlElement.childNodes.forEach(element => {
+                if (element.nodeName === 'LABEL') {
+                    element.childNodes.forEach(input => {
+                        if (input.nodeName === 'INPUT') input.style.color = controlColour;
+                    })
+                }
+            })
         })
-
-
-    }
-
-    getNormalisedVolume(microphone) {
-        var volume = microphone.getVolume();
-        let minV = 0;
-        if (this.maxV < volume) {
-            this.maxV = volume;
-        }
-        if (volume < this.maxV * 0.2) {
-            this.maxV = volume;
-        }
-        let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMaxV = this.maxV * 1.2
-        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        return normVolume
     }
 
     changeProfile(index) {
