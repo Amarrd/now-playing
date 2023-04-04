@@ -26543,7 +26543,7 @@ module.exports={
             "particles": 1000,
             "lineWidth": 2,
             "xAdjustment": 1,
-            "yAdjustment": 0,
+            "yAdjustment": -2,
             "direction": "right"
         },
         {
