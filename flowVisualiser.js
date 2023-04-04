@@ -15,18 +15,55 @@ class FlowVisualier {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-
-        this.loadProfiles();
-        this.setupProfiles();
-        document.querySelector('#controls').style.opacity = 1;
         this.options = profiles.profiles[0];
-        this.setOptions(this.options);
-        this.updateColours();
-
         this.microphone = new Microphone.Microphone(audioPromise);
         this.effect = new Effect.FlowEffect(this.canvas, this.options);
+
+        this.setupProfiles();
+        this.setupControls();
+        this.setOptions(this.options);
+        this.updateColours();
         this.effect.render(this.ctx, 5);
         this.animate();
+    }
+
+    setupProfiles() {
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            const savedProfile = localStorage.getItem('profile_' + (i + 1));
+            if (savedProfile) {
+                profiles.profiles[i] = JSON.parse(savedProfile);
+            }
+        }
+        
+        let profileElements = document.querySelector('#profiles');
+        profileElements.style.opacity = 1;
+        for (let i = 0; i < profiles.profiles.length; i++) {
+            let button = document.createElement('button');
+            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
+            let profileNumber = i + 1;
+            button.id = 'profile-' + profileNumber + '-button';
+            button.textContent = profileNumber;
+            button.style.backgroundColor = profileColour;
+            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+            profileElements.appendChild(button);
+        }
+
+        let saveProfile = document.createElement('button');
+        saveProfile.id = 'saveProfile';
+        saveProfile.className = 'fa fa-save';
+        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
+        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        let resetProfile = document.createElement('button');
+        resetProfile.id = 'resetProfile';
+        resetProfile.className = 'fa fa-undo';
+        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
+        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+
+        profileElements.appendChild(document.createElement('br'));
+        profileElements.appendChild(saveProfile);
+        profileElements.appendChild(resetProfile);
+
     }
 
     animate() {
@@ -41,28 +78,59 @@ class FlowVisualier {
         requestAnimationFrame(this.animate.bind(this));
     }
 
-    getNormalisedVolume(microphone) {
-        var volume = microphone.getVolume();
-        let minV = 0;
-        if (this.maxV < volume) {
-            this.maxV = volume;
-        }
-        if (volume < this.maxV * 0.2) {
-            this.maxV = volume;
-        }
-        let adjVolume = Math.floor(volume * this.options.volume) / 10;
-        let adjMaxV = this.maxV * 1.2
-        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        return normVolume
+    setupControls() {
+        this.createNumberInput('hue', 'hue', 1, 360)
+        this.createNumberInput('hue shift', 'hueShift', 1, 360)
+        this.createNumberInput('volume', 'volume', 1, 200)
+        this.createNumberInput('curve', 'curve', 0, 100)
+        this.createNumberInput('zoom', 'zoom', 0, 100)
+        this.createNumberInput('particles', 'particles', 1, 3000)
+        this.createNumberInput('line width', 'lineWidth', 1, 10)
+        this.createNumberInput('horizontal scroll', 'xAdjustment', -10, 10)
+        this.createNumberInput('vertical scroll', 'yAdjustment', -10, 10)
+        
+        let directionId = 'direction';
+        let labelElement = document.createElement('label');
+        labelElement.innerHTML = directionId;
+        labelElement.htmlFor = directionId;
+        
+        let inputElement = document.createElement('select');
+        inputElement.id = directionId;
+        inputElement.setAttribute('onchange', 'myBundle.changeOption('+directionId+')')
+        
+        let directions = ['up','down','left','right'];
+        directions.forEach(direction => {
+            let option = document.createElement('option');
+            option.id = direction;
+            option.value = direction;
+            option.innerHTML = direction;
+            inputElement.appendChild(option);
+        })
+        
+        let controls = document.querySelector('#controls');
+        labelElement.appendChild(inputElement);
+        controls.appendChild(labelElement);
+
+        controls.style.opacity = 1;
     }
 
-    loadProfiles() {
-        for (let i = 0; i < profiles.profiles.length; i++) {
-            const savedProfile = localStorage.getItem('profile_' + (i + 1));
-            if (savedProfile) {
-                profiles.profiles[i] = JSON.parse(savedProfile);
-            }
-        }
+    createNumberInput(label, id, min, max) {
+        let controls = document.querySelector('#controls');
+
+        let labelElement = document.createElement('label');
+        labelElement.innerHTML = label;
+        labelElement.htmlFor = id;
+
+        let inputElement = document.createElement('input');
+        inputElement.setAttribute('type', 'number');
+        inputElement.id = id;
+        inputElement.setAttribute('name', id);
+        inputElement.setAttribute('min', min)
+        inputElement.setAttribute('max', max)
+        inputElement.setAttribute('onchange', 'myBundle.changeOption('+id+')')
+
+        labelElement.appendChild(inputElement);
+        controls.appendChild(labelElement);
     }
 
     setOptions(options) {
@@ -105,36 +173,19 @@ class FlowVisualier {
 
     }
 
-    setupProfiles() {
-        let profileElements = document.querySelector('#profiles');
-        profileElements.style.opacity = 1;
-        for (let i = 0; i < profiles.profiles.length; i++) {
-            let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift)/2}, 100%, 30%, 0.7)`;
-            let profileNumber = i + 1;
-            button.id = 'profile-' + profileNumber + '-button';
-            button.textContent = profileNumber;
-            button.style.backgroundColor = profileColour;
-            button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
-            profileElements.appendChild(button);
+    getNormalisedVolume(microphone) {
+        var volume = microphone.getVolume();
+        let minV = 0;
+        if (this.maxV < volume) {
+            this.maxV = volume;
         }
-
-        let saveProfile = document.createElement('button');
-        saveProfile.id = 'saveProfile';
-        saveProfile.className = 'fa fa-save';
-        saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
-        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
-
-        let resetProfile = document.createElement('button');
-        resetProfile.id = 'resetProfile';
-        resetProfile.className = 'fa fa-undo';
-        resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
-        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
-
-        profileElements.appendChild(document.createElement('br'));
-        profileElements.appendChild(saveProfile);
-        profileElements.appendChild(resetProfile);
-
+        if (volume < this.maxV * 0.2) {
+            this.maxV = volume;
+        }
+        let adjVolume = Math.floor(volume * this.options.volume) / 10;
+        let adjMaxV = this.maxV * 1.2
+        let normVolume = (adjVolume - minV) / (adjMaxV - minV);
+        return normVolume
     }
 
     changeProfile(index) {

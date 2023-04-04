@@ -8,7 +8,7 @@ const visualiserOnly = false;
 
 var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
-var flowVisualiser;
+var currentVisualiser;
 var identifyFunction;
 
 function startVisualiser() {
@@ -16,7 +16,7 @@ function startVisualiser() {
 		document.querySelector('#updateButton').disabled = true;
 		document.querySelector('#autoToggleLabel').disabled = true;
 	}
-	flowVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
+	currentVisualiser = new FlowVisualiser.FlowVisualier(audioPromise);
 	toggleTransition();
 
 	if (acrCloud.credentialsRequired()) {
@@ -148,7 +148,7 @@ function toggleAuto() {
 }
 
 function toggleTransition() {
-	flowVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
+	currentVisualiser.toggleProfileTransition(document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
@@ -189,11 +189,11 @@ function fade(elementId) {
 }
 
 function changeProfile(value) {
-	flowVisualiser.changeProfile(value - 1);
+	currentVisualiser.changeProfile(value - 1);
 }
 
 function changeOption(option) {
-	flowVisualiser.changeOption(option, document.querySelector('#' + option).value)
+	currentVisualiser.changeOption(option.id, option.value)
 }
 
 function submitCredentials() {
@@ -205,11 +205,11 @@ function cancelCredentials() {
 }
 
 function saveProfile() {
-	flowVisualiser.saveProfile();
+	currentVisualiser.saveProfile();
 }
 
 function resetProfile() {
-	flowVisualiser.resetProfile();
+	currentVisualiser.resetProfile();
 }
 
 module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
