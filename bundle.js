@@ -26511,7 +26511,7 @@ module.exports={
 const Microphone = require("./microphone");
 const p5 = require('p5');
 
-class CirclesVisualiser {
+class CircleVisualiser {
 
     constructor(audioPromise) {
         this.microphone = new Microphone.Microphone(audioPromise);
@@ -26571,84 +26571,82 @@ class CirclesVisualiser {
     }
 }
 
-module.exports = { CirclesVisualiser };
+module.exports = { CircleVisualiser: CircleVisualiser };
 },{"./microphone":194,"p5":235}],190:[function(require,module,exports){
-module.exports={
-    "profiles": [
-        {
-            "hue": 10,
-            "hueShift": 20,
-            "volume": 70,
-            "curve": 10,
-            "zoom": 7,
-            "particles": 2000,
-            "lineWidth": 1,
-            "xAdjustment": 0,
-            "yAdjustment": 0,
-            "direction": "right"
-        },
-        {
-            "hue": 40,
-            "hueShift": -160,
-            "volume": 70,
-            "curve": 30,
-            "zoom": 10,
-            "particles": 2000,
-            "lineWidth": 1,
-            "xAdjustment": -4,
-            "yAdjustment": -4,
-            "direction": "left"
-        },
-        {
-            "hue": 90,
-            "hueShift": 120,
-            "volume": 50,
-            "curve": 20,
-            "zoom": 30,
-            "particles": 1000,
-            "lineWidth": 2,
-            "xAdjustment": 1,
-            "yAdjustment": -2,
-            "direction": "right"
-        },
-        {
-            "hue": 180,
-            "hueShift": 40,
-            "volume": 50,
-            "curve": 5,
-            "zoom": 10,
-            "particles": 750,
-            "lineWidth": 5,
-            "xAdjustment": 2,
-            "yAdjustment": 0,
-            "direction": "down"
-        },
-        {
-            "hue": 220,
-            "hueShift": 60,
-            "volume": 70,
-            "curve": 70,
-            "zoom": 10,
-            "particles": 2000,
-            "lineWidth": 1,
-            "xAdjustment": 0,
-            "yAdjustment": 0,
-            "direction": "right"
-        },
-        {
-            "hue": 300,
-            "hueShift": 60,
-            "volume": 70,
-            "curve": 4,
-            "zoom": 20,
-            "particles": 750,
-            "lineWidth": 3,
-            "xAdjustment": -5,
-            "yAdjustment": 0,
-            "direction": "up"
-        }
-    ]
-}
+module.exports=[
+    {
+        "hue": 10,
+        "hueShift": 20,
+        "volume": 70,
+        "curve": 10,
+        "zoom": 7,
+        "particles": 2000,
+        "lineWidth": 1,
+        "xAdjustment": 0,
+        "yAdjustment": 0,
+        "direction": "right"
+    },
+    {
+        "hue": 40,
+        "hueShift": -160,
+        "volume": 70,
+        "curve": 30,
+        "zoom": 10,
+        "particles": 2000,
+        "lineWidth": 1,
+        "xAdjustment": -4,
+        "yAdjustment": -4,
+        "direction": "left"
+    },
+    {
+        "hue": 90,
+        "hueShift": 120,
+        "volume": 50,
+        "curve": 20,
+        "zoom": 30,
+        "particles": 1000,
+        "lineWidth": 2,
+        "xAdjustment": 1,
+        "yAdjustment": -2,
+        "direction": "right"
+    },
+    {
+        "hue": 180,
+        "hueShift": 40,
+        "volume": 50,
+        "curve": 5,
+        "zoom": 10,
+        "particles": 750,
+        "lineWidth": 5,
+        "xAdjustment": 2,
+        "yAdjustment": 0,
+        "direction": "down"
+    },
+    {
+        "hue": 220,
+        "hueShift": 60,
+        "volume": 70,
+        "curve": 70,
+        "zoom": 10,
+        "particles": 2000,
+        "lineWidth": 1,
+        "xAdjustment": 0,
+        "yAdjustment": 0,
+        "direction": "right"
+    },
+    {
+        "hue": 300,
+        "hueShift": 60,
+        "volume": 70,
+        "curve": 4,
+        "zoom": 20,
+        "particles": 750,
+        "lineWidth": 3,
+        "xAdjustment": -5,
+        "yAdjustment": 0,
+        "direction": "up"
+    }
+]
 },{}],191:[function(require,module,exports){
 const Particle = require('./flowParticle')
 
@@ -26837,7 +26835,7 @@ const profiles = require("./flowDefaultProfiles.json");
 class FlowVisualier {
 
     constructor(audioPromise) {
-        this.defaultProfiles = JSON.parse(JSON.stringify(profiles.profiles));
+        this.defaultProfiles = JSON.parse(JSON.stringify(profiles));
         this.canvas = document.querySelector('#myCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
@@ -26847,7 +26845,7 @@ class FlowVisualier {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-        this.options = profiles.profiles[0];
+        this.options = profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
         this.effect = new Effect.FlowEffect(this.canvas, this.options);
 
@@ -26889,18 +26887,18 @@ class FlowVisualier {
     }
 
     setupProfiles() {
-        for (let i = 0; i < profiles.profiles.length; i++) {
+        for (let i = 0; i < profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
             if (savedProfile) {
-                profiles.profiles[i] = JSON.parse(savedProfile);
+                profiles[i] = JSON.parse(savedProfile);
             }
         }
 
         let profileContainer = document.querySelector('#profiles');
         profileContainer.style.opacity = 1;
-        for (let i = 0; i < profiles.profiles.length; i++) {
+        for (let i = 0; i < profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles[i].hue) + Number(profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -26913,13 +26911,13 @@ class FlowVisualier {
         saveProfile.id = 'saveProfile';
         saveProfile.className = 'fa fa-save';
         saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
-        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+        saveProfile.style.backgroundColor = `hsl( ${profiles[0].hue}, 100%, 30%, 0.7)`;
 
         let resetProfile = document.createElement('button');
         resetProfile.id = 'resetProfile';
         resetProfile.className = 'fa fa-undo';
         resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
-        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+        resetProfile.style.backgroundColor = `hsl( ${profiles[0].hue}, 100%, 30%, 0.7)`;
 
         profileContainer.appendChild(document.createElement('br'));
         profileContainer.appendChild(saveProfile);
@@ -27032,7 +27030,7 @@ class FlowVisualier {
 
     changeProfile(index) {
         let previousParticleCount = this.options.particles;
-        this.options = profiles.profiles[index];
+        this.options = profiles[index];
         this.profileNumber = index + 1;
         console.log('changed to profile ' + this.profileNumber);
         this.setOptions(this.options)
@@ -27045,14 +27043,14 @@ class FlowVisualier {
 
     saveProfile() {
         let itemName = 'profile_' + this.profileNumber;
-        let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
+        let profile = JSON.stringify(profiles[this.profileNumber - 1]);
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber);
         this.createSnackBar('saved');
     }
 
     resetProfile() {
-        profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
+        profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
         this.changeProfile(this.profileNumber - 1);
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
@@ -27149,7 +27147,7 @@ module.exports = {Microphone}
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
-const CirclesVisualiser = require('./circlesVisualiser')
+const CircleVisualiser = require('./circleVisualiser')
 
 const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
@@ -27160,7 +27158,7 @@ var currentVisualiser;
 var identifyFunction;
 
 function startVisualiser() {
-	currentVisualiser = new CirclesVisualiser.CirclesVisualiser(audioPromise);
+	currentVisualiser = new CircleVisualiser.CircleVisualiser(audioPromise);
 
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
@@ -27358,7 +27356,7 @@ function resetProfile() {
 module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
 	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
 
-},{"./acrCloud":187,"./circlesVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
+},{"./acrCloud":187,"./circleVisualiser":189,"./flowVisualiser":193,"audio-encoder":198}],196:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;

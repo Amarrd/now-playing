@@ -1,7 +1,7 @@
 const Microphone = require("./microphone");
 const p5 = require('p5');
 
-class CirclesVisualiser {
+class CircleVisualiser {
 
     constructor(audioPromise) {
         this.microphone = new Microphone.Microphone(audioPromise);
@@ -61,4 +61,4 @@ class CirclesVisualiser {
     }
 }
 
-module.exports = { CirclesVisualiser };
+module.exports = { CircleVisualiser: CircleVisualiser };

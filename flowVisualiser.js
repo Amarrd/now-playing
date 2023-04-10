@@ -5,7 +5,7 @@ const profiles = require("./flowDefaultProfiles.json");
 class FlowVisualier {
 
     constructor(audioPromise) {
-        this.defaultProfiles = JSON.parse(JSON.stringify(profiles.profiles));
+        this.defaultProfiles = JSON.parse(JSON.stringify(profiles));
         this.canvas = document.querySelector('#myCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
@@ -15,7 +15,7 @@ class FlowVisualier {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-        this.options = profiles.profiles[0];
+        this.options = profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
         this.effect = new Effect.FlowEffect(this.canvas, this.options);
 
@@ -57,18 +57,18 @@ class FlowVisualier {
     }
 
     setupProfiles() {
-        for (let i = 0; i < profiles.profiles.length; i++) {
+        for (let i = 0; i < profiles.length; i++) {
             const savedProfile = localStorage.getItem('profile_' + (i + 1));
             if (savedProfile) {
-                profiles.profiles[i] = JSON.parse(savedProfile);
+                profiles[i] = JSON.parse(savedProfile);
             }
         }
 
         let profileContainer = document.querySelector('#profiles');
         profileContainer.style.opacity = 1;
-        for (let i = 0; i < profiles.profiles.length; i++) {
+        for (let i = 0; i < profiles.length; i++) {
             let button = document.createElement('button');
-            let profileColour = `hsl( ${Number(profiles.profiles[i].hue) + Number(profiles.profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
+            let profileColour = `hsl( ${Number(profiles[i].hue) + Number(profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
             let profileNumber = i + 1;
             button.id = 'profile-' + profileNumber + '-button';
             button.textContent = profileNumber;
@@ -81,13 +81,13 @@ class FlowVisualier {
         saveProfile.id = 'saveProfile';
         saveProfile.className = 'fa fa-save';
         saveProfile.setAttribute('onclick', 'myBundle.saveProfile()')
-        saveProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+        saveProfile.style.backgroundColor = `hsl( ${profiles[0].hue}, 100%, 30%, 0.7)`;
 
         let resetProfile = document.createElement('button');
         resetProfile.id = 'resetProfile';
         resetProfile.className = 'fa fa-undo';
         resetProfile.setAttribute('onclick', 'myBundle.resetProfile()')
-        resetProfile.style.backgroundColor = `hsl( ${profiles.profiles[0].hue}, 100%, 30%, 0.7)`;
+        resetProfile.style.backgroundColor = `hsl( ${profiles[0].hue}, 100%, 30%, 0.7)`;
 
         profileContainer.appendChild(document.createElement('br'));
         profileContainer.appendChild(saveProfile);
@@ -200,7 +200,7 @@ class FlowVisualier {
 
     changeProfile(index) {
         let previousParticleCount = this.options.particles;
-        this.options = profiles.profiles[index];
+        this.options = profiles[index];
         this.profileNumber = index + 1;
         console.log('changed to profile ' + this.profileNumber);
         this.setOptions(this.options)
@@ -213,14 +213,14 @@ class FlowVisualier {
 
     saveProfile() {
         let itemName = 'profile_' + this.profileNumber;
-        let profile = JSON.stringify(profiles.profiles[this.profileNumber - 1]);
+        let profile = JSON.stringify(profiles[this.profileNumber - 1]);
         localStorage.setItem(itemName, profile);
         console.log('Saved profile ' + this.profileNumber);
         this.createSnackBar('saved');
     }
 
     resetProfile() {
-        profiles.profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
+        profiles[this.profileNumber - 1] = JSON.parse(JSON.stringify(this.defaultProfiles[this.profileNumber - 1]));
         this.changeProfile(this.profileNumber - 1);
         let itemName = 'profile_' + this.profileNumber;
         localStorage.removeItem(itemName);
