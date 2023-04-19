@@ -27294,7 +27294,7 @@ class Microphone {
             // console.log(`array:${i}, perArray:${arrayLengths[i]}, min:${splitMin}, max:${splitMax}`)
             let subSamples = [];
             for (let j = splitMin; j < splitMax; j++) {
-                //    console.log(`j:${j}, sample:${samples[j]}`)
+                // console.log(`j:${j}, sample:${samples[j]}`)
                 subSamples.push(samples[j]);
             }
             let arrayNumber = i+1;
