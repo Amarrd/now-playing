@@ -26,29 +26,52 @@ class Microphone {
 
     getSampleSubArrays(arrayCount, elementModifier) {
         let samples = this.getSamples();
-       // console.log(samples);
-        let perArray = Math.floor(samples.length/arrayCount);
+        let arrayLengths = [];
         let sampleArrays = [];
+        let priorSplitMin = 0;
+        for (let i = 1; i <= arrayCount; i++) {
+            arrayLengths.push(i * elementModifier);
+        }
         for (let i = 0; i < arrayCount; i++) {
-            let splitMin = i * perArray;
-            let splitMax = splitMin + perArray;
-          //  console.log(`array:${i}, min:${splitMin}, max:${splitMax}`)
+            let splitMin = i === 0 ? 0 : priorSplitMin + arrayLengths[i-1]; 
+            let splitMax = splitMin + arrayLengths[i];
+            // console.log(`array:${i}, perArray:${arrayLengths[i]}, min:${splitMin}, max:${splitMax}`)
             let subSamples = [];
             for (let j = splitMin; j < splitMax; j++) {
-            //    console.log(`j:${j}, sample:${samples[j]}`)
+                // console.log(`j:${j}, sample:${samples[j]}`)
                 subSamples.push(samples[j]);
             }
             let arrayNumber = i+1;
-            let elementsPerArray = arrayNumber * ((arrayNumber+1)/2) * elementModifier + arrayNumber;
-            //console.log(`samplesBeforeReduction:`)
-            //console.log(subSamples);
-            sampleArrays.push(this.getReducedSamples(subSamples, elementsPerArray));
+            let elementsPerArray = arrayNumber * elementModifier; //arrayNumber * ((arrayNumber+1)/2) * elementModifier + arrayNumber;
+            // console.log(`samplesBeforeReduction:`)
+            // console.log(subSamples);
+            sampleArrays.push(this.getAdjustedSamples(subSamples, elementsPerArray));
+            priorSplitMin = splitMin;
         }
         return sampleArrays;
     }
 
-    getReducedSamples(samples, numberToSplit) {
-        if (numberToSplit > samples.length) numberToSplit = samples.length;
+    getAdjustedSamples(samples, targetArrayLength) {
+      //  console.log(`sample length:${samples.length}, targetLength:${targetArrayLength}`)
+        if (samples.length >= targetArrayLength) {
+            return this.reduceSamples(samples, targetArrayLength);
+        } else {
+            return this.interpolateSamples(samples, targetArrayLength); 
+        }
+    }
+
+    interpolateSamples(samples, targetArrayLength) {
+        let multiplyFactor = Math.round(targetArrayLength/samples.length);
+        let interpolatedSamples = [];
+        for (let i = 0; i < targetArrayLength; i++) {
+            let array = Array(multiplyFactor).fill(1 - (Math.abs(samples[i]) || 0))
+            interpolatedSamples.push(...array);
+        }
+
+        return interpolatedSamples;
+    }
+
+    reduceSamples(samples, numberToSplit) {
         let perSplit = Math.floor(samples.length/numberToSplit);
         let reducedSamples = [];
         for (let i = 0; i < numberToSplit; i++) {
