@@ -26612,15 +26612,15 @@ class CircleVisualiser {
 
     animate() {
         const sketch = (s) => {
-            let hue = 230;
+            let hue = 100;
             let dotModifier = 2;
-            let ringCount = 14;
+            let ringCount = 8;
             let directionModifier = 1;
             let ringDistance = 50
+            let totalDots = 0;
             let hueControl = s.createInput(hue, 'number');
             let dotCountControl = s.createInput(dotModifier, 'number');
             let ringCountControl = s.createInput(ringCount, 'number');
-            let symmetrical = false;
 
             s.setup = () => {
                 let canvas = s.createCanvas(window.innerWidth, window.innerHeight);
@@ -26649,8 +26649,8 @@ class CircleVisualiser {
                 document.querySelector('#controls').appendChild(ringCountLabel);
                 ringCountControl.parent('ringCountLabel');
                 ringCountControl.input(changeRingCount);
-
                 s.background(0)
+                recalcTotal();
             }
 
             s.draw = () => {
@@ -26658,14 +26658,14 @@ class CircleVisualiser {
                     return;
                 }
                 s.clear();
-                let samples = this.microphone.getSampleSubArrays(ringCount, dotModifier);
+                console.log(`totalDots:${totalDots}`)
+                let samples = this.microphone.getSamplesFor(totalDots);
                 let volume = s.map(this.microphone.getVolume(), 0, 0.5, 0, 2) + 0.3;
                 s.translate(window.innerWidth / 2, window.innerHeight / 2)
                 let currDot = 0;
                 for (let ringNumber = 1; ringNumber <= ringCount; ringNumber++) {
                     let dotsForRing = ringNumber * dotModifier;
                     let ringRadius = ringNumber * ringDistance;
-                    let samplesForRing = samples[ringNumber - 1]
                     for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
                         let noiseForCircle = s.noise(currDot + s.frameCount / 100);
                         let adjustedNoise = noiseForCircle * volume;
@@ -26674,12 +26674,12 @@ class CircleVisualiser {
                         let angle = (s.frameCount / (Math.max(angleIncrement, 0.001) * 1000)) * -directionModifier - s.TWO_PI / dotsForRing;
                         let xOne = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                         let yOne = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
-                        let dotSize = s.map(samplesForRing[angleIncrement], 0, 1, 10, 30 * ringNumber, true) * s.map(adjustedNoise, 0, 1, 1, 2, true);
+                        let dotSize = s.map(samples[currDot], 0, 1, 10, 30 * ringNumber, true) * s.map(adjustedNoise, 0, 1, 1, 2, true);
                         //s.map(s.noise(currDot + s.frameCount / 100), 0, 1, 10, 15);
                         s.circle(xOne, yOne, dotSize);
                         let maxHue = Number(hue) + 150;
                         // let colour = Math.round(s.map(s.noise(currDot + s.frameCount / 100), 0, 1, Number(hue), maxHue));
-                        let colour = Math.round(s.map(samplesForRing[angleIncrement], 0, 0.4, Number(hue), maxHue, true)); //* s.map(adjustedNoise, 0, 1, 0.75, 1.25));
+                        let colour = Math.round(s.map(samples[currDot], 0, 0.4, Number(hue), maxHue, true)); //* s.map(adjustedNoise, 0, 1, 0.75, 1.25));
                         //console.log(`sample:${samplesForRing[angleIncrement]}, colour:${colour}`)
                         if (colour > 360) {
                             colour = colour - 360;
@@ -26691,11 +26691,7 @@ class CircleVisualiser {
                     }
              //        console.log('ring:' + ringNumber + ',dotCount:' + currDot);
                 }
-             //     console.log(currDot);
-            }
-
-            let decay = (angleIncrement, ringNumber, adjustedNose) => {
-
+                //   console.log(`loopCount:${currDot}`);
             }
 
             s.windowResized = () => {
@@ -26708,10 +26704,19 @@ class CircleVisualiser {
 
             let changeDotCount = () => {
                 dotModifier = dotCountControl.value();
+                recalcTotal();
             }
 
             let changeRingCount = () => {
                 ringCount = ringCountControl.value();
+                recalcTotal();
+            }
+
+            let recalcTotal = () => {
+                totalDots = 0;
+                for (let i = 1; i <= ringCount; i++) {
+                    totalDots += i * dotModifier;
+                }
             }
 
 
@@ -27257,7 +27262,7 @@ module.exports = { FlowVisualier };
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
-        audioPromise.then(function(stream) {
+        audioPromise.then(function (stream) {
             this.audioContext = new AudioContext();
             this.microphone = this.audioContext.createMediaStreamSource(stream);
             this.analyser = this.audioContext.createAnalyser();
@@ -27273,96 +27278,55 @@ class Microphone {
         });
     }
 
-    getSamples() {
-        this.analyser.getByteFrequencyData(this.dataArray);
-        let conversion = this.analyser.frequencyBinCount / 2;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 1);
-        return normSamples;
-    }
-
-    getSampleSubArrays(arrayCount, elementModifier) {
-        let samples = this.getSamples();
-        let arrayLengths = [];
-        let sampleArrays = [];
-        let priorSplitMin = 0;
-        for (let i = 1; i <= arrayCount; i++) {
-            arrayLengths.push(i * elementModifier);
-        }
-        for (let i = 0; i < arrayCount; i++) {
-            let splitMin = i === 0 ? 0 : priorSplitMin + arrayLengths[i-1]; 
-            let splitMax = splitMin + arrayLengths[i];
-            // console.log(`array:${i}, perArray:${arrayLengths[i]}, min:${splitMin}, max:${splitMax}`)
-            let subSamples = [];
-            for (let j = splitMin; j < splitMax; j++) {
-                // console.log(`j:${j}, sample:${samples[j]}`)
-                subSamples.push(samples[j]);
-            }
-            let arrayNumber = i+1;
-            let elementsPerArray = arrayNumber * elementModifier; //arrayNumber * ((arrayNumber+1)/2) * elementModifier + arrayNumber;
-            // console.log(`samplesBeforeReduction:`)
-            // console.log(subSamples);
-            sampleArrays.push(this.getAdjustedSamples(subSamples, elementsPerArray));
-            priorSplitMin = splitMin;
-        }
-        return sampleArrays;
-    }
-
-    getAdjustedSamples(samples, targetArrayLength) {
-      //  console.log(`sample length:${samples.length}, targetLength:${targetArrayLength}`)
-        if (samples.length >= targetArrayLength) {
-            return this.reduceSamples(samples, targetArrayLength);
-        } else {
-            return this.interpolateSamples(samples, targetArrayLength); 
-        }
-    }
-
-    interpolateSamples(samples, targetArrayLength) {
-        let multiplyFactor = Math.round(targetArrayLength/samples.length);
-        let interpolatedSamples = [];
-        for (let i = 0; i < targetArrayLength; i++) {
-            let array = Array(multiplyFactor).fill(1 - (Math.abs(samples[i]) || 0))
-            interpolatedSamples.push(...array);
-        }
-
-        return interpolatedSamples;
-    }
-
-    reduceSamples(samples, numberToSplit) {
-        let perSplit = Math.floor(samples.length/numberToSplit);
-        let reducedSamples = [];
-        for (let i = 0; i < numberToSplit; i++) {
-            let splitMin = i * perSplit;
-            let splitMax = splitMin + perSplit;
-            let sum = 0;
-            for (let j = splitMin; j < splitMax; j++) {
-            //    console.log(samples[j])
-                sum += samples[j] * samples[j];
-            }
-            let result = 1-Math.sqrt(sum/perSplit);
-          //  console.log(`splitMin:${splitMin}, splitMax:${splitMax}, sum:${sum}, perSplit:${perSplit}, result:${result}`)
-            reducedSamples.push(result);
-        }
-     //   console.log(reducedSamples);
-        return reducedSamples;
-    }
-
     getVolume() {
         this.analyser.getByteTimeDomainData(this.dataArray);
-        let conversion = this.analyser.frequencyBinCount/4;
-        let normSamples = [...this.dataArray].map(e => e/conversion - 0.5);
+        let conversion = this.analyser.frequencyBinCount / 4;
+        let normSamples = [...this.dataArray].map(e => e / conversion - 0.5);
         let sum = 0;
-        for (let i = 0; i< normSamples.length; i++){
+        for (let i = 0; i < normSamples.length; i++) {
             sum += normSamples[i] * normSamples[i]
         }
         let volume = Math.sqrt(sum / normSamples.length);
         let volumeDiff = volume - this.lastVolume;
-        let smoothVolume = this.lastVolume + volumeDiff/2;
+        let smoothVolume = this.lastVolume + volumeDiff / 2;
         this.lastVolume = smoothVolume;
         return smoothVolume;
     }
+
+    getSamples() {
+        this.analyser.getByteFrequencyData(this.dataArray);
+        let conversion = this.analyser.frequencyBinCount / 2;
+        let normSamples = [...this.dataArray].map(e => 1 - Math.abs(e / conversion - 1));
+        return normSamples;
+    }
+
+    getSamplesFor(targetArrayLength) {
+        let normSamples = this.getSamples();
+        if (normSamples.length >= targetArrayLength) {
+            return normSamples;
+        } else {
+            return this.interpolateSamples(normSamples, targetArrayLength);
+        }
+    }
+
+    interpolateSamples(samples, targetArrayLength) {
+        let diff = targetArrayLength - samples.length;
+        let interpolatedSamples = [];
+        for (let i = 0; i < samples.length; i++) {
+            if (i < diff) {
+                let array = Array(2).fill(samples[i] || 0);
+                interpolatedSamples.push(...array);
+                array = [];
+            } else {
+                interpolatedSamples.push(samples[i] || 0);
+            }
+        }
+
+        return interpolatedSamples;
+    }
 }
 
-module.exports = {Microphone}
+module.exports = { Microphone }
 },{}],196:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
