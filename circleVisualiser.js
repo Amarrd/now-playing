@@ -119,9 +119,9 @@ class Visualiser {
                     //  console.log(`volume:${volume}, noiseImp: ${noiseInp}, noiseVal:${noiseVal}`)
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentDotHue = this.dotHues[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * utils.map(adjustedNoise, 0, 1, 1, 2, true);
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * 2 //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
                     let maxHue = Number(this.options.hue) + Number(this.options.hueShift);
-                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.3, Number(this.options.hue), maxHue, false) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true));
+                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.3, Number(this.options.hue), maxHue, false)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true));
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);

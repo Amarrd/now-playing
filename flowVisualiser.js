@@ -31,7 +31,7 @@ class Visualiser {
         this.transitionInterval = 0;
         this.intervalFunction;
         this.effect = new Effect.FlowEffect(this.canvas, this.options);
-        this.effect.render(this.ctx, 5);
+        this.effect.render(this.ctx, 1);
         this.animate();
         utils.toggleProfileTransition(this, document.querySelector('#profileTransition').value);
     }

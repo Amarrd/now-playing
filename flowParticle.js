@@ -10,7 +10,7 @@ class FlowParticle {
         this.history = [{ x: this.x, y: this.y }];
         this.maxLength = Math.floor(Math.random() * 70 + 50);
         this.angle = 0;
-        this.timer = this.maxLength * 2;
+        this.timer = this.maxLength;
         this.hue = this.effect.options.hue;
         this.colours;
         this.colour;
