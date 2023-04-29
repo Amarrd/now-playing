@@ -39,7 +39,7 @@ div.currentSong {
     z-index: 1;
 }
 
-.controls-container{
+.controls-container {
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
@@ -106,7 +106,7 @@ input {
 body {
     background-color: black;
     color: white;
-    font-size: 24px;
+    font-size: 34px;
     text-align: left;
     position: absolute;
     bottom: 0;
@@ -150,7 +150,6 @@ input[type='checkbox'] {
     font-size: 18px;
     z-index: 1;
 }
-
 
 #snackbar.show {
     visibility: visible;

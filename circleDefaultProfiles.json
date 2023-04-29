@@ -1,0 +1,10 @@
+[
+    {
+        "hue": 10,
+        "hueShift": 20,
+        "dotModifier": 3,
+        "ringCount": 5,
+        "ringDistance": 30,
+        "rotationSpeed": 1
+    }
+]

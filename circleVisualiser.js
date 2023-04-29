@@ -1,145 +1,145 @@
 const Microphone = require("./microphone");
-const p5 = require('p5');
+const utils = require('./utils');
+const Gradient = require('javascript-color-gradient');
+const { Noise } = require('noisejs');
 
 class CircleVisualiser {
     constructor(audioPromise) {
+        this.name = 'circle';
+        this.profiles = require("./circleDefaultProfiles.json")
+        this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
+        this.canvas = document.querySelector('#myCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.profileNumber = 1;
+        this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
+        const gradientArray = new Gradient()
+            .setColorGradient("#3F2CAF", "#e9446a", "#edc988", "#607D8B")
+            .setMidpoint(20)
+            .getColors();
+        console.log(gradientArray);
+
+        this.directionModifier = 1;
+        this.totalDots = 0;
+        this.baseDotSize = 5;
+        this.maxDotSize = 30;
+        this.dotSizes = [];
+        this.frameCount = 0;
+        this.noise = new Noise();
+
         this.setupControls();
+
+        // Common setup
+        utils.setOptions(this);
+        utils.setupProfiles(this);
+        utils.updateColours(this);
+
+        window.addEventListener('resize', e => {
+            let newWidth = e.target.innerWidth;
+            let newHeight = e.target.innerHeight;
+            this.canvas.width = newWidth;
+            this.canvas.height = newHeight;
+            console.log('resized')
+
+            this.ctx.translate(window.innerWidth / 2, window.innerHeight / 2)
+
+            let containers = ['#profiles', '#controls-container'];
+            containers.forEach(id => {
+                let container = document.querySelector(id);
+                let height = (window.innerHeight - container.offsetHeight) / 2;
+                container.style.top = height + 'px'
+            })
+        })
+
+        this.setup();
         this.animate();
+        utils.toggleProfileTransition(this, document.querySelector('#profileTransition').value);
     }
 
     setupControls() {
-        let container = document.querySelector('#controls-container');
-        let profileSwitch = document.querySelector('#profileTransitionLabel');
-        let height = (window.innerHeight - container.offsetHeight) / 2;
+        utils.createNumberInput('hue', 'hue', 1, 360)
+        utils.createNumberInput('hue shift', 'hueShift', 1, 360)
+        utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
+        utils.createNumberInput('ring count', 'ringCount', 1, 30)
+        utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
+        utils.createNumberInput('rotation speed', 'rotationSpeed', 0, 20)
+    }
 
-        container.style.opacity = 1;
-        container.style.top = height + 'px';
-        profileSwitch.style.display = 'none';
+    setup() {
+        this.recalcTotal()
+        this.ctx.translate(window.innerWidth / 2, window.innerHeight / 2)
     }
 
     animate() {
-        const sketch = (s) => {
-            let baseHue = 10;
-            let hueShift = 30;
-            let dotModifier = 3;
-            let ringCount = 12;
-            let directionModifier = 1;
-            let ringDistance = 50
-            let totalDots = 0;
-            let baseDotSize = 5;
-            let maxDotSize = 30;
-            let hueControl = s.createInput(baseHue, 'number');
-            let dotCountControl = s.createInput(dotModifier, 'number');
-            let ringCountControl = s.createInput(ringCount, 'number');
-            let dotSizes = [];
 
-            s.setup = () => {
-                let canvas = s.createCanvas(window.innerWidth, window.innerHeight);
-                canvas.elt.setAttribute('onclick', 'myBundle.canvasClicked()')
-                s.noFill();
-                s.strokeWeight(1);
+        if (this.microphone.initialised) {
 
-                let hueLabel = document.createElement('label');
-                hueLabel.id = 'hueLabel'
-                hueLabel.innerHTML = 'hue';
-                document.querySelector('#controls').appendChild(hueLabel);
-                hueControl.parent('hueLabel');
-                hueControl.input(changeColour);
+            this.ctx.save();
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.restore();
 
-                let dotCountLabel = document.createElement('label');
-                dotCountLabel.id = 'dotCountLabel'
-                dotCountLabel.innerHTML = 'dots multiplier';
-                document.querySelector('#controls').appendChild(dotCountLabel);
-                dotCountControl.parent('dotCountLabel');
-                dotCountControl.input(changeDotCount);
+            this.frameCount++
+            let samples = this.microphone.getSamplesFor(this.totalDots);
+            let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 0, 2) + 0.3;
+            let currDot = 0;
 
-                let ringCountLabel = document.createElement('label');
-                ringCountLabel.id = 'ringCountLabel'
-                ringCountLabel.innerHTML = 'ring count';
-                document.querySelector('#controls').appendChild(ringCountLabel);
-                ringCountControl.parent('ringCountLabel');
-                ringCountControl.input(changeRingCount);
-                s.background(0)
-                recalcTotal();
-            }
+            for (let ringNumber = 1; ringNumber <= this.options.ringCount; ringNumber++) {
+                let dotsForRing = ringNumber * this.options.dotModifier;
+                let ringRadius = ringNumber * this.options.ringDistance;
 
-            s.draw = () => {
-                if (!this.microphone.initialised) {
-                    return;
-                }
+                for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
+                    this.directionModifier = (-2 * (ringNumber % 2) + 1) // for alternating ring directions
+                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
+                    let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
+                    let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
+                    let noiseInp = currDot + this.frameCount / 100
+                    let noiseVal = utils.map(this.noise.perlin2(noiseInp, 0), -1, 1, 0, 1, true);
+                    let adjustedNoise = noiseVal * volume;
+                    //  console.log(`volume:${volume}, noiseImp: ${noiseInp}, noiseVal:${noiseVal}`)
+                    let currentDotSize = this.dotSizes[currDot] || 0;
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * utils.map(adjustedNoise, 0, 1, 1, 2, false);
+                    let maxHue = Number(this.options.hue) + Number(this.options.hueShift);
+                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.3, Number(this.options.hue), maxHue, false) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, false));
 
-                let samples = this.microphone.getSamplesFor(totalDots);
-                let volume = s.map(this.microphone.getVolume(), 0, 0.5, 0, 2) + 0.3;
-                let currDot = 0;
-                s.clear();
-                s.translate(window.innerWidth / 2, window.innerHeight / 2)
-
-                for (let ringNumber = 1; ringNumber <= ringCount; ringNumber++) {
-                    let dotsForRing = ringNumber * dotModifier;
-                    let ringRadius = ringNumber * ringDistance;
-
-                    for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
-                        //directionModifier = (-2 * (ringNumber % 2) + 1) // for alternating ring directions
-                        let angle = (s.frameCount / (Math.max(angleIncrement, 0.001) * 1000)) * -directionModifier - s.TWO_PI / dotsForRing;
-                        let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
-                        let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
-                        let adjustedNoise = s.noise(currDot + s.frameCount / 100) * volume;
-                        let currentDotSize = dotSizes[currDot] || 0;
-                        let dotSize = s.map(samples[currDot], 0, 1, baseDotSize, maxDotSize * ringNumber, true) * s.map(adjustedNoise, 0, 1, 1, 2, true);
-                        let maxHue = Number(baseHue) + Number(hueShift);
-                        let hue = Math.round(s.map(samples[currDot], 0, 0.3, Number(baseHue), maxHue, true)); //* s.map(adjustedNoise, 0, 1, 0.75, 1.25));
-
-                        if (dotSize < currentDotSize) {
-                            dotSize = Math.max(currentDotSize * 0.98, baseDotSize);
-                        }
-                        
-                        if (hue > 360) {
-                            hue = hue - 360;
-                        }
-
-                        if (hue < 0) {
-                            hue = hue + 360;
-                        }
-                        
-                        s.circle(x, y, dotSize);
-                        s.fill(s.color(`hsl(${hue}, 100%, 50%)`))
-
-                        dotSizes[currDot] = dotSize;
-                        currDot++;
+                    if (dotSize < currentDotSize) {
+                        dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
                     }
+
+                    if (dotHue > 360) {
+                        dotHue = dotHue - 360;
+                    }
+
+                    if (dotHue < 0) {
+                        dotHue = dotHue + 360;
+                    }
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, dotSize / 2, 0, 2 * Math.PI, false);
+                    this.ctx.fillStyle = `hsl(${dotHue}, 100%, 50%)`;
+                    this.ctx.fill();
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeStyle = `hsl(${dotHue}, 100%, 0%)`;
+                    this.ctx.stroke();
+
+                    this.dotSizes[currDot] = dotSize;
+                    currDot++;
                 }
             }
-
-            s.windowResized = () => {
-                s.resizeCanvas(window.innerWidth, window.innerHeight);
-            }
-
-            let changeColour = () => {
-                baseHue = hueControl.value();
-            }
-
-            let changeDotCount = () => {
-                dotModifier = dotCountControl.value();
-                recalcTotal();
-            }
-
-            let changeRingCount = () => {
-                ringCount = ringCountControl.value();
-                recalcTotal();
-            }
-
-            let recalcTotal = () => {
-                totalDots = 0;
-                for (let i = 1; i <= ringCount; i++) {
-                    totalDots += i * dotModifier;
-                }
-            }
-
-
         }
-        new p5(sketch);
+
+        requestAnimationFrame(this.animate.bind(this));
     }
+
+    recalcTotal() {
+        this.totalDots = 0;
+        for (let i = 1; i <= this.options.ringCount; i++) {
+            this.totalDots += i * this.options.dotModifier;
+        }
+    }
+
 }
 
 module.exports = { CircleVisualiser: CircleVisualiser };
