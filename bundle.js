@@ -26609,6 +26609,42 @@ module.exports=[
         "ringDistance": 44,
         "alternateRings": true,
         "rotationSpeed": 1
+    },
+    {
+        "hue": 150,
+        "hueShift": 150,
+        "dotModifier": 2,
+        "ringCount": 15,
+        "ringDistance": 44,
+        "alternateRings": true,
+        "rotationSpeed": 1
+    },
+    {
+        "hue": 300,
+        "hueShift": 50,
+        "dotModifier": 10,
+        "ringCount": 5,
+        "ringDistance": 20,
+        "alternateRings": false,
+        "rotationSpeed": 1
+    },
+    {
+        "hue": 230,
+        "hueShift": 150,
+        "dotModifier": 5,
+        "ringCount": 13,
+        "ringDistance": 44,
+        "alternateRings": true,
+        "rotationSpeed": 1
+    },
+    {
+        "hue": 230,
+        "hueShift": 150,
+        "dotModifier": 5,
+        "ringCount": 13,
+        "ringDistance": 44,
+        "alternateRings": true,
+        "rotationSpeed": 1
     }
 ]
 },{}],191:[function(require,module,exports){
