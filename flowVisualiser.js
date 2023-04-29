@@ -2,7 +2,7 @@ const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const utils = require('./utils')
 
-class FlowVisualier {
+class Visualiser {
 
     constructor(audioPromise) {
         // Common properties
@@ -16,6 +16,7 @@ class FlowVisualier {
         this.profileNumber = 1;
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
+        this.active = true;
 
         this.setupControls();
 
@@ -23,7 +24,7 @@ class FlowVisualier {
         utils.setOptions(this);
         utils.setupProfiles(this);
         utils.updateColours(this);
-        
+
         // Specific properties 
         this.maxV = 0;
         this.ctx.lineWidth = 1;
@@ -44,7 +45,9 @@ class FlowVisualier {
             this.effect.updateEffect(false, normVolume, this.options);
             this.effect.render(this.ctx, normVolume);
         }
-        requestAnimationFrame(this.animate.bind(this));
+        if (this.active) {
+            requestAnimationFrame(this.animate.bind(this));
+        }
     }
 
 
@@ -64,6 +67,7 @@ class FlowVisualier {
     }
 
     setupControls() {
+        utils.createTitle();
         utils.createNumberInput('hue', 'hue', 1, 360)
         utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('volume', 'volume', 1, 200)
@@ -98,4 +102,4 @@ class FlowVisualier {
     }
 }
 
-module.exports = { FlowVisualier };
+module.exports = { Visualiser };

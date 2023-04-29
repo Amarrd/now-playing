@@ -26617,7 +26617,7 @@ const utils = require('./utils');
 const Gradient = require('javascript-color-gradient');
 const { Noise } = require('noisejs');
 
-class CircleVisualiser {
+class Visualiser {
     constructor(audioPromise) {
         this.name = 'circle';
         this.profiles = require("./circleDefaultProfiles.json")
@@ -26629,6 +26629,7 @@ class CircleVisualiser {
         this.profileNumber = 1;
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
+        this.active = true;
         const gradientArray = new Gradient()
             .setColorGradient("#3F2CAF", "#e9446a", "#edc988", "#607D8B")
             .setMidpoint(20)
@@ -26642,6 +26643,7 @@ class CircleVisualiser {
         this.dotSizes = [];
         this.dotHues = [];
         this.frameCount = 0;
+        this.intervalFunction;
         this.noise = new Noise();
 
         this.setupControls();
@@ -26656,7 +26658,6 @@ class CircleVisualiser {
             let newHeight = e.target.innerHeight;
             this.canvas.width = newWidth;
             this.canvas.height = newHeight;
-            console.log('resized')
 
             this.ctx.translate(window.innerWidth / 2, window.innerHeight / 2)
 
@@ -26674,30 +26675,27 @@ class CircleVisualiser {
     }
 
     setupControls() {
+        utils.createTitle();
         utils.createNumberInput('hue', 'hue', 1, 360)
         utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
-        utils.createNumberInput('rotation speed', 'rotationSpeed', 0, 20)
+        utils.createNumberInput('rotation speed', 'rotationSpeed', -20, 20)
 
         let controls = document.querySelector('#controls');
 
         let labelElement = document.createElement('label');
         labelElement.innerHTML = 'alternate rings ';
         labelElement.htmlFor = 'alternateRings';
-      
+
         let inputElement = document.createElement('input');
         inputElement.setAttribute('type', 'checkbox');
         inputElement.id = 'alternateRings';
         inputElement.setAttribute('name', 'alternateRings');
         inputElement.setAttribute('onchange', 'myBundle.changeOption(alternateRings)');
 
-        let span = document.createElement('span');
-        span.className = 'checkmark';
-      
         labelElement.appendChild(inputElement);
-        labelElement.appendChild(span);
         controls.appendChild(labelElement);
     }
 
@@ -26725,8 +26723,8 @@ class CircleVisualiser {
                 let ringRadius = ringNumber * this.options.ringDistance;
 
                 for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
-                    this.directionModifier = (-2 * (ringNumber % 2) + 1) // for alternating ring directions
-                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
+                    this.directionModifier = this.options.alternateRings ? (-2 * (ringNumber % 2) + 1) : 1; // for alternating ring directions
+                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
                     let noiseInp = currDot + this.frameCount / 100
@@ -26769,8 +26767,9 @@ class CircleVisualiser {
                 }
             }
         }
-
-        requestAnimationFrame(this.animate.bind(this));
+        if (this.active) {
+            requestAnimationFrame(this.animate.bind(this));
+        }
     }
 
     recalcTotal() {
@@ -26779,10 +26778,9 @@ class CircleVisualiser {
             this.totalDots += i * this.options.dotModifier;
         }
     }
-
 }
 
-module.exports = { CircleVisualiser: CircleVisualiser };
+module.exports = { Visualiser };
 },{"./circleDefaultProfiles.json":190,"./microphone":196,"./utils":198,"javascript-color-gradient":203,"noisejs":239}],192:[function(require,module,exports){
 module.exports=[
     {
@@ -27043,7 +27041,7 @@ const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const utils = require('./utils')
 
-class FlowVisualier {
+class Visualiser {
 
     constructor(audioPromise) {
         // Common properties
@@ -27057,6 +27055,7 @@ class FlowVisualier {
         this.profileNumber = 1;
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
+        this.active = true;
 
         this.setupControls();
 
@@ -27064,7 +27063,7 @@ class FlowVisualier {
         utils.setOptions(this);
         utils.setupProfiles(this);
         utils.updateColours(this);
-        
+
         // Specific properties 
         this.maxV = 0;
         this.ctx.lineWidth = 1;
@@ -27085,7 +27084,9 @@ class FlowVisualier {
             this.effect.updateEffect(false, normVolume, this.options);
             this.effect.render(this.ctx, normVolume);
         }
-        requestAnimationFrame(this.animate.bind(this));
+        if (this.active) {
+            requestAnimationFrame(this.animate.bind(this));
+        }
     }
 
 
@@ -27105,6 +27106,7 @@ class FlowVisualier {
     }
 
     setupControls() {
+        utils.createTitle();
         utils.createNumberInput('hue', 'hue', 1, 360)
         utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('volume', 'volume', 1, 200)
@@ -27139,7 +27141,7 @@ class FlowVisualier {
     }
 }
 
-module.exports = { FlowVisualier };
+module.exports = { Visualiser };
 },{"./flowDefaultProfiles.json":192,"./flowEffect":193,"./microphone":196,"./utils":198}],196:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
@@ -27224,10 +27226,16 @@ var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var currentVisualiser;
 var identifyFunction;
-var visualisers = {CircleVisualiser, FlowVisualiser};
+var visualisers = [CircleVisualiser, FlowVisualiser];
+var visualiserIndex = 0;
+var initialised = false;
 
 function startVisualiser() {
-	currentVisualiser =  new CircleVisualiser.CircleVisualiser(audioPromise); //new FlowVisualiser.FlowVisualier(audioPromise); //
+	if (!initialised) {
+		addSwitchButtons();
+		initialised = true;
+	}
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); //new FlowVisualiser.FlowVisualier(audioPromise); //
 
 	let container = document.querySelector('#controls-container');
 	container.style.opacity = 1;
@@ -27333,7 +27341,7 @@ function processResponse(response) {
 			delay = delay + 15000;
 			console.log('Setting detection delay to ' + delay + 'ms');
 			identifyFunction = setTimeout(() => updateSong(), delay);
-		} 
+		}
 	} else {
 		if (autoMode) {
 			delay = 60000
@@ -27345,11 +27353,11 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); 
-	var a = document.createElement("a"); 
-	a.href = blobUrl; 
-	a.download = name + ".wav"; 
-	a.click(); 
+	var blobUrl = URL.createObjectURL(audioBlob);
+	var a = document.createElement("a");
+	a.href = blobUrl;
+	a.download = name + ".wav";
+	a.click();
 }
 
 function toggleAuto() {
@@ -27363,7 +27371,7 @@ function toggleAuto() {
 }
 
 function toggleTransition() {
-	toggleProfileTransition(currentVisualiser, document.querySelector('#profileTransition').value);
+	utils.toggleProfileTransition(currentVisualiser, document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
@@ -27400,7 +27408,71 @@ function fade(elementId) {
 	if (element) {
 		element.style.transition = 'opacity 0.2s linear 0s';
 		element.style.opacity = element.style.opacity === '1' ? '0' : '1'
-	} 
+	}
+}
+
+function addSwitchButtons() {
+	// create left button
+	var leftButton = document.createElement("button");
+	leftButton.setAttribute("type", "button");
+	leftButton.setAttribute("value", "left");
+	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
+	leftButton.innerHTML = "&#8592;"; // left arrow symbol
+
+	// create right button
+	var rightButton = document.createElement("button");
+	rightButton.setAttribute("type", "button");
+	rightButton.setAttribute("value", "right");
+	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
+	rightButton.innerHTML = "&#8594;"; // right arrow symbol
+
+	// append buttons to document body
+	document.body.appendChild(leftButton);
+	document.body.appendChild(rightButton);
+
+	// style buttons using CSS
+	leftButton.style.position = "fixed";
+	leftButton.style.top = "0";
+	leftButton.style.left = "0";
+	leftButton.style.display = "block"; 
+
+	rightButton.style.position = "fixed";
+	rightButton.style.top = "0";
+	rightButton.style.right = "0";
+	rightButton.style.display = "block";
+
+	//  show or hide buttons on mouseover and mouseout events
+	// document.body.onmouseover = function (event) {
+	// 	// get the mouse y position relative to the window height
+	// 	var mouseY = event.clientY / window.innerHeight;
+	// 	// if mouse is in the top quarter of the screen, show buttons
+	// 	if (mouseY < 0.25) {
+	// 		leftButton.style.display = "block";
+	// 		rightButton.style.display = "block";
+	// 	} else {
+	// 		leftButton.style.display = "none";
+	// 		rightButton.style.display = "none";
+	// 	}
+	// };
+
+	//   document.body.onmouseout = function(event) {
+	// 	// hide buttons when mouse leaves the body
+	// 	leftButton.style.display = "none";
+	// 	rightButton.style.display = "none";
+	//   };
+}
+
+// define functions for button clicks
+function leftFunction() {
+	utils.teardown(currentVisualiser);
+	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
+	startVisualiser();
+}
+
+function rightFunction() {
+	utils.teardown(currentVisualiser);
+	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	startVisualiser();
 }
 
 function submitCredentials() {
@@ -27416,7 +27488,7 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	utils.changeOption(currentVisualiser, option.id, option.value)
+	utils.changeOption(currentVisualiser, option)
 }
 
 function saveProfile() {
@@ -27427,8 +27499,10 @@ function resetProfile() {
 	utils.resetProfile(currentVisualiser);
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
-	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
+module.exports = {
+	startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile,
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction
+}
 
 },{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./flowVisualiser":195,"./utils":198,"audio-encoder":201}],198:[function(require,module,exports){
 map = function(n, start1, stop1, start2, stop2, withinBounds) {
@@ -27519,6 +27593,12 @@ changeProfile = function(visualiser, index) {
   }
 }
 
+createTitle = function() {
+  let optionsTitle = document.createElement('h4');
+  optionsTitle.id = 'controls-title';
+  document.querySelector('#controls').appendChild(optionsTitle);
+}
+
 setOptions = function(visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
@@ -27531,14 +27611,14 @@ setOptions = function(visualiser) {
   });
 }
 
-changeOption = function(visualiser, option, value) {
-  if (visualiser.name === 'flow' && option === 'particles') {
-      let particleDiff = visualiser.options[option] - value;
-      visualiser.options[option] = value;
+changeOption = function(visualiser, option) {
+  if (visualiser.name === 'flow' && option.id === 'particles') {
+      let particleDiff = visualiser.options[option.id] - option.value;
+      visualiser.options[option.id] = option.value;
       visualiser.effect.clearParticles(particleDiff);
       visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
   } else {
-      visualiser.options[option] = value;
+      visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   updateColours(visualiser);
 }
@@ -27551,7 +27631,6 @@ updateColours = function(visualiser) {
   document.querySelector('#mic-icon').style.color = controlColour;
   document.querySelector('#current-song').style.color = controlColour;
   document.querySelector('#updateButton').style.color = controlColour;
-  //document.querySelector('#direction').style.color = controlColour;
   document.querySelector('#saveProfile').style.backgroundColor = profileColour;
   document.querySelector('#resetProfile').style.backgroundColor = profileColour;
   document.querySelector('#profile-' + visualiser.profileNumber + '-button').style.backgroundColor = profileColour;
@@ -27563,8 +27642,8 @@ updateColours = function(visualiser) {
       controlElement.style.color = controlColour;
       controlElement.childNodes.forEach(element => {
           if (element.nodeName === 'LABEL') {
-              element.childNodes.forEach(input => {
-                  if (input.nodeName === 'INPUT') input.style.color = controlColour;
+              element.childNodes.forEach(child => {
+                  if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
               })
           }
       })
@@ -27602,7 +27681,7 @@ toggleProfileTransition = function(visualiser, value) {
   visualiser.transitionInterval = value * 1000;
   if (visualiser.transitionInterval > 0) {
       console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
-      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser.transitionInterval), visualiser.transitionInterval);
+      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
   } else {
       console.log('stopping profile transitions');
   }
@@ -27616,12 +27695,26 @@ transitionProfile = function(visualiser, currentInterval) {
       } else {
           index = visualiser.profileNumber;
       }
-      utils.changeProfile(visualiser, index);
+      changeProfile(visualiser, index);
   }
 }
 
-module.exports = {map, setupProfiles, changeProfile, setOptions, changeOption, 
-  updateColours, createNumberInput, saveProfile, resetProfile, toggleProfileTransition}
+teardown = function(visualiser) {
+  visualiser.ctx.save();
+  visualiser.ctx.setTransform(1, 0, 0, 1, 0, 0);
+  visualiser.ctx.clearRect(0, 0, visualiser.canvas.width, visualiser.canvas.height);
+  visualiser.ctx.restore();
+  visualiser.active = false;
+
+  let profileContainer = document.querySelector('#profiles');
+  profileContainer.replaceChildren();
+
+  let controls = document.querySelector('#controls')
+  controls.replaceChildren();
+}
+
+module.exports = {map, setupProfiles, changeProfile, createTitle, setOptions, changeOption, 
+  updateColours, createNumberInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
 
 
 },{}],199:[function(require,module,exports){

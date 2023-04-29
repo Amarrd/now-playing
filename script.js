@@ -12,10 +12,16 @@ var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var currentVisualiser;
 var identifyFunction;
-var visualisers = {CircleVisualiser, FlowVisualiser};
+var visualisers = [CircleVisualiser, FlowVisualiser];
+var visualiserIndex = 0;
+var initialised = false;
 
 function startVisualiser() {
-	currentVisualiser =  new CircleVisualiser.CircleVisualiser(audioPromise); //new FlowVisualiser.FlowVisualier(audioPromise); //
+	if (!initialised) {
+		addSwitchButtons();
+		initialised = true;
+	}
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); //new FlowVisualiser.FlowVisualier(audioPromise); //
 
 	let container = document.querySelector('#controls-container');
 	container.style.opacity = 1;
@@ -121,7 +127,7 @@ function processResponse(response) {
 			delay = delay + 15000;
 			console.log('Setting detection delay to ' + delay + 'ms');
 			identifyFunction = setTimeout(() => updateSong(), delay);
-		} 
+		}
 	} else {
 		if (autoMode) {
 			delay = 60000
@@ -133,11 +139,11 @@ function processResponse(response) {
 }
 
 function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob); 
-	var a = document.createElement("a"); 
-	a.href = blobUrl; 
-	a.download = name + ".wav"; 
-	a.click(); 
+	var blobUrl = URL.createObjectURL(audioBlob);
+	var a = document.createElement("a");
+	a.href = blobUrl;
+	a.download = name + ".wav";
+	a.click();
 }
 
 function toggleAuto() {
@@ -151,7 +157,7 @@ function toggleAuto() {
 }
 
 function toggleTransition() {
-	toggleProfileTransition(currentVisualiser, document.querySelector('#profileTransition').value);
+	utils.toggleProfileTransition(currentVisualiser, document.querySelector('#profileTransition').value);
 }
 
 function canvasClicked() {
@@ -188,7 +194,71 @@ function fade(elementId) {
 	if (element) {
 		element.style.transition = 'opacity 0.2s linear 0s';
 		element.style.opacity = element.style.opacity === '1' ? '0' : '1'
-	} 
+	}
+}
+
+function addSwitchButtons() {
+	// create left button
+	var leftButton = document.createElement("button");
+	leftButton.setAttribute("type", "button");
+	leftButton.setAttribute("value", "left");
+	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
+	leftButton.innerHTML = "&#8592;"; // left arrow symbol
+
+	// create right button
+	var rightButton = document.createElement("button");
+	rightButton.setAttribute("type", "button");
+	rightButton.setAttribute("value", "right");
+	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
+	rightButton.innerHTML = "&#8594;"; // right arrow symbol
+
+	// append buttons to document body
+	document.body.appendChild(leftButton);
+	document.body.appendChild(rightButton);
+
+	// style buttons using CSS
+	leftButton.style.position = "fixed";
+	leftButton.style.top = "0";
+	leftButton.style.left = "0";
+	leftButton.style.display = "block"; 
+
+	rightButton.style.position = "fixed";
+	rightButton.style.top = "0";
+	rightButton.style.right = "0";
+	rightButton.style.display = "block";
+
+	//  show or hide buttons on mouseover and mouseout events
+	// document.body.onmouseover = function (event) {
+	// 	// get the mouse y position relative to the window height
+	// 	var mouseY = event.clientY / window.innerHeight;
+	// 	// if mouse is in the top quarter of the screen, show buttons
+	// 	if (mouseY < 0.25) {
+	// 		leftButton.style.display = "block";
+	// 		rightButton.style.display = "block";
+	// 	} else {
+	// 		leftButton.style.display = "none";
+	// 		rightButton.style.display = "none";
+	// 	}
+	// };
+
+	//   document.body.onmouseout = function(event) {
+	// 	// hide buttons when mouse leaves the body
+	// 	leftButton.style.display = "none";
+	// 	rightButton.style.display = "none";
+	//   };
+}
+
+// define functions for button clicks
+function leftFunction() {
+	utils.teardown(currentVisualiser);
+	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
+	startVisualiser();
+}
+
+function rightFunction() {
+	utils.teardown(currentVisualiser);
+	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	startVisualiser();
 }
 
 function submitCredentials() {
@@ -204,7 +274,7 @@ function changeProfile(value) {
 }
 
 function changeOption(option) {
-	utils.changeOption(currentVisualiser, option.id, option.value)
+	utils.changeOption(currentVisualiser, option)
 }
 
 function saveProfile() {
@@ -215,5 +285,7 @@ function resetProfile() {
 	utils.resetProfile(currentVisualiser);
 }
 
-module.exports = { startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile, 
-	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked }
+module.exports = {
+	startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile,
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction
+}

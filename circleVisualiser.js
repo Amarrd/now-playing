@@ -3,7 +3,7 @@ const utils = require('./utils');
 const Gradient = require('javascript-color-gradient');
 const { Noise } = require('noisejs');
 
-class CircleVisualiser {
+class Visualiser {
     constructor(audioPromise) {
         this.name = 'circle';
         this.profiles = require("./circleDefaultProfiles.json")
@@ -15,6 +15,7 @@ class CircleVisualiser {
         this.profileNumber = 1;
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
+        this.active = true;
         const gradientArray = new Gradient()
             .setColorGradient("#3F2CAF", "#e9446a", "#edc988", "#607D8B")
             .setMidpoint(20)
@@ -28,6 +29,7 @@ class CircleVisualiser {
         this.dotSizes = [];
         this.dotHues = [];
         this.frameCount = 0;
+        this.intervalFunction;
         this.noise = new Noise();
 
         this.setupControls();
@@ -42,7 +44,6 @@ class CircleVisualiser {
             let newHeight = e.target.innerHeight;
             this.canvas.width = newWidth;
             this.canvas.height = newHeight;
-            console.log('resized')
 
             this.ctx.translate(window.innerWidth / 2, window.innerHeight / 2)
 
@@ -60,30 +61,27 @@ class CircleVisualiser {
     }
 
     setupControls() {
+        utils.createTitle();
         utils.createNumberInput('hue', 'hue', 1, 360)
         utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
-        utils.createNumberInput('rotation speed', 'rotationSpeed', 0, 20)
+        utils.createNumberInput('rotation speed', 'rotationSpeed', -20, 20)
 
         let controls = document.querySelector('#controls');
 
         let labelElement = document.createElement('label');
         labelElement.innerHTML = 'alternate rings ';
         labelElement.htmlFor = 'alternateRings';
-      
+
         let inputElement = document.createElement('input');
         inputElement.setAttribute('type', 'checkbox');
         inputElement.id = 'alternateRings';
         inputElement.setAttribute('name', 'alternateRings');
         inputElement.setAttribute('onchange', 'myBundle.changeOption(alternateRings)');
 
-        let span = document.createElement('span');
-        span.className = 'checkmark';
-      
         labelElement.appendChild(inputElement);
-        labelElement.appendChild(span);
         controls.appendChild(labelElement);
     }
 
@@ -111,8 +109,8 @@ class CircleVisualiser {
                 let ringRadius = ringNumber * this.options.ringDistance;
 
                 for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
-                    this.directionModifier = (-2 * (ringNumber % 2) + 1) // for alternating ring directions
-                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
+                    this.directionModifier = this.options.alternateRings ? (-2 * (ringNumber % 2) + 1) : 1; // for alternating ring directions
+                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
                     let noiseInp = currDot + this.frameCount / 100
@@ -155,8 +153,9 @@ class CircleVisualiser {
                 }
             }
         }
-
-        requestAnimationFrame(this.animate.bind(this));
+        if (this.active) {
+            requestAnimationFrame(this.animate.bind(this));
+        }
     }
 
     recalcTotal() {
@@ -165,7 +164,6 @@ class CircleVisualiser {
             this.totalDots += i * this.options.dotModifier;
         }
     }
-
 }
 
-module.exports = { CircleVisualiser: CircleVisualiser };
+module.exports = { Visualiser };

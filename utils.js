@@ -86,6 +86,12 @@ changeProfile = function(visualiser, index) {
   }
 }
 
+createTitle = function() {
+  let optionsTitle = document.createElement('h4');
+  optionsTitle.id = 'controls-title';
+  document.querySelector('#controls').appendChild(optionsTitle);
+}
+
 setOptions = function(visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
@@ -98,14 +104,14 @@ setOptions = function(visualiser) {
   });
 }
 
-changeOption = function(visualiser, option, value) {
-  if (visualiser.name === 'flow' && option === 'particles') {
-      let particleDiff = visualiser.options[option] - value;
-      visualiser.options[option] = value;
+changeOption = function(visualiser, option) {
+  if (visualiser.name === 'flow' && option.id === 'particles') {
+      let particleDiff = visualiser.options[option.id] - option.value;
+      visualiser.options[option.id] = option.value;
       visualiser.effect.clearParticles(particleDiff);
       visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
   } else {
-      visualiser.options[option] = value;
+      visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   updateColours(visualiser);
 }
@@ -118,7 +124,6 @@ updateColours = function(visualiser) {
   document.querySelector('#mic-icon').style.color = controlColour;
   document.querySelector('#current-song').style.color = controlColour;
   document.querySelector('#updateButton').style.color = controlColour;
-  //document.querySelector('#direction').style.color = controlColour;
   document.querySelector('#saveProfile').style.backgroundColor = profileColour;
   document.querySelector('#resetProfile').style.backgroundColor = profileColour;
   document.querySelector('#profile-' + visualiser.profileNumber + '-button').style.backgroundColor = profileColour;
@@ -130,8 +135,8 @@ updateColours = function(visualiser) {
       controlElement.style.color = controlColour;
       controlElement.childNodes.forEach(element => {
           if (element.nodeName === 'LABEL') {
-              element.childNodes.forEach(input => {
-                  if (input.nodeName === 'INPUT') input.style.color = controlColour;
+              element.childNodes.forEach(child => {
+                  if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
               })
           }
       })
@@ -169,7 +174,7 @@ toggleProfileTransition = function(visualiser, value) {
   visualiser.transitionInterval = value * 1000;
   if (visualiser.transitionInterval > 0) {
       console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
-      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser.transitionInterval), visualiser.transitionInterval);
+      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
   } else {
       console.log('stopping profile transitions');
   }
@@ -183,10 +188,24 @@ transitionProfile = function(visualiser, currentInterval) {
       } else {
           index = visualiser.profileNumber;
       }
-      utils.changeProfile(visualiser, index);
+      changeProfile(visualiser, index);
   }
 }
 
-module.exports = {map, setupProfiles, changeProfile, setOptions, changeOption, 
-  updateColours, createNumberInput, saveProfile, resetProfile, toggleProfileTransition}
+teardown = function(visualiser) {
+  visualiser.ctx.save();
+  visualiser.ctx.setTransform(1, 0, 0, 1, 0, 0);
+  visualiser.ctx.clearRect(0, 0, visualiser.canvas.width, visualiser.canvas.height);
+  visualiser.ctx.restore();
+  visualiser.active = false;
+
+  let profileContainer = document.querySelector('#profiles');
+  profileContainer.replaceChildren();
+
+  let controls = document.querySelector('#controls')
+  controls.replaceChildren();
+}
+
+module.exports = {map, setupProfiles, changeProfile, createTitle, setOptions, changeOption, 
+  updateColours, createNumberInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
 
