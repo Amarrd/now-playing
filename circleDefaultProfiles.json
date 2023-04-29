@@ -5,6 +5,16 @@
         "dotModifier": 3,
         "ringCount": 5,
         "ringDistance": 30,
+        "alternateRings": false,
+        "rotationSpeed": 1
+    },
+    {
+        "hue": 230,
+        "hueShift": 150,
+        "dotModifier": 5,
+        "ringCount": 13,
+        "ringDistance": 44,
+        "alternateRings": true,
         "rotationSpeed": 1
     }
 ]

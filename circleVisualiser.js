@@ -26,6 +26,7 @@ class CircleVisualiser {
         this.baseDotSize = 5;
         this.maxDotSize = 30;
         this.dotSizes = [];
+        this.dotHues = [];
         this.frameCount = 0;
         this.noise = new Noise();
 
@@ -65,6 +66,25 @@ class CircleVisualiser {
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
         utils.createNumberInput('rotation speed', 'rotationSpeed', 0, 20)
+
+        let controls = document.querySelector('#controls');
+
+        let labelElement = document.createElement('label');
+        labelElement.innerHTML = 'alternate rings ';
+        labelElement.htmlFor = 'alternateRings';
+      
+        let inputElement = document.createElement('input');
+        inputElement.setAttribute('type', 'checkbox');
+        inputElement.id = 'alternateRings';
+        inputElement.setAttribute('name', 'alternateRings');
+        inputElement.setAttribute('onchange', 'myBundle.changeOption(alternateRings)');
+
+        let span = document.createElement('span');
+        span.className = 'checkmark';
+      
+        labelElement.appendChild(inputElement);
+        labelElement.appendChild(span);
+        controls.appendChild(labelElement);
     }
 
     setup() {
@@ -100,12 +120,17 @@ class CircleVisualiser {
                     let adjustedNoise = noiseVal * volume;
                     //  console.log(`volume:${volume}, noiseImp: ${noiseInp}, noiseVal:${noiseVal}`)
                     let currentDotSize = this.dotSizes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * utils.map(adjustedNoise, 0, 1, 1, 2, false);
+                    let currentDotHue = this.dotHues[currDot] || 0;
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * utils.map(adjustedNoise, 0, 1, 1, 2, true);
                     let maxHue = Number(this.options.hue) + Number(this.options.hueShift);
-                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.3, Number(this.options.hue), maxHue, false) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, false));
+                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.3, Number(this.options.hue), maxHue, false) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true));
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
+                    }
+
+                    if (dotHue < currentDotHue) {
+                        dotHue = Math.max(currentDotHue - 1, 0)
                     }
 
                     if (dotHue > 360) {
@@ -125,6 +150,7 @@ class CircleVisualiser {
                     this.ctx.stroke();
 
                     this.dotSizes[currDot] = dotSize;
+                    this.dotHues[currDot] = dotHue;
                     currDot++;
                 }
             }

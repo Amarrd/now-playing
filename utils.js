@@ -89,7 +89,12 @@ changeProfile = function(visualiser, index) {
 setOptions = function(visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
-     document.querySelector(`#${key}`).value = visualiser.options[key];
+    let control = document.querySelector(`#${key}`);
+    if (control.type === 'checkbox') {
+      control.checked = visualiser.options[key];
+    } else {
+      control.value = visualiser.options[key];
+    }
   });
 }
 
