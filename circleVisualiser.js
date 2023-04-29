@@ -143,7 +143,7 @@ class Visualiser {
                     this.ctx.arc(x, y, dotSize / 2, 0, 2 * Math.PI, false);
                     this.ctx.fillStyle = `hsl(${dotHue}, 100%, 50%)`;
                     this.ctx.fill();
-                    this.ctx.lineWidth = 1;
+                    this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = `hsl(${dotHue}, 100%, 0%)`;
                     this.ctx.stroke();
 

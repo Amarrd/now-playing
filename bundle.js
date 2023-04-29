@@ -26593,17 +26593,17 @@ module.exports = {main};
 },{"./microphone":196}],190:[function(require,module,exports){
 module.exports=[
     {
-        "hue": 10,
-        "hueShift": 20,
-        "dotModifier": 3,
-        "ringCount": 5,
-        "ringDistance": 30,
-        "alternateRings": false,
+        "hue": 230,
+        "hueShift": 150,
+        "dotModifier": 2,
+        "ringCount": 13,
+        "ringDistance": 63,
+        "alternateRings": true,
         "rotationSpeed": 1
     },
     {
-        "hue": 230,
-        "hueShift": 150,
+        "hue": 150,
+        "hueShift": 50,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 44,
@@ -26620,29 +26620,29 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "hue": 300,
-        "hueShift": 50,
-        "dotModifier": 10,
-        "ringCount": 5,
-        "ringDistance": 20,
+        "hue": 130,
+        "hueShift": 0,
+        "dotModifier": 2,
+        "ringCount": 9,
+        "ringDistance": 69,
         "alternateRings": false,
         "rotationSpeed": 1
     },
     {
-        "hue": 230,
-        "hueShift": 150,
-        "dotModifier": 5,
+        "hue": 0,
+        "hueShift": 30,
+        "dotModifier": 6,
         "ringCount": 13,
         "ringDistance": 44,
         "alternateRings": true,
         "rotationSpeed": 1
     },
     {
-        "hue": 230,
-        "hueShift": 150,
+        "hue": 250,
+        "hueShift": 30,
         "dotModifier": 5,
         "ringCount": 13,
-        "ringDistance": 44,
+        "ringDistance": 58,
         "alternateRings": true,
         "rotationSpeed": 1
     }
@@ -26793,7 +26793,7 @@ class Visualiser {
                     this.ctx.arc(x, y, dotSize / 2, 0, 2 * Math.PI, false);
                     this.ctx.fillStyle = `hsl(${dotHue}, 100%, 50%)`;
                     this.ctx.fill();
-                    this.ctx.lineWidth = 1;
+                    this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = `hsl(${dotHue}, 100%, 0%)`;
                     this.ctx.stroke();
 
