@@ -63,11 +63,17 @@ class Visualiser {
         let adjVolume = Math.floor(volume * this.options.volume) / 10;
         let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
-        return normVolume
+        return normVolume || 0;
     }
 
     setupControls() {
-        utils.createTitle();
+        let directions = {
+            up: 'up',
+            down: 'down',
+            left: 'left',
+            right: 'right',
+        }
+
         utils.createNumberInput('hue', 'hue', 1, 360)
         utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('volume', 'volume', 1, 200)
@@ -77,28 +83,11 @@ class Visualiser {
         utils.createNumberInput('line width', 'lineWidth', 1, 10)
         utils.createNumberInput('horizontal scroll', 'xAdjustment', -10, 10)
         utils.createNumberInput('vertical scroll', 'yAdjustment', -10, 10)
+        utils.createSelectInput('direction', 'direction', directions)
+    }
 
-        let directionId = 'direction';
-        let directionLabel = document.createElement('label');
-        directionLabel.innerHTML = directionId;
-        directionLabel.htmlFor = directionId;
-
-        let directionSelect = document.createElement('select');
-        directionSelect.id = directionId;
-        directionSelect.setAttribute('onchange', 'myBundle.changeOption(' + directionId + ')')
-
-        let directions = ['up', 'down', 'left', 'right'];
-        directions.forEach(direction => {
-            let option = document.createElement('option');
-            option.id = direction;
-            option.value = direction;
-            option.innerHTML = direction;
-            directionSelect.appendChild(option);
-        })
-
-        let controls = document.querySelector('#controls');
-        directionLabel.appendChild(directionSelect);
-        controls.appendChild(directionLabel);
+    updateControls() {
+        //no op
     }
 }
 

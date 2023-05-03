@@ -1,3 +1,5 @@
+const iro = require('@jaames/iro');
+
 map = function(n, start1, stop1, start2, stop2, withinBounds) {
     const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
     if (!withinBounds) {
@@ -49,7 +51,10 @@ setupProfiles = function(visualiser) {
 
   let height = (window.innerHeight - profileContainer.offsetHeight) / 2;
   profileContainer.style.top = height + 'px'
-  changeProfile(visualiser, 0);
+  visualiser.options = visualiser.profiles[0];
+  visualiser.profileNumber = 1;
+  setOptions(visualiser)
+  updateColours(visualiser);
 }
 
 createNumberInput = function(label, id, min, max) {
@@ -58,6 +63,7 @@ createNumberInput = function(label, id, min, max) {
   let labelElement = document.createElement('label');
   labelElement.innerHTML = label;
   labelElement.htmlFor = id;
+  labelElement.id = id + 'Label'
 
   let inputElement = document.createElement('input');
   inputElement.setAttribute('type', 'number');
@@ -68,6 +74,28 @@ createNumberInput = function(label, id, min, max) {
   inputElement.setAttribute('onchange', 'myBundle.changeOption(' + id + ')')
 
   labelElement.appendChild(inputElement);
+  controls.appendChild(labelElement);
+}
+
+createSelectInput = function(label, id, options) {
+  let labelElement = document.createElement('label');
+  labelElement.innerHTML = label;
+  labelElement.htmlFor = id;
+
+  let select = document.createElement('select');
+  select.id = id;
+  select.setAttribute('onchange', 'myBundle.changeOption(' + id + ')')
+
+  for (const [key, value] of Object.entries(options)) {
+    let option = document.createElement('option');
+    option.id = key;
+    option.value = key;
+    option.innerHTML = value;
+    select.appendChild(option);
+  }
+
+  let controls = document.querySelector('#controls');
+  labelElement.appendChild(select);
   controls.appendChild(labelElement);
 }
 
@@ -84,9 +112,10 @@ changeProfile = function(visualiser, index) {
     visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
     toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   }
+  visualiser.updateControls();
 }
 
-createTitle = function() {
+createProfileTitle = function() {
   let optionsTitle = document.createElement('h4');
   optionsTitle.id = 'controls-title';
   document.querySelector('#controls').appendChild(optionsTitle);
@@ -96,6 +125,9 @@ setOptions = function(visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
     let control = document.querySelector(`#${key}`);
+    if (!control) {
+      return;
+    }
     if (control.type === 'checkbox') {
       control.checked = visualiser.options[key];
     } else {
@@ -113,13 +145,15 @@ changeOption = function(visualiser, option) {
   } else {
       visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
+  visualiser.updateControls();
   updateColours(visualiser);
 }
 
 updateColours = function(visualiser) {
-  let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
-  let controlColour = `hsl( ${hue}, 100%, 80%)`;
-  let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
+    let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
+    let controlColour = `hsl( ${hue}, 100%, 80%)`;
+    let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
+ 
 
   document.querySelector('#mic-icon').style.color = controlColour;
   document.querySelector('#current-song').style.color = controlColour;
@@ -139,15 +173,20 @@ updateColours = function(visualiser) {
                   if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
               })
           }
+          if (element.nodeName === 'BUTTON') {
+            element.style.color = controlColour;
+
+          }
       })
   })
 }
 
 saveProfile = function(visualiser) {
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
-  let profile = JSON.stringify(visualiser.profiles[visualiser.profileNumber - 1]);
+  let profile = JSON.stringify(visualiser.options); 
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileNumber);
+  console.log(profile);
   createSnackBar(visualiser, 'saved');
 }
 
@@ -206,6 +245,6 @@ teardown = function(visualiser) {
   controls.replaceChildren();
 }
 
-module.exports = {map, setupProfiles, changeProfile, createTitle, setOptions, changeOption, 
-  updateColours, createNumberInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
+module.exports = {map, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption, 
+  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
 

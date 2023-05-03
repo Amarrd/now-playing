@@ -21,8 +21,8 @@ function startVisualiser() {
 		addSwitchButtons();
 		initialised = true;
 	}
-	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); //new FlowVisualiser.FlowVisualier(audioPromise); //
-
+	utils.createProfileTitle();
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); 
 	let container = document.querySelector('#controls-container');
 	container.style.opacity = 1;
 	let height = (window.innerHeight - container.offsetHeight) / 2;
@@ -164,6 +164,8 @@ function canvasClicked() {
 	fade('#controls-container');
 	fade('#profiles');
 	fade('#credentialsPrompt')
+	fade('#leftSwitch')
+	fade('#rightSwitch')
 }
 
 document.onkeyup = function (e) {
@@ -198,57 +200,37 @@ function fade(elementId) {
 }
 
 function addSwitchButtons() {
-	// create left button
+
 	var leftButton = document.createElement("button");
+	leftButton.id = "leftSwitch";
 	leftButton.setAttribute("type", "button");
 	leftButton.setAttribute("value", "left");
 	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
-	leftButton.innerHTML = "&#8592;"; // left arrow symbol
+	leftButton.innerHTML = "&#8592;"; 
 
-	// create right button
 	var rightButton = document.createElement("button");
+	rightButton.id = "rightSwitch";
 	rightButton.setAttribute("type", "button");
 	rightButton.setAttribute("value", "right");
 	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
-	rightButton.innerHTML = "&#8594;"; // right arrow symbol
+	rightButton.innerHTML = "&#8594;"; 
 
-	// append buttons to document body
 	document.body.appendChild(leftButton);
 	document.body.appendChild(rightButton);
 
-	// style buttons using CSS
 	leftButton.style.position = "fixed";
 	leftButton.style.top = "0";
 	leftButton.style.left = "0";
+	leftButton.style.opacity = 1;
 	leftButton.style.display = "block"; 
 
 	rightButton.style.position = "fixed";
 	rightButton.style.top = "0";
 	rightButton.style.right = "0";
+	rightButton.style.opacity = 1;
 	rightButton.style.display = "block";
-
-	//  show or hide buttons on mouseover and mouseout events
-	// document.body.onmouseover = function (event) {
-	// 	// get the mouse y position relative to the window height
-	// 	var mouseY = event.clientY / window.innerHeight;
-	// 	// if mouse is in the top quarter of the screen, show buttons
-	// 	if (mouseY < 0.25) {
-	// 		leftButton.style.display = "block";
-	// 		rightButton.style.display = "block";
-	// 	} else {
-	// 		leftButton.style.display = "none";
-	// 		rightButton.style.display = "none";
-	// 	}
-	// };
-
-	//   document.body.onmouseout = function(event) {
-	// 	// hide buttons when mouse leaves the body
-	// 	leftButton.style.display = "none";
-	// 	rightButton.style.display = "none";
-	//   };
 }
 
-// define functions for button clicks
 function leftFunction() {
 	utils.teardown(currentVisualiser);
 	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
@@ -285,7 +267,23 @@ function resetProfile() {
 	utils.resetProfile(currentVisualiser);
 }
 
+function addColours() {
+	currentVisualiser.createColourDialogue();
+}
+
+function closeColours() {
+	currentVisualiser.closeColourDialogue();
+}
+
+function clearColour() {
+	currentVisualiser.clearColour();
+}
+
+function colourClicked(colour) {
+	currentVisualiser.colourClicked(colour);
+}
+
 module.exports = {
 	startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile,
-	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction, addColours, closeColours, clearColour, colourClicked
 }
