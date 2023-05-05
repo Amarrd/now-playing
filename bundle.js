@@ -26777,8 +26777,8 @@ class Visualiser {
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, false)) * volume //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
-                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, true))
+                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
@@ -26860,7 +26860,6 @@ class Visualiser {
         clear.style.float = 'left';
         clear.style.marginLeft = '20px'
         clear.setAttribute('onclick', 'myBundle.clearColour()');
-
 
         close.innerHTML = 'close';
         close.id = 'closeColour';
@@ -26964,6 +26963,17 @@ class Visualiser {
         this.currentColour = colour.getAttribute('index');
         colour.setAttribute('currentColour', 'true');
         colour.style.border = '3px solid #e7e7e7'
+
+        this.profiles[this.profileNumber - 1].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+            .map(button => new iro.Color(button.style.backgroundColor).hexString)
+            .filter(colour => colour != "#000000");
+
+        this.gradientArray = new Gradient()
+            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setMidpoint(500)
+            .getColors();
+
+        utils.updateColours(this);
     }
 
     clearColour() {
