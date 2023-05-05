@@ -17,6 +17,7 @@ class Visualiser {
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
+        this.themeHue;
 
         this.setupControls();
 
@@ -88,6 +89,11 @@ class Visualiser {
 
     updateControls() {
         //no op
+    }
+
+    getProfileHue(index) {
+        let i = index || this.profileNumber - 1;
+        return this.profiles[i].hue + Number(this.profiles[i].hueShift) / 2;
     }
 }
 

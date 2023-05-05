@@ -23,7 +23,6 @@ class Visualiser {
         this.baseDotSize = 5;
         this.maxDotSize = 30;
         this.dotSizes = [];
-        this.dotHues = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
         this.intervalFunction;
@@ -37,11 +36,11 @@ class Visualiser {
         utils.setOptions(this);
         utils.setupProfiles(this);
         this.gradientArray = new Gradient()
-        .setColorGradient(...this.options.gradientColours)
-        .setMidpoint(500)
-        .getColors();
-        utils.updateColours(this);
+            .setColorGradient(...this.options.gradientColours)
+            .setMidpoint(500)
+            .getColors();
         this.updateControls();
+        utils.updateColours(this);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -92,47 +91,28 @@ class Visualiser {
                     let noiseVal = utils.map(this.noise.perlin2(noiseInp, 0), -1, 1, 0, 1, true);
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
-                    let currentDotHue = this.dotHues[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * volume //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
-                    let maxHue = Number(this.options.hue) + Number(this.options.hueShift);
-                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.5, Number(this.options.hue), maxHue, false)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true));
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, false)) * volume //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
                     }
 
-                    if (dotHue < currentDotHue) {
-                        dotHue = Math.max(currentDotHue - 1, 0);
-                    }
-
                     if (gradientIndex < currentGradientIndex) {
                         gradientIndex = Math.max(currentGradientIndex - 1, 0);
                     }
 
-                    if (dotHue > 360) {
-                        dotHue = dotHue - 360;
-                    }
-
-                    if (dotHue < 0) {
-                        dotHue = dotHue + 360;
-                    }
-
                     this.ctx.beginPath();
                     this.ctx.arc(x, y, dotSize / 2, 0, 2 * Math.PI, false);
-                    if (this.options.colourMode === 'gradient') {
-                        this.ctx.fillStyle = this.gradientArray[gradientIndex];
-                    } else {
-                        this.ctx.fillStyle = `hsl(${dotHue}, 100%, 50%)`;
-                    }
+
+                    this.ctx.fillStyle = this.gradientArray[gradientIndex];
                     this.ctx.fill();
                     this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = `hsl(0, 100%, 0%)`;
                     this.ctx.stroke();
 
                     this.dotSizes[currDot] = dotSize;
-                    this.dotHues[currDot] = dotHue;
                     this.gradientIndexes[currDot] = gradientIndex;
                     currDot++;
                 }
@@ -145,21 +125,12 @@ class Visualiser {
 
     setupControls() {
         let controls = document.querySelector('#controls');
-        let colourModes = {
-            hue_Shift: 'hue shift',
-            gradient: 'gradient'
-        }
-
-        utils.createSelectInput('colour mode', 'colourMode', colourModes)
-
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
-        openColour.innerHTML = 'add colours'
+        openColour.innerHTML = 'configure gradient'
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
-        utils.createNumberInput('hue', 'hue', 1, 360)
-        utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
@@ -242,7 +213,7 @@ class Visualiser {
             ]
         });
 
-        this.sliderPicker.on('color:change', function(colour) {
+        this.sliderPicker.on('color:change', function (colour) {
             let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes).find(button => button.getAttribute('currentColour') === 'true')
             if (!colourButton) {
                 return;
@@ -284,15 +255,13 @@ class Visualiser {
     closeColourDialogue() {
 
         this.options.gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-        .map(button => new iro.Color(button.style.backgroundColor).hexString)
-        .filter(colour => colour != "#000000");
+            .map(button => new iro.Color(button.style.backgroundColor).hexString)
+            .filter(colour => colour != "#000000");
 
         this.gradientArray = new Gradient()
-        .setColorGradient(...this.options.gradientColours)
-        .setMidpoint(100)
-        .getColors(); 
-
-        this.options.hue = new iro.Color(this.gradientArray[50]).hue;
+            .setColorGradient(...this.options.gradientColours)
+            .setMidpoint(500)
+            .getColors();
 
         utils.updateColours(this);
         document.body.removeChild(document.querySelector('#colourPrompt'))
@@ -329,18 +298,29 @@ class Visualiser {
     }
 
     updateControls() {
-        if (this.options.colourMode == 'gradient') {
-            document.querySelector('#hueLabel').style.display = 'none'
-            document.querySelector('#hueShiftLabel').style.display = 'none'
-            document.querySelector('#addColours').style.display = 'inline'
-            this.options.hue = Math.round(new iro.Color(this.gradientArray[50]).hue);
-            this.options.hueShift = 0;
-        } else {
-            document.querySelector('#hueLabel').style.display = 'inline'
-            document.querySelector('#hueShiftLabel').style.display = 'inline'
-            document.querySelector('#addColours').style.display = 'none'
-        }
+            this.gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+                .setMidpoint(500)
+                .getColors();
         utils.updateColours(this);
+    }
+
+    getProfileHue(index) {
+        if (index >= 0) {
+            let gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[index].gradientColours)
+                .setMidpoint(500)
+                .getColors();
+            let iroColour = new iro.Color(gradientArray[250]);
+            return iroColour.hue;
+        } else {
+            let gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+                .setMidpoint(500)
+                .getColors();
+            let iroColour = new iro.Color(gradientArray[250])
+            return iroColour.hue;
+        }
     }
 
     recalcTotal() {

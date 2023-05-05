@@ -1,14 +1,11 @@
 [
     {
-        "colourMode": "gradient",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 230,
-        "hueShift": 150,
         "dotModifier": 6,
         "ringCount": 5,
         "ringDistance": 30,
@@ -16,15 +13,12 @@
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 150,
-        "hueShift": 50,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 44,
@@ -32,15 +26,12 @@
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 150,
-        "hueShift": 150,
         "dotModifier": 2,
         "ringCount": 15,
         "ringDistance": 44,
@@ -48,15 +39,12 @@
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 130,
-        "hueShift": 0,
         "dotModifier": 2,
         "ringCount": 9,
         "ringDistance": 69,
@@ -64,15 +52,12 @@
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 0,
-        "hueShift": 30,
         "dotModifier": 6,
         "ringCount": 13,
         "ringDistance": 44,
@@ -80,15 +65,12 @@
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 250,
-        "hueShift": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,

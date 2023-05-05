@@ -1,36 +1,41 @@
 const iro = require('@jaames/iro');
 
-map = function(n, start1, stop1, start2, stop2, withinBounds) {
-    const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
-    if (!withinBounds) {
-      return newval;
-    }
-    if (start2 < stop2) {
-      return Math.max(Math.min(newval, stop2), start2);
-    } else {
-      return Math.max(Math.min(newval, start2), stop2);
-    }
+map = function (n, start1, stop1, start2, stop2, withinBounds) {
+  const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+  if (!withinBounds) {
+    return newval;
+  }
+  if (start2 < stop2) {
+    return Math.max(Math.min(newval, stop2), start2);
+  } else {
+    return Math.max(Math.min(newval, start2), stop2);
+  }
 }
 
-setupProfiles = function(visualiser) {
+loadProfiles = function (visualiser) {
   for (let i = 0; i < visualiser.profiles.length; i++) {
-      const savedProfile = localStorage.getItem(visualiser.name + '_profile_' + (i + 1));
-      if (savedProfile) {
-        visualiser.profiles[i] = JSON.parse(savedProfile);
-      }
+    const savedProfile = localStorage.getItem(visualiser.name + '_profile_' + (i + 1));
+    if (savedProfile) {
+      visualiser.profiles[i] = JSON.parse(savedProfile);
+    }
   }
+}
+
+setupProfiles = function (visualiser) {
+  loadProfiles(visualiser);
 
   let profileContainer = document.querySelector('#profiles');
   profileContainer.style.opacity = 1;
   for (let i = 0; i < visualiser.profiles.length; i++) {
-      let button = document.createElement('button');
-      let profileColour = `hsl( ${Number(visualiser.profiles[i].hue) + Number(visualiser.profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
-      let profileNumber = i + 1;
-      button.id = 'profile-' + profileNumber + '-button';
-      button.textContent = profileNumber;
-      button.style.backgroundColor = profileColour;
-      button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
-      profileContainer.appendChild(button);
+    let button = document.createElement('button');
+    let profileHue = visualiser.getProfileHue(i);
+    let profileColour = `hsl( ${profileHue}, 100%, 30%, 0.7)`;
+    let profileNumber = i + 1;
+    button.id = 'profile-' + profileNumber + '-button';
+    button.textContent = profileNumber;
+    button.style.backgroundColor = profileColour;
+    button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+    profileContainer.appendChild(button);
   }
 
   let saveProfile = document.createElement('button');
@@ -53,11 +58,11 @@ setupProfiles = function(visualiser) {
   profileContainer.style.top = height + 'px'
   visualiser.options = visualiser.profiles[0];
   visualiser.profileNumber = 1;
-  setOptions(visualiser)
-  updateColours(visualiser);
+  //setOptions(visualiser)
+  //updateColours(visualiser);
 }
 
-createNumberInput = function(label, id, min, max) {
+createNumberInput = function (label, id, min, max) {
   let controls = document.querySelector('#controls');
 
   let labelElement = document.createElement('label');
@@ -77,7 +82,7 @@ createNumberInput = function(label, id, min, max) {
   controls.appendChild(labelElement);
 }
 
-createSelectInput = function(label, id, options) {
+createSelectInput = function (label, id, options) {
   let labelElement = document.createElement('label');
   labelElement.innerHTML = label;
   labelElement.htmlFor = id;
@@ -99,29 +104,29 @@ createSelectInput = function(label, id, options) {
   controls.appendChild(labelElement);
 }
 
-changeProfile = function(visualiser, index) {
-  let previousParticleCount = visualiser.options.particles;
+changeProfile = function (visualiser, index) {
   visualiser.options = visualiser.profiles[index];
   visualiser.profileNumber = index + 1;
   console.log('changed to profile ' + visualiser.profileNumber);
   setOptions(visualiser)
   updateColours(visualiser);
   if (visualiser.name === 'flow' && visualiser.effect) {
+    let previousParticleCount = visualiser.options.particles;
     let particleDiff = previousParticleCount - visualiser.options.particles;
     visualiser.effect.clearParticles(particleDiff);
     visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
-    toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   }
+  toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   visualiser.updateControls();
 }
 
-createProfileTitle = function() {
+createProfileTitle = function () {
   let optionsTitle = document.createElement('h4');
   optionsTitle.id = 'controls-title';
   document.querySelector('#controls').appendChild(optionsTitle);
 }
 
-setOptions = function(visualiser) {
+setOptions = function (visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
     let control = document.querySelector(`#${key}`);
@@ -136,24 +141,23 @@ setOptions = function(visualiser) {
   });
 }
 
-changeOption = function(visualiser, option) {
+changeOption = function (visualiser, option) {
   if (visualiser.name === 'flow' && option.id === 'particles') {
-      let particleDiff = visualiser.options[option.id] - option.value;
-      visualiser.options[option.id] = option.value;
-      visualiser.effect.clearParticles(particleDiff);
-      visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
+    let particleDiff = visualiser.options[option.id] - option.value;
+    visualiser.options[option.id] = option.value;
+    visualiser.effect.clearParticles(particleDiff);
+    visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
   } else {
-      visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
+    visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   visualiser.updateControls();
   updateColours(visualiser);
 }
 
-updateColours = function(visualiser) {
-    let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
-    let controlColour = `hsl( ${hue}, 100%, 80%)`;
-    let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
- 
+updateColours = function (visualiser) {
+  let hue = visualiser.getProfileHue();
+  let controlColour = `hsl( ${hue}, 100%, 80%)`;
+  let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
   document.querySelector('#mic-icon').style.color = controlColour;
   document.querySelector('#current-song').style.color = controlColour;
@@ -165,32 +169,32 @@ updateColours = function(visualiser) {
   let controlsToUpdate = ['#controls', '#global-controls']
 
   controlsToUpdate.forEach(controls => {
-      let controlElement = document.querySelector(controls);
-      controlElement.style.color = controlColour;
-      controlElement.childNodes.forEach(element => {
-          if (element.nodeName === 'LABEL') {
-              element.childNodes.forEach(child => {
-                  if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
-              })
-          }
-          if (element.nodeName === 'BUTTON') {
-            element.style.color = controlColour;
+    let controlElement = document.querySelector(controls);
+    controlElement.style.color = controlColour;
+    controlElement.childNodes.forEach(element => {
+      if (element.nodeName === 'LABEL') {
+        element.childNodes.forEach(child => {
+          if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
+        })
+      }
+      if (element.nodeName === 'BUTTON') {
+        element.style.color = controlColour;
 
-          }
-      })
+      }
+    })
   })
 }
 
-saveProfile = function(visualiser) {
+saveProfile = function (visualiser) {
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
-  let profile = JSON.stringify(visualiser.options); 
+  let profile = JSON.stringify(visualiser.options);
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileNumber);
   console.log(profile);
   createSnackBar(visualiser, 'saved');
 }
 
-resetProfile = function(visualiser) {
+resetProfile = function (visualiser) {
   visualiser.profiles[visualiser.profileNumber - 1] = JSON.parse(JSON.stringify(visualiser.defaultProfiles[visualiser.profileNumber - 1]));
   changeProfile(visualiser, visualiser.profileNumber - 1);
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
@@ -199,7 +203,7 @@ resetProfile = function(visualiser) {
   createSnackBar(visualiser, 'reset');
 }
 
-createSnackBar = function(visualiser, action) {
+createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
   snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
@@ -208,30 +212,30 @@ createSnackBar = function(visualiser, action) {
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
 }
 
-toggleProfileTransition = function(visualiser, value) {
+toggleProfileTransition = function (visualiser, value) {
   clearInterval(visualiser.intervalFunction);
   visualiser.transitionInterval = value * 1000;
   if (visualiser.transitionInterval > 0) {
-      console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
-      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
+    console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
+    visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
   } else {
-      console.log('stopping profile transitions');
+    console.log('stopping profile transitions');
   }
 }
 
-transitionProfile = function(visualiser, currentInterval) {
+transitionProfile = function (visualiser, currentInterval) {
   if (visualiser.transitionInterval > 0 && currentInterval === visualiser.transitionInterval) {
-      let index;
-      if (visualiser.profileNumber === visualiser.defaultProfiles.length) {
-          index = 0;
-      } else {
-          index = visualiser.profileNumber;
-      }
-      changeProfile(visualiser, index);
+    let index;
+    if (visualiser.profileNumber === visualiser.defaultProfiles.length) {
+      index = 0;
+    } else {
+      index = visualiser.profileNumber;
+    }
+    changeProfile(visualiser, index);
   }
 }
 
-teardown = function(visualiser) {
+teardown = function (visualiser) {
   visualiser.ctx.save();
   visualiser.ctx.setTransform(1, 0, 0, 1, 0, 0);
   visualiser.ctx.clearRect(0, 0, visualiser.canvas.width, visualiser.canvas.height);
@@ -245,6 +249,8 @@ teardown = function(visualiser) {
   controls.replaceChildren();
 }
 
-module.exports = {map, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption, 
-  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
+module.exports = {
+  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
+  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
+}
 

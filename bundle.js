@@ -26605,15 +26605,12 @@ module.exports = {main};
 },{"./microphone":196}],190:[function(require,module,exports){
 module.exports=[
     {
-        "colourMode": "gradient",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 230,
-        "hueShift": 150,
         "dotModifier": 6,
         "ringCount": 5,
         "ringDistance": 30,
@@ -26621,15 +26618,12 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 150,
-        "hueShift": 50,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 44,
@@ -26637,15 +26631,12 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 150,
-        "hueShift": 150,
         "dotModifier": 2,
         "ringCount": 15,
         "ringDistance": 44,
@@ -26653,15 +26644,12 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 130,
-        "hueShift": 0,
         "dotModifier": 2,
         "ringCount": 9,
         "ringDistance": 69,
@@ -26669,15 +26657,12 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 0,
-        "hueShift": 30,
         "dotModifier": 6,
         "ringCount": 13,
         "ringDistance": 44,
@@ -26685,15 +26670,12 @@ module.exports=[
         "rotationSpeed": 1
     },
     {
-        "colourMode": "hue_Shift",
         "gradientColours": [
             "#3F2CAF", 
             "#e9446a", 
             "#edc988", 
             "#607D8B"
         ],
-        "hue": 250,
-        "hueShift": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,
@@ -26727,7 +26709,6 @@ class Visualiser {
         this.baseDotSize = 5;
         this.maxDotSize = 30;
         this.dotSizes = [];
-        this.dotHues = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
         this.intervalFunction;
@@ -26741,11 +26722,11 @@ class Visualiser {
         utils.setOptions(this);
         utils.setupProfiles(this);
         this.gradientArray = new Gradient()
-        .setColorGradient(...this.options.gradientColours)
-        .setMidpoint(500)
-        .getColors();
-        utils.updateColours(this);
+            .setColorGradient(...this.options.gradientColours)
+            .setMidpoint(500)
+            .getColors();
         this.updateControls();
+        utils.updateColours(this);
 
         window.addEventListener('resize', e => {
             let newWidth = e.target.innerWidth;
@@ -26796,47 +26777,28 @@ class Visualiser {
                     let noiseVal = utils.map(this.noise.perlin2(noiseInp, 0), -1, 1, 0, 1, true);
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
-                    let currentDotHue = this.dotHues[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 1, this.baseDotSize, this.maxDotSize * ringNumber, false)) * volume //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
-                    let maxHue = Number(this.options.hue) + Number(this.options.hueShift);
-                    let dotHue = Math.round(utils.map(samples[currDot], 0, 0.5, Number(this.options.hue), maxHue, false)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true));
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, false)) * volume //* utils.map(adjustedNoise, 0, 1, 1, 2, true);
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
                     }
 
-                    if (dotHue < currentDotHue) {
-                        dotHue = Math.max(currentDotHue - 1, 0);
-                    }
-
                     if (gradientIndex < currentGradientIndex) {
                         gradientIndex = Math.max(currentGradientIndex - 1, 0);
                     }
 
-                    if (dotHue > 360) {
-                        dotHue = dotHue - 360;
-                    }
-
-                    if (dotHue < 0) {
-                        dotHue = dotHue + 360;
-                    }
-
                     this.ctx.beginPath();
                     this.ctx.arc(x, y, dotSize / 2, 0, 2 * Math.PI, false);
-                    if (this.options.colourMode === 'gradient') {
-                        this.ctx.fillStyle = this.gradientArray[gradientIndex];
-                    } else {
-                        this.ctx.fillStyle = `hsl(${dotHue}, 100%, 50%)`;
-                    }
+
+                    this.ctx.fillStyle = this.gradientArray[gradientIndex];
                     this.ctx.fill();
                     this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = `hsl(0, 100%, 0%)`;
                     this.ctx.stroke();
 
                     this.dotSizes[currDot] = dotSize;
-                    this.dotHues[currDot] = dotHue;
                     this.gradientIndexes[currDot] = gradientIndex;
                     currDot++;
                 }
@@ -26849,21 +26811,12 @@ class Visualiser {
 
     setupControls() {
         let controls = document.querySelector('#controls');
-        let colourModes = {
-            hue_Shift: 'hue shift',
-            gradient: 'gradient'
-        }
-
-        utils.createSelectInput('colour mode', 'colourMode', colourModes)
-
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
-        openColour.innerHTML = 'add colours'
+        openColour.innerHTML = 'configure gradient'
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
-        utils.createNumberInput('hue', 'hue', 1, 360)
-        utils.createNumberInput('hue shift', 'hueShift', 1, 360)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
@@ -26946,7 +26899,7 @@ class Visualiser {
             ]
         });
 
-        this.sliderPicker.on('color:change', function(colour) {
+        this.sliderPicker.on('color:change', function (colour) {
             let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes).find(button => button.getAttribute('currentColour') === 'true')
             if (!colourButton) {
                 return;
@@ -26988,15 +26941,13 @@ class Visualiser {
     closeColourDialogue() {
 
         this.options.gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-        .map(button => new iro.Color(button.style.backgroundColor).hexString)
-        .filter(colour => colour != "#000000");
+            .map(button => new iro.Color(button.style.backgroundColor).hexString)
+            .filter(colour => colour != "#000000");
 
         this.gradientArray = new Gradient()
-        .setColorGradient(...this.options.gradientColours)
-        .setMidpoint(100)
-        .getColors(); 
-
-        this.options.hue = new iro.Color(this.gradientArray[50]).hue;
+            .setColorGradient(...this.options.gradientColours)
+            .setMidpoint(500)
+            .getColors();
 
         utils.updateColours(this);
         document.body.removeChild(document.querySelector('#colourPrompt'))
@@ -27033,18 +26984,29 @@ class Visualiser {
     }
 
     updateControls() {
-        if (this.options.colourMode == 'gradient') {
-            document.querySelector('#hueLabel').style.display = 'none'
-            document.querySelector('#hueShiftLabel').style.display = 'none'
-            document.querySelector('#addColours').style.display = 'inline'
-            this.options.hue = Math.round(new iro.Color(this.gradientArray[50]).hue);
-            this.options.hueShift = 0;
-        } else {
-            document.querySelector('#hueLabel').style.display = 'inline'
-            document.querySelector('#hueShiftLabel').style.display = 'inline'
-            document.querySelector('#addColours').style.display = 'none'
-        }
+            this.gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+                .setMidpoint(500)
+                .getColors();
         utils.updateColours(this);
+    }
+
+    getProfileHue(index) {
+        if (index >= 0) {
+            let gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[index].gradientColours)
+                .setMidpoint(500)
+                .getColors();
+            let iroColour = new iro.Color(gradientArray[250]);
+            return iroColour.hue;
+        } else {
+            let gradientArray = new Gradient()
+                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+                .setMidpoint(500)
+                .getColors();
+            let iroColour = new iro.Color(gradientArray[250])
+            return iroColour.hue;
+        }
     }
 
     recalcTotal() {
@@ -27331,6 +27293,7 @@ class Visualiser {
         this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
+        this.themeHue;
 
         this.setupControls();
 
@@ -27402,6 +27365,11 @@ class Visualiser {
 
     updateControls() {
         //no op
+    }
+
+    getProfileHue(index) {
+        let i = index || this.profileNumber - 1;
+        return this.profiles[i].hue + Number(this.profiles[i].hueShift) / 2;
     }
 }
 
@@ -27769,37 +27737,42 @@ module.exports = {
 },{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./flowVisualiser":195,"./utils":198,"audio-encoder":202}],198:[function(require,module,exports){
 const iro = require('@jaames/iro');
 
-map = function(n, start1, stop1, start2, stop2, withinBounds) {
-    const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
-    if (!withinBounds) {
-      return newval;
-    }
-    if (start2 < stop2) {
-      return Math.max(Math.min(newval, stop2), start2);
-    } else {
-      return Math.max(Math.min(newval, start2), stop2);
-    }
+map = function (n, start1, stop1, start2, stop2, withinBounds) {
+  const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+  if (!withinBounds) {
+    return newval;
+  }
+  if (start2 < stop2) {
+    return Math.max(Math.min(newval, stop2), start2);
+  } else {
+    return Math.max(Math.min(newval, start2), stop2);
+  }
 }
 
-setupProfiles = function(visualiser) {
+loadProfiles = function (visualiser) {
   for (let i = 0; i < visualiser.profiles.length; i++) {
-      const savedProfile = localStorage.getItem(visualiser.name + '_profile_' + (i + 1));
-      if (savedProfile) {
-        visualiser.profiles[i] = JSON.parse(savedProfile);
-      }
+    const savedProfile = localStorage.getItem(visualiser.name + '_profile_' + (i + 1));
+    if (savedProfile) {
+      visualiser.profiles[i] = JSON.parse(savedProfile);
+    }
   }
+}
+
+setupProfiles = function (visualiser) {
+  loadProfiles(visualiser);
 
   let profileContainer = document.querySelector('#profiles');
   profileContainer.style.opacity = 1;
   for (let i = 0; i < visualiser.profiles.length; i++) {
-      let button = document.createElement('button');
-      let profileColour = `hsl( ${Number(visualiser.profiles[i].hue) + Number(visualiser.profiles[i].hueShift) / 2}, 100%, 30%, 0.7)`;
-      let profileNumber = i + 1;
-      button.id = 'profile-' + profileNumber + '-button';
-      button.textContent = profileNumber;
-      button.style.backgroundColor = profileColour;
-      button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
-      profileContainer.appendChild(button);
+    let button = document.createElement('button');
+    let profileHue = visualiser.getProfileHue(i);
+    let profileColour = `hsl( ${profileHue}, 100%, 30%, 0.7)`;
+    let profileNumber = i + 1;
+    button.id = 'profile-' + profileNumber + '-button';
+    button.textContent = profileNumber;
+    button.style.backgroundColor = profileColour;
+    button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
+    profileContainer.appendChild(button);
   }
 
   let saveProfile = document.createElement('button');
@@ -27822,11 +27795,11 @@ setupProfiles = function(visualiser) {
   profileContainer.style.top = height + 'px'
   visualiser.options = visualiser.profiles[0];
   visualiser.profileNumber = 1;
-  setOptions(visualiser)
-  updateColours(visualiser);
+  //setOptions(visualiser)
+  //updateColours(visualiser);
 }
 
-createNumberInput = function(label, id, min, max) {
+createNumberInput = function (label, id, min, max) {
   let controls = document.querySelector('#controls');
 
   let labelElement = document.createElement('label');
@@ -27846,7 +27819,7 @@ createNumberInput = function(label, id, min, max) {
   controls.appendChild(labelElement);
 }
 
-createSelectInput = function(label, id, options) {
+createSelectInput = function (label, id, options) {
   let labelElement = document.createElement('label');
   labelElement.innerHTML = label;
   labelElement.htmlFor = id;
@@ -27868,29 +27841,29 @@ createSelectInput = function(label, id, options) {
   controls.appendChild(labelElement);
 }
 
-changeProfile = function(visualiser, index) {
-  let previousParticleCount = visualiser.options.particles;
+changeProfile = function (visualiser, index) {
   visualiser.options = visualiser.profiles[index];
   visualiser.profileNumber = index + 1;
   console.log('changed to profile ' + visualiser.profileNumber);
   setOptions(visualiser)
   updateColours(visualiser);
   if (visualiser.name === 'flow' && visualiser.effect) {
+    let previousParticleCount = visualiser.options.particles;
     let particleDiff = previousParticleCount - visualiser.options.particles;
     visualiser.effect.clearParticles(particleDiff);
     visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
-    toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   }
+  toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   visualiser.updateControls();
 }
 
-createProfileTitle = function() {
+createProfileTitle = function () {
   let optionsTitle = document.createElement('h4');
   optionsTitle.id = 'controls-title';
   document.querySelector('#controls').appendChild(optionsTitle);
 }
 
-setOptions = function(visualiser) {
+setOptions = function (visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
   Object.keys(visualiser.options).forEach(key => {
     let control = document.querySelector(`#${key}`);
@@ -27905,24 +27878,23 @@ setOptions = function(visualiser) {
   });
 }
 
-changeOption = function(visualiser, option) {
+changeOption = function (visualiser, option) {
   if (visualiser.name === 'flow' && option.id === 'particles') {
-      let particleDiff = visualiser.options[option.id] - option.value;
-      visualiser.options[option.id] = option.value;
-      visualiser.effect.clearParticles(particleDiff);
-      visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
+    let particleDiff = visualiser.options[option.id] - option.value;
+    visualiser.options[option.id] = option.value;
+    visualiser.effect.clearParticles(particleDiff);
+    visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
   } else {
-      visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
+    visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   visualiser.updateControls();
   updateColours(visualiser);
 }
 
-updateColours = function(visualiser) {
-    let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
-    let controlColour = `hsl( ${hue}, 100%, 80%)`;
-    let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
- 
+updateColours = function (visualiser) {
+  let hue = visualiser.getProfileHue();
+  let controlColour = `hsl( ${hue}, 100%, 80%)`;
+  let profileColour = `hsl( ${hue}, 100%, 30%, 0.7)`;
 
   document.querySelector('#mic-icon').style.color = controlColour;
   document.querySelector('#current-song').style.color = controlColour;
@@ -27934,32 +27906,32 @@ updateColours = function(visualiser) {
   let controlsToUpdate = ['#controls', '#global-controls']
 
   controlsToUpdate.forEach(controls => {
-      let controlElement = document.querySelector(controls);
-      controlElement.style.color = controlColour;
-      controlElement.childNodes.forEach(element => {
-          if (element.nodeName === 'LABEL') {
-              element.childNodes.forEach(child => {
-                  if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
-              })
-          }
-          if (element.nodeName === 'BUTTON') {
-            element.style.color = controlColour;
+    let controlElement = document.querySelector(controls);
+    controlElement.style.color = controlColour;
+    controlElement.childNodes.forEach(element => {
+      if (element.nodeName === 'LABEL') {
+        element.childNodes.forEach(child => {
+          if (child.nodeName === 'INPUT' || child.nodeName === 'SELECT') child.style.color = controlColour;
+        })
+      }
+      if (element.nodeName === 'BUTTON') {
+        element.style.color = controlColour;
 
-          }
-      })
+      }
+    })
   })
 }
 
-saveProfile = function(visualiser) {
+saveProfile = function (visualiser) {
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
-  let profile = JSON.stringify(visualiser.options); 
+  let profile = JSON.stringify(visualiser.options);
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileNumber);
   console.log(profile);
   createSnackBar(visualiser, 'saved');
 }
 
-resetProfile = function(visualiser) {
+resetProfile = function (visualiser) {
   visualiser.profiles[visualiser.profileNumber - 1] = JSON.parse(JSON.stringify(visualiser.defaultProfiles[visualiser.profileNumber - 1]));
   changeProfile(visualiser, visualiser.profileNumber - 1);
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
@@ -27968,7 +27940,7 @@ resetProfile = function(visualiser) {
   createSnackBar(visualiser, 'reset');
 }
 
-createSnackBar = function(visualiser, action) {
+createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
   snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
@@ -27977,30 +27949,30 @@ createSnackBar = function(visualiser, action) {
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
 }
 
-toggleProfileTransition = function(visualiser, value) {
+toggleProfileTransition = function (visualiser, value) {
   clearInterval(visualiser.intervalFunction);
   visualiser.transitionInterval = value * 1000;
   if (visualiser.transitionInterval > 0) {
-      console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
-      visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
+    console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
+    visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
   } else {
-      console.log('stopping profile transitions');
+    console.log('stopping profile transitions');
   }
 }
 
-transitionProfile = function(visualiser, currentInterval) {
+transitionProfile = function (visualiser, currentInterval) {
   if (visualiser.transitionInterval > 0 && currentInterval === visualiser.transitionInterval) {
-      let index;
-      if (visualiser.profileNumber === visualiser.defaultProfiles.length) {
-          index = 0;
-      } else {
-          index = visualiser.profileNumber;
-      }
-      changeProfile(visualiser, index);
+    let index;
+    if (visualiser.profileNumber === visualiser.defaultProfiles.length) {
+      index = 0;
+    } else {
+      index = visualiser.profileNumber;
+    }
+    changeProfile(visualiser, index);
   }
 }
 
-teardown = function(visualiser) {
+teardown = function (visualiser) {
   visualiser.ctx.save();
   visualiser.ctx.setTransform(1, 0, 0, 1, 0, 0);
   visualiser.ctx.clearRect(0, 0, visualiser.canvas.width, visualiser.canvas.height);
@@ -28014,8 +27986,10 @@ teardown = function(visualiser) {
   controls.replaceChildren();
 }
 
-module.exports = {map, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption, 
-  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown}
+module.exports = {
+  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
+  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
+}
 
 
 },{"@jaames/iro":199}],199:[function(require,module,exports){
