@@ -14,7 +14,6 @@ class Visualiser {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.profileNumber = 1;
-        this.options = this.profiles[0];
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
 
@@ -36,7 +35,7 @@ class Visualiser {
         utils.setOptions(this);
         utils.setupProfiles(this);
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.options.gradientColours)
+            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
             .setMidpoint(500)
             .getColors();
         this.updateControls();
@@ -78,13 +77,13 @@ class Visualiser {
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2); //+ 0.3;
             let currDot = 0;
 
-            for (let ringNumber = 1; ringNumber <= this.options.ringCount; ringNumber++) {
-                let dotsForRing = ringNumber * this.options.dotModifier;
-                let ringRadius = ringNumber * this.options.ringDistance;
+            for (let ringNumber = 1; ringNumber <= this.profiles[this.profileNumber - 1].ringCount; ringNumber++) {
+                let dotsForRing = ringNumber * this.profiles[this.profileNumber - 1].dotModifier;
+                let ringRadius = ringNumber * this.profiles[this.profileNumber - 1].ringDistance;
 
                 for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
-                    this.directionModifier = this.options.alternateRings ? (-2 * (ringNumber % 2) + 1) : 1;
-                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.options.rotationSpeed - 2 * Math.PI / dotsForRing;
+                    this.directionModifier = this.profiles[this.profileNumber - 1].alternateRings ? (-2 * (ringNumber % 2) + 1) : 1;
+                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileNumber - 1].rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
                     let noiseInp = currDot + this.frameCount / 100
@@ -188,7 +187,7 @@ class Visualiser {
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
-            color: this.options.gradientColours[0],
+            color: this.profiles[this.profileNumber - 1].gradientColours[0],
             borderWidth: 1,
             borderColor: "grey",
             layout: [
@@ -214,7 +213,8 @@ class Visualiser {
         });
 
         this.sliderPicker.on('color:change', function (colour) {
-            let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes).find(button => button.getAttribute('currentColour') === 'true')
+            let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes)
+                .find(button => button.getAttribute('currentColour') === 'true')
             if (!colourButton) {
                 return;
             }
@@ -230,7 +230,7 @@ class Visualiser {
             button.id = 'colour-' + colourNumber + '-button';
             button.setAttribute('index', i);
             button.textContent = " ";
-            button.style.backgroundColor = this.options.gradientColours[i] || 'rgba(0, 0, 0, 0)';
+            button.style.backgroundColor = this.profiles[this.profileNumber - 1].gradientColours[i] || 'rgba(0, 0, 0, 0)';
             button.style.margin = '5px';
             button.style.height = '50px';
             button.style.width = '50px';
@@ -253,13 +253,12 @@ class Visualiser {
     }
 
     closeColourDialogue() {
-
-        this.options.gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+        this.profiles[this.profileNumber - 1].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
             .map(button => new iro.Color(button.style.backgroundColor).hexString)
             .filter(colour => colour != "#000000");
 
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.options.gradientColours)
+            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
             .setMidpoint(500)
             .getColors();
 
@@ -298,10 +297,10 @@ class Visualiser {
     }
 
     updateControls() {
-            this.gradientArray = new Gradient()
-                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
-                .setMidpoint(500)
-                .getColors();
+        this.gradientArray = new Gradient()
+            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setMidpoint(500)
+            .getColors();
         utils.updateColours(this);
     }
 
@@ -325,8 +324,8 @@ class Visualiser {
 
     recalcTotal() {
         this.totalDots = 0;
-        for (let i = 1; i <= this.options.ringCount; i++) {
-            this.totalDots += i * this.options.dotModifier;
+        for (let i = 1; i <= this.profiles[this.profileNumber - 1].ringCount; i++) {
+            this.totalDots += i * this.profiles[this.profileNumber - 1].dotModifier;
         }
     }
 }

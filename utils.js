@@ -56,10 +56,7 @@ setupProfiles = function (visualiser) {
 
   let height = (window.innerHeight - profileContainer.offsetHeight) / 2;
   profileContainer.style.top = height + 'px'
-  visualiser.options = visualiser.profiles[0];
-  visualiser.profileNumber = 1;
-  //setOptions(visualiser)
-  //updateColours(visualiser);
+  // visualiser.profileNumber = 1;
 }
 
 createNumberInput = function (label, id, min, max) {
@@ -105,16 +102,15 @@ createSelectInput = function (label, id, options) {
 }
 
 changeProfile = function (visualiser, index) {
-  visualiser.options = visualiser.profiles[index];
   visualiser.profileNumber = index + 1;
   console.log('changed to profile ' + visualiser.profileNumber);
   setOptions(visualiser)
   updateColours(visualiser);
   if (visualiser.name === 'flow' && visualiser.effect) {
-    let previousParticleCount = visualiser.options.particles;
-    let particleDiff = previousParticleCount - visualiser.options.particles;
+    let previousParticleCount = visualiser.profiles[visualiser.profileNumber - 1].particles;
+    let particleDiff = previousParticleCount - visualiser.profiles[visualiser.profileNumber - 1].particles;
     visualiser.effect.clearParticles(particleDiff);
-    visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
+    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileNumber - 1], particleDiff)
   }
   toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   visualiser.updateControls();
@@ -128,27 +124,27 @@ createProfileTitle = function () {
 
 setOptions = function (visualiser) {
   document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
-  Object.keys(visualiser.options).forEach(key => {
+  Object.keys(visualiser.profiles[visualiser.profileNumber - 1]).forEach(key => {
     let control = document.querySelector(`#${key}`);
     if (!control) {
       return;
     }
     if (control.type === 'checkbox') {
-      control.checked = visualiser.options[key];
+      control.checked = visualiser.profiles[visualiser.profileNumber - 1][key];
     } else {
-      control.value = visualiser.options[key];
+      control.value = visualiser.profiles[visualiser.profileNumber - 1][key];
     }
   });
 }
 
 changeOption = function (visualiser, option) {
   if (visualiser.name === 'flow' && option.id === 'particles') {
-    let particleDiff = visualiser.options[option.id] - option.value;
-    visualiser.options[option.id] = option.value;
+    let particleDiff = visualiser.profiles[visualiser.profileNumber - 1][option.id] - option.value;
+    visualiser.profiles[visualiser.profileNumber - 1][option.id] = option.value;
     visualiser.effect.clearParticles(particleDiff);
-    visualiser.effect.updateEffect(true, 0, visualiser.options, particleDiff)
+    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileNumber - 1], particleDiff)
   } else {
-    visualiser.options[option.id] = option.type === 'checkbox' ? option.checked : option.value;
+    visualiser.profiles[visualiser.profileNumber - 1][option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   visualiser.updateControls();
   updateColours(visualiser);
@@ -187,7 +183,7 @@ updateColours = function (visualiser) {
 
 saveProfile = function (visualiser) {
   let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
-  let profile = JSON.stringify(visualiser.options);
+  let profile = JSON.stringify(visualiser.profiles[visualiser.profileNumber - 1]);
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileNumber);
   console.log(profile);
@@ -205,7 +201,7 @@ resetProfile = function (visualiser) {
 
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
-  let hue = Number(visualiser.options.hue) + Number(visualiser.options.hueShift) / 2;
+  let hue = Number(visualiser.profiles[visualiser.profileNumber - 1].hue) + Number(visualiser.profiles[visualiser.profileNumber - 1].hueShift) / 2;
   snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
