@@ -26510,7 +26510,7 @@ function sign(signString, accessSecret) {
 
 module.exports = { identify, credentialsRequired, cancelCredentials, createCredentialsDialogue, submitCredentials }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":203}],188:[function(require,module,exports){
+},{"./acrConfig.json":188,"buffer":63,"crypto":71,"form-data":204}],188:[function(require,module,exports){
 module.exports={
 	"host": "identify-eu-west-1.acrcloud.com",
 	"endpoint": "/v1/identify",
@@ -26752,7 +26752,8 @@ class Visualiser {
             this.frameCount++
             let samples = this.microphone.getSamplesFor(this.totalDots);
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2);
-            let sensitivity = 1 - this.profiles[this.profileIndex].sensitivity / 10;
+            let sensitivity = utils.map(this.profiles[this.profileIndex].sensitivity, 0, 10, 1, 0.1, true);
+            console.log(sensitivity);
             let currDot = 0;
 
             for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
@@ -26768,7 +26769,7 @@ class Visualiser {
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
                     let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
-                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
+                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
@@ -27019,7 +27020,7 @@ class Visualiser {
 }
 
 module.exports = { Visualiser };
-},{"./circleDefaultProfiles.json":190,"./microphone":196,"./utils":198,"@jaames/iro":199,"javascript-color-gradient":204}],192:[function(require,module,exports){
+},{"./circleDefaultProfiles.json":190,"./microphone":196,"./utils":198,"@jaames/iro":199,"javascript-color-gradient":205}],192:[function(require,module,exports){
 module.exports=[
     {
         "hue": 10,
@@ -27450,6 +27451,7 @@ const FlowVisualiser = require('./flowVisualiser')
 const CircleVisualiser = require('./circleVisualiser')
 const BarVisualiser = require('./barVisualiser')
 const utils = require('./utils');
+const saveAs = require('file-saver')
 
 const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
@@ -27513,7 +27515,7 @@ function updateSong() {
 			console.log('Stopped recording')
 			const audioBlob = new Blob(chunks, { type: 'audio/webm' });
 			if (debugRecording) {
-				saveRecordingToFile(audioBlob, 'beforeEncoding')
+				saveToFile(audioBlob, 'beforeEncoding', '.wav')
 			}
 
 			let fileReader = new FileReader();
@@ -27526,7 +27528,7 @@ function updateSong() {
 						function (progress) { },
 						function (encodedAudio) {
 							if (debugRecording) {
-								saveRecordingToFile(encodedAudio, 'afterEncoding')
+								saveToFile(encodedAudio, 'afterEncoding', '.wav')
 							}
 							console.log('Identifying recording')
 							acrCloud.identify(encodedAudio, function (body, err) {
@@ -27585,12 +27587,13 @@ function processResponse(response) {
 	}
 }
 
-function saveRecordingToFile(audioBlob, name) {
-	var blobUrl = URL.createObjectURL(audioBlob);
-	var a = document.createElement("a");
-	a.href = blobUrl;
-	a.download = name + ".wav";
-	a.click();
+function saveToFile(toDownload, name, extension) {
+	var url = URL.createObjectURL(toDownload);
+	var download = document.createElement("a");
+	download.href = url;
+	download.download = name + extension;
+	download.click();
+	document.removeChild(download);
 }
 
 function toggleAuto() {
@@ -27619,6 +27622,11 @@ document.onkeyup = function (e) {
 	if (e.key === "s") {
 		fade('#current-song');
 	}
+	if (e.shiftKey && e.key === 'S') {
+		var blob = new Blob([JSON.stringify(currentVisualiser.profiles)], {type: 'application/json'});
+		saveToFile(blob, currentVisualiser.name + ' profiles', '.json')
+	}
+
 }
 
 function fadeIn(elementId) {
@@ -27741,7 +27749,7 @@ module.exports = {
 	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction, addColours, closeColours, clearColour, colourClicked
 }
 
-},{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./flowVisualiser":195,"./utils":198,"audio-encoder":202}],198:[function(require,module,exports){
+},{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./flowVisualiser":195,"./utils":198,"audio-encoder":202,"file-saver":203}],198:[function(require,module,exports){
 const iro = require('@jaames/iro');
 
 map = function (n, start1, stop1, start2, stop2, withinBounds) {
@@ -29902,7 +29910,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":239}],201:[function(require,module,exports){
+},{"lamejs":240}],201:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -30014,10 +30022,16 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 };
 
 },{"./encodeMp3":200,"./encodeWav":201}],203:[function(require,module,exports){
+(function (global){(function (){
+(function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(a,b,c){var d=new XMLHttpRequest;d.open("GET",a),d.responseType="blob",d.onload=function(){g(d.response,b,c)},d.onerror=function(){console.error("could not download file")},d.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.navigator&&/Macintosh/.test(navigator.userAgent)&&/AppleWebKit/.test(navigator.userAgent)&&!/Safari/.test(navigator.userAgent),g=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype&&!a?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(b,d,e,g){if(g=g||open("","_blank"),g&&(g.document.title=g.document.body.innerText="downloading..."),"string"==typeof b)return c(b,d,e);var h="application/octet-stream"===b.type,i=/constructor/i.test(f.HTMLElement)||f.safari,j=/CriOS\/[\d]+/.test(navigator.userAgent);if((j||h&&i||a)&&"undefined"!=typeof FileReader){var k=new FileReader;k.onloadend=function(){var a=k.result;a=j?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),g?g.location.href=a:location=a,g=null},k.readAsDataURL(b)}else{var l=f.URL||f.webkitURL,m=l.createObjectURL(b);g?g.location=m:location.href=m,g=null,setTimeout(function(){l.revokeObjectURL(m)},4E4)}});f.saveAs=g.saveAs=g,"undefined"!=typeof module&&(module.exports=g)});
+
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],204:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
-},{}],204:[function(require,module,exports){
+},{}],205:[function(require,module,exports){
 class GradientColor {
   constructor(startColor = "", endColor = "", minNum = 0, maxNum = 10) {
     this.setColorGradient = (colorStart, colorEnd) => {
@@ -30178,7 +30192,7 @@ class Gradient {
 
 module.exports = Gradient;
 
-},{}],205:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -30259,7 +30273,7 @@ function ATH() {
 
 module.exports = ATH;
 
-},{"./Encoder.js":210,"./common.js":238}],206:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],207:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -31287,7 +31301,7 @@ function BitStream() {
 
 module.exports = BitStream;
 
-},{"./Encoder.js":210,"./LameInternalFlags.js":220,"./Tables.js":232,"./Takehiro.js":233,"./common.js":238}],207:[function(require,module,exports){
+},{"./Encoder.js":211,"./LameInternalFlags.js":221,"./Tables.js":233,"./Takehiro.js":234,"./common.js":239}],208:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -31381,7 +31395,7 @@ function CBRNewIterationLoop(_quantize)  {
 }
 module.exports = CBRNewIterationLoop;
 
-},{"./Encoder.js":210,"./L3Side.js":217,"./LameInternalFlags.js":220,"./MeanBits.js":222,"./common.js":238}],208:[function(require,module,exports){
+},{"./Encoder.js":211,"./L3Side.js":218,"./LameInternalFlags.js":221,"./MeanBits.js":223,"./common.js":239}],209:[function(require,module,exports){
 var common = require('./common.js');
 var new_float = common.new_float;
 var new_int = common.new_int;
@@ -31397,7 +31411,7 @@ function CalcNoiseData() {
 
 module.exports = CalcNoiseData;
 
-},{"./common.js":238}],209:[function(require,module,exports){
+},{"./common.js":239}],210:[function(require,module,exports){
 //package mp3;
 
 function CalcNoiseResult() {
@@ -31426,7 +31440,7 @@ function CalcNoiseResult() {
 
 module.exports = CalcNoiseResult;
 
-},{}],210:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32090,7 +32104,7 @@ function Encoder() {
 
 module.exports = Encoder;
 
-},{"./III_psy_ratio.js":215,"./NewMDCT.js":223,"./common.js":238}],211:[function(require,module,exports){
+},{"./III_psy_ratio.js":216,"./NewMDCT.js":224,"./common.js":239}],212:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -32338,7 +32352,7 @@ function FFT() {
 
 module.exports = FFT;
 
-},{"./Encoder.js":210,"./common.js":238}],212:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],213:[function(require,module,exports){
 /*
  *  ReplayGainAnalysis - analyzes input samples and give the recommended dB change
  *  Copyright (C) 2001 David Robinson and Glen Sawyer
@@ -32892,7 +32906,7 @@ function GainAnalysis() {
 
 module.exports = GainAnalysis;
 
-},{"./common.js":238}],213:[function(require,module,exports){
+},{"./common.js":239}],214:[function(require,module,exports){
 //package mp3;
 var common = require('./common.js');
 var System = common.System;
@@ -33001,7 +33015,7 @@ function GrInfo() {
 
 module.exports = GrInfo;
 
-},{"./L3Side.js":217,"./common.js":238}],214:[function(require,module,exports){
+},{"./L3Side.js":218,"./common.js":239}],215:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -33037,7 +33051,7 @@ function IIISideInfo() {
 
 module.exports = IIISideInfo;
 
-},{"./GrInfo.js":213,"./common.js":238}],215:[function(require,module,exports){
+},{"./GrInfo.js":214,"./common.js":239}],216:[function(require,module,exports){
 //package mp3;
 
 var III_psy_xmin = require('./III_psy_xmin.js');
@@ -33049,7 +33063,7 @@ function III_psy_ratio() {
 
 module.exports = III_psy_ratio;
 
-},{"./III_psy_xmin.js":216}],216:[function(require,module,exports){
+},{"./III_psy_xmin.js":217}],217:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 var common = require('./common.js');
 var System = common.System;
@@ -33084,7 +33098,7 @@ function III_psy_xmin() {
 
 module.exports = III_psy_xmin;
 
-},{"./Encoder.js":210,"./common.js":238}],217:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],218:[function(require,module,exports){
 var Encoder = require('./Encoder.js');
 
 var L3Side = {};
@@ -33097,7 +33111,7 @@ L3Side.SFBMAX = (Encoder.SBMAX_s * 3);
 
 module.exports = L3Side;
 
-},{"./Encoder.js":210}],218:[function(require,module,exports){
+},{"./Encoder.js":211}],219:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -34968,7 +34982,7 @@ function Lame() {
 
 module.exports = Lame;
 
-},{"./ATH.js":205,"./BitStream.js":206,"./CBRNewIterationLoop.js":207,"./Encoder.js":210,"./LameGlobalFlags.js":219,"./LameInternalFlags.js":220,"./PsyModel.js":226,"./ReplayGain.js":229,"./Tables.js":232,"./common.js":238}],219:[function(require,module,exports){
+},{"./ATH.js":206,"./BitStream.js":207,"./CBRNewIterationLoop.js":208,"./Encoder.js":211,"./LameGlobalFlags.js":220,"./LameInternalFlags.js":221,"./PsyModel.js":227,"./ReplayGain.js":230,"./Tables.js":233,"./common.js":239}],220:[function(require,module,exports){
 var MPEGMode = require('./MPEGMode.js');
 
 function LameGlobalFlags() {
@@ -35239,7 +35253,7 @@ function LameGlobalFlags() {
 
 module.exports = LameGlobalFlags;
 
-},{"./MPEGMode.js":221}],220:[function(require,module,exports){
+},{"./MPEGMode.js":222}],221:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -35631,7 +35645,7 @@ function LameInternalFlags() {
 
 module.exports = LameInternalFlags;
 
-},{"./Encoder.js":210,"./IIISideInfo.js":214,"./III_psy_xmin.js":216,"./L3Side.js":217,"./NsPsy.js":224,"./ScaleFac.js":231,"./VBRSeekInfo.js":235,"./common.js":238}],221:[function(require,module,exports){
+},{"./Encoder.js":211,"./IIISideInfo.js":215,"./III_psy_xmin.js":217,"./L3Side.js":218,"./NsPsy.js":225,"./ScaleFac.js":232,"./VBRSeekInfo.js":236,"./common.js":239}],222:[function(require,module,exports){
 //package mp3;
 
 /* MPEG modes */
@@ -35650,14 +35664,14 @@ MPEGMode.NOT_SET = new MPEGMode(4);
 
 module.exports = MPEGMode;
 
-},{}],222:[function(require,module,exports){
+},{}],223:[function(require,module,exports){
 function MeanBits(meanBits) {
     this.bits = meanBits;
 }
 
 module.exports = MeanBits;
 
-},{}],223:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 /*
  *      MP3 window subband -> subband filtering -> mdct routine
  *
@@ -36823,7 +36837,7 @@ function NewMDCT() {
 
 module.exports = NewMDCT;
 
-},{"./Encoder.js":210,"./common.js":238}],224:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],225:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -36866,7 +36880,7 @@ function NsPsy() {
 
 module.exports = NsPsy;
 
-},{"./Encoder.js":210,"./common.js":238}],225:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],226:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -37355,7 +37369,7 @@ function Presets() {
 
 module.exports = Presets;
 
-},{"./common.js":238}],226:[function(require,module,exports){
+},{"./common.js":239}],227:[function(require,module,exports){
 /*
  *      psymodel.c
  *
@@ -40255,7 +40269,7 @@ function PsyModel() {
 
 module.exports = PsyModel;
 
-},{"./Encoder.js":210,"./FFT.js":211,"./common.js":238}],227:[function(require,module,exports){
+},{"./Encoder.js":211,"./FFT.js":212,"./common.js":239}],228:[function(require,module,exports){
 /*
  * MP3 quantization
  *
@@ -41755,7 +41769,7 @@ function Quantize() {
 
 module.exports = Quantize;
 
-},{"./CalcNoiseData.js":208,"./CalcNoiseResult.js":209,"./Encoder.js":210,"./GrInfo.js":213,"./L3Side.js":217,"./VBRQuantize.js":234,"./common.js":238}],228:[function(require,module,exports){
+},{"./CalcNoiseData.js":209,"./CalcNoiseResult.js":210,"./Encoder.js":211,"./GrInfo.js":214,"./L3Side.js":218,"./VBRQuantize.js":235,"./common.js":239}],229:[function(require,module,exports){
 /*
  *      quantize_pvt source file
  *
@@ -42794,7 +42808,7 @@ function QuantizePVT() {
 
 module.exports = QuantizePVT;
 
-},{"./Encoder.js":210,"./LameInternalFlags.js":220,"./MeanBits.js":222,"./ScaleFac.js":231,"./common.js":238}],229:[function(require,module,exports){
+},{"./Encoder.js":211,"./LameInternalFlags.js":221,"./MeanBits.js":223,"./ScaleFac.js":232,"./common.js":239}],230:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -42855,7 +42869,7 @@ function ReplayGain() {
 
 module.exports = ReplayGain;
 
-},{"./GainAnalysis.js":212,"./common.js":238}],230:[function(require,module,exports){
+},{"./GainAnalysis.js":213,"./common.js":239}],231:[function(require,module,exports){
 /*
  *      bit reservoir source file
  *
@@ -43154,7 +43168,7 @@ function Reservoir() {
 
 module.exports = Reservoir;
 
-},{"./common.js":238}],231:[function(require,module,exports){
+},{"./common.js":239}],232:[function(require,module,exports){
 //package mp3;
 
 /**
@@ -43208,7 +43222,7 @@ function ScaleFac(arrL, arrS, arr21, arr12) {
 
 module.exports = ScaleFac;
 
-},{"./Encoder.js":210,"./common.js":238}],232:[function(require,module,exports){
+},{"./Encoder.js":211,"./common.js":239}],233:[function(require,module,exports){
 function HuffCodeTab(len, max, tab, hl) {
     this.xlen = len;
     this.linmax = max;
@@ -43724,7 +43738,7 @@ Tables.scfsi_band = [0, 6, 11, 16, 21];
 
 module.exports = Tables;
 
-},{}],233:[function(require,module,exports){
+},{}],234:[function(require,module,exports){
 /*
  *	MP3 huffman table selecting and bit counting
  *
@@ -44901,7 +44915,7 @@ function Takehiro() {
 
 module.exports = Takehiro;
 
-},{"./Encoder.js":210,"./GrInfo.js":213,"./QuantizePVT.js":228,"./Tables.js":232,"./common.js":238}],234:[function(require,module,exports){
+},{"./Encoder.js":211,"./GrInfo.js":214,"./QuantizePVT.js":229,"./Tables.js":233,"./common.js":239}],235:[function(require,module,exports){
 function VBRQuantize() {
     var qupvt;
     var tak;
@@ -44916,7 +44930,7 @@ function VBRQuantize() {
 
 module.exports = VBRQuantize;
 
-},{}],235:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 //package mp3;
 
 function VBRSeekInfo() {
@@ -44952,7 +44966,7 @@ function VBRSeekInfo() {
 
 module.exports = VBRSeekInfo;
 
-},{}],236:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -45924,7 +45938,7 @@ function VBRTag() {
 
 module.exports = VBRTag;
 
-},{"./common.js":238}],237:[function(require,module,exports){
+},{"./common.js":239}],238:[function(require,module,exports){
 function Version() {
 
     /**
@@ -46016,7 +46030,7 @@ function Version() {
 
 module.exports = Version;
 
-},{}],238:[function(require,module,exports){
+},{}],239:[function(require,module,exports){
 function new_byte(count) {
     return new Int8Array(count);
 }
@@ -46187,7 +46201,7 @@ module.exports = {
     "assert": assert
 };
 
-},{}],239:[function(require,module,exports){
+},{}],240:[function(require,module,exports){
 var common = require('./common.js');
 var System = common.System;
 var VbrMode = common.VbrMode;
@@ -46385,5 +46399,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":206,"./Encoder.js":210,"./GainAnalysis.js":212,"./Lame.js":218,"./MPEGMode.js":221,"./Presets.js":225,"./Quantize.js":227,"./QuantizePVT.js":228,"./Reservoir.js":230,"./Takehiro.js":233,"./VBRTag.js":236,"./Version.js":237,"./common.js":238}]},{},[197])(197)
+},{"./BitStream.js":207,"./Encoder.js":211,"./GainAnalysis.js":213,"./Lame.js":219,"./MPEGMode.js":222,"./Presets.js":226,"./Quantize.js":228,"./QuantizePVT.js":229,"./Reservoir.js":231,"./Takehiro.js":234,"./VBRTag.js":237,"./Version.js":238,"./common.js":239}]},{},[197])(197)
 });

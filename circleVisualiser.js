@@ -72,7 +72,8 @@ class Visualiser {
             this.frameCount++
             let samples = this.microphone.getSamplesFor(this.totalDots);
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2);
-            let sensitivity = 1 - this.profiles[this.profileIndex].sensitivity / 10;
+            let sensitivity = utils.map(this.profiles[this.profileIndex].sensitivity, 0, 10, 1, 0.1, true);
+            console.log(sensitivity);
             let currDot = 0;
 
             for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
@@ -88,7 +89,7 @@ class Visualiser {
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
                     let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
-                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
+                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
