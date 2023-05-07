@@ -1,7 +1,6 @@
 const Microphone = require("./microphone");
 const utils = require('./utils');
 const Gradient = require('javascript-color-gradient');
-const { Noise } = require('noisejs');
 const iro = require('@jaames/iro');
 
 class Visualiser {
@@ -24,7 +23,6 @@ class Visualiser {
         this.gradientIndexes = [];
         this.frameCount = 0;
         this.intervalFunction;
-        this.noise = new Noise();
         this.sliderPicker;
         this.currentColour = 0;
 
@@ -73,7 +71,8 @@ class Visualiser {
 
             this.frameCount++
             let samples = this.microphone.getSamplesFor(this.totalDots);
-            let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2); //+ 0.3;
+            let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2);
+            let sensitivity = 1 - this.profiles[this.profileIndex].sensitivity / 10;
             let currDot = 0;
 
             for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
@@ -85,13 +84,11 @@ class Visualiser {
                     let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileIndex].rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
-                    let noiseInp = currDot + this.frameCount / 100
-                    let noiseVal = utils.map(this.noise.perlin2(noiseInp, 0), -1, 1, 0, 1, true);
-                    let adjustedNoise = noiseVal * volume;
+                    
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true))
-                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
+                    let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true)) //* utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
                         dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
@@ -129,6 +126,7 @@ class Visualiser {
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
+        utils.createNumberInput('sensitivity', 'sensitivity', 0, 10);
         utils.createNumberInput('dot size', 'dotSize', 10, 50)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)

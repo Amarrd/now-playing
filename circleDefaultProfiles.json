@@ -8,6 +8,7 @@
             "#ca0cfa",
             "#edbbfa"
         ],
+        "sensitivity" : 5,
         "dotSize":  30,
         "dotModifier": 2,
         "ringCount": 10,
@@ -17,6 +18,7 @@
     },
     {
         "gradientColours":["#9eff00","#ff003b","#f79f00","#3300ff","#8f00ff"],
+        "sensitivity" : 5,
         "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 20,
@@ -26,6 +28,7 @@
     },
     {
         "gradientColours":["#a7f7a1","#5be944","#4ced5c","#228b1a","#fc0f0f","#fc8800"],
+        "sensitivity" : 5,
         "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 17,
@@ -35,6 +38,7 @@
     },
     {
         "gradientColours":["#f50000","#ff2e00","#ff5c00","#0047ff","#0582f5","#00f5e6"],
+        "sensitivity" : 5,
         "dotSize": 30,
         "dotModifier": 1,
         "ringCount": 23,
@@ -44,6 +48,7 @@
     },
     {
         "gradientColours":["#00af3c","#e90036","#02ed5f","#6e008b","#008b1f","#dbff00"],
+        "sensitivity" : 5,
         "dotSize": 30,
         "dotModifier": 3,
         "ringCount": 8,
@@ -58,6 +63,7 @@
             "#edc988",
             "#607D8B"
         ],
+        "sensitivity" : 5,
         "dotSize": 30,
         "dotModifier": 5,
         "ringCount": 13,

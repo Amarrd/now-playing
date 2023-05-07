@@ -104,6 +104,7 @@ div.profiles {
 select {
     background: black;
     color: white;
+    margin-left: 5px;
 }
 
 button {
@@ -119,6 +120,7 @@ button {
 input {
     background-color: black;
     color: white;
+    margin-left: 5px;
 }
 
 body {
