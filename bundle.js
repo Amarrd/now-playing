@@ -26606,9 +26606,9 @@ module.exports = {main};
 module.exports=[
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26620,9 +26620,9 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26634,9 +26634,9 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26648,9 +26648,9 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26662,9 +26662,9 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26676,9 +26676,9 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
         "dotSize": 30,
@@ -26712,7 +26712,6 @@ class Visualiser {
         this.directionModifier = 1;
         this.totalDots = 0;
         this.baseDotSize = 5;
-        //this.maxDotSize = 30;
         this.dotSizes = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
@@ -26783,7 +26782,7 @@ class Visualiser {
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileNumber - 1].dotSize * ringNumber*0.5, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileNumber - 1].dotSize * ringNumber * 0.5, true))
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
@@ -26879,7 +26878,7 @@ class Visualiser {
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
-            color: this.profiles[this.profileNumber-1].gradientColours[0],
+            color: this.profiles[this.profileNumber - 1].gradientColours[0],
             borderWidth: 1,
             borderColor: "grey",
             layout: [
@@ -27479,7 +27478,7 @@ var initialised = false;
 
 function startVisualiser() {
 	utils.createProfileTitle();
-	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); 
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise);
 	utils.createVisualiserTitle(currentVisualiser)
 	if (!initialised) {
 		addSwitchButtons();
@@ -27668,7 +27667,7 @@ function addSwitchButtons() {
 	leftButton.setAttribute("type", "button");
 	leftButton.setAttribute("value", "left");
 	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
-	leftButton.innerHTML = "&#8592;"; 
+	leftButton.innerHTML = "&#8592;";
 	leftButton.style.fontSize = '22px'
 	leftButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
 	leftButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
@@ -27678,7 +27677,7 @@ function addSwitchButtons() {
 	rightButton.setAttribute("type", "button");
 	rightButton.setAttribute("value", "right");
 	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
-	rightButton.innerHTML = "&#8594;"; 
+	rightButton.innerHTML = "&#8594;";
 	rightButton.style.fontSize = '22px'
 	rightButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
 	rightButton.style.color = currentVisualiser.getProfileHue()
@@ -27691,7 +27690,7 @@ function addSwitchButtons() {
 	leftButton.style.top = "10px";
 	leftButton.style.left = "20px";
 	leftButton.style.opacity = 1;
-	leftButton.style.display = "block"; 
+	leftButton.style.display = "block";
 
 	rightButton.style.position = "fixed";
 	rightButton.style.top = "10px";
