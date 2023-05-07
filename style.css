@@ -14,16 +14,14 @@ div.credentialsPrompt {
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
-    bottom: calc(50% - 50px);
     font-size: 18px;
-    left: calc(50% - 150px);
-    right: auto;
     padding: 20px;
     color: white;
     font-family: ‘Roboto’, sans-serif;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    z-index: 3;
     gap: 5px;
 }
 
@@ -36,15 +34,36 @@ div.currentSong {
     opacity: 0;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
+    z-index: 1;
 }
 
-.controls-container{
+.blockingDiv {
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    background-color: black;
+    z-index: 2;
+    display:block
+  }
+
+.gradientButtons {
+    display: 'inline-flex';
+    padding: 5px
+}
+
+.controls-container {
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
     font-size: 18px;
     left: auto;
     right: 10px;
+    color: white;
     font-family: ‘Roboto’, sans-serif;
     display: flex;
     flex-direction: column;
@@ -85,25 +104,29 @@ div.profiles {
 select {
     background: black;
     color: white;
+    margin-left: 5px;
 }
 
 button {
     background-color: black;
     color: white;
     border: none;
+    border-width: thin;
     border-radius: 5px;
-    padding: 15px
+    padding: 15px;
+    font-size: 16px;
 }
 
 input {
     background-color: black;
     color: white;
+    margin-left: 5px;
 }
 
 body {
     background-color: black;
     color: white;
-    font-size: 24px;
+    font-size: 34px;
     text-align: left;
     position: absolute;
     bottom: 0;
@@ -123,7 +146,7 @@ label.autoToggle {
     position: fixed;
     bottom: 10px;
     opacity: 0;
-
+    z-index: 1;
     left: calc(50% - 15px);
 }
 
@@ -145,8 +168,8 @@ input[type='checkbox'] {
     bottom: 40px;
     font-family: ‘Roboto’, sans-serif;
     font-size: 18px;
+    z-index: 1;
 }
-
 
 #snackbar.show {
     visibility: visible;
@@ -199,6 +222,77 @@ input[type='checkbox'] {
 
     to {
         bottom: 0;
+        opacity: 0;
+    }
+}
+
+#snackbarTop {
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-align: center;
+    border-radius: 16px;
+    padding: 14px;
+    position: fixed;
+    z-index: 1;
+    left: 47%;
+    top: 40px;
+    font-family: ‘Roboto’, sans-serif;
+    font-size: 22px;
+    z-index: 1;
+}
+
+#snackbarTop.show {
+    visibility: visible;
+    -webkit-animation: fadeinTop 0.5s, fadeoutTop 0.5s 3.75s;
+    animation: fadeinTop 0.5s, fadeoutTop 0.5s 3.75s;
+}
+
+
+@-webkit-keyframes fadeinTop {
+    from {
+        top: 0;
+        opacity: 0;
+    }
+
+    to {
+        top: 40px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadeinTop {
+    from {
+        top: 0;
+        opacity: 0;
+    }
+
+    to {
+        top: 40px;
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeoutTop {
+    from {
+        top: 40px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeoutTop {
+    from {
+        top: 40px;
+        opacity: 1;
+    }
+
+    to {
+        top: 0;
         opacity: 0;
     }
 }

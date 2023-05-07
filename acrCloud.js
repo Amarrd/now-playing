@@ -24,7 +24,12 @@ function createCredentialsDialogue() {
 	let buttons = document.createElement('div');
 	let submit = document.createElement('button');
 	let cancel = document.createElement('button');
+	let blockingDiv = document.createElement('div');
 	const colour = document.querySelector('#controls').style.color;
+
+	blockingDiv.id = 'blockingDiv';
+	blockingDiv.className = 'blockingDiv';
+	document.body.appendChild(blockingDiv);
 
 	prompt.className = 'credentialsPrompt';
 	prompt.id = 'credentialsPrompt';
@@ -53,6 +58,11 @@ function createCredentialsDialogue() {
 	prompt.appendChild(secretInput);
 	prompt.appendChild(buttons);
 	document.body.appendChild(prompt);
+
+	let height = (window.innerHeight - prompt.offsetHeight) / 2;
+	let width = (window.innerWidth - prompt.offsetWidth) / 2;
+	prompt.style.top = height + 'px';
+	prompt.style.left = width + 'px';
 	return;
 }
 
@@ -79,7 +89,8 @@ function submitCredentials() {
 			localStorage.removeItem('accessSecret', accessSecret);
 			addSnackbar('Invalid credentials', colour);
 		} else {
-			document.body.removeChild(document.querySelector('#credentialsPrompt'))
+			document.body.removeChild(document.querySelector('#credentialsPrompt'));
+			document.body.removeChild(document.querySelector('#blockingDiv'));
 			document.querySelector('#autoToggle').style.display = 'inline';
 			document.querySelector('#autoToggleLabel').style.display = 'inline';
 			document.querySelector('#updateButton').innerHTML = 'identify song';
@@ -130,7 +141,8 @@ function addSnackbar(text, colour) {
 }
 
 function cancelCredentials() {
-	document.body.removeChild(document.querySelector('#credentialsPrompt'))
+	document.body.removeChild(document.querySelector('#credentialsPrompt'));
+	document.body.removeChild(document.querySelector('#blockingDiv'));
 }
 
 function buildStringToSign(method, uri, accessKey, dataType, signatureVersion, timestamp) {

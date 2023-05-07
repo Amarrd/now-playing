@@ -14,8 +14,7 @@ class Bar {
 
     }
 
-    update(micInput, volume) {
-        //const sound = volume * 1000;
+    update(micInput) {
         const sound = micInput * 500;
         if (sound > this.height) {
             this.height = sound;
@@ -51,7 +50,7 @@ function main(audioPromise) {
         let canvasMidX = canvas.width/ 2;
         let canvasMidY = canvas.height * 0.75;
         let barWidth = 10;
-        let frequencyBinCount = 512/4;
+        let frequencyBinCount = 4;
         let barStart = canvasMidX - ((frequencyBinCount/2) * barWidth);
 
         for (let i = 0; i < frequencyBinCount; i++) {
@@ -63,12 +62,11 @@ function main(audioPromise) {
     function animate() {
         if (microphone.initialised) {
             ctx.clearRect(0,0, canvas.width, canvas.height);
-            const samples = microphone.getSamples();
-            const volume = microphone.getVolume();
-            bars.forEach(function(bar, i) {
-                bar.update(samples[i], volume);
-                bar.draw(ctx);
-            });
+            const samples = microphone.getSampleSubArrays(4, 10);
+            // bars.forEach(function(bar, i) {
+            //     bar.update(samples[i]);
+            //     bar.draw(ctx);
+            // });
         }
         requestAnimationFrame(animate);
     }

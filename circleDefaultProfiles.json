@@ -1,0 +1,102 @@
+[
+    {
+        "gradientColours": [
+            "#5b3ffc",
+            "#44a4e9",
+            "#200eed",
+            "#07448b",
+            "#ca0cfa",
+            "#edbbfa"
+        ],
+        "sensitivity": "6",
+        "dotSize": 30,
+        "dotModifier": 2,
+        "ringCount": 10,
+        "ringDistance": 50,
+        "alternateRings": true,
+        "rotationSpeed": 1
+    },
+    {
+        "gradientColours": [
+            "#9eff00",
+            "#ff003b",
+            "#f79f00",
+            "#3300ff",
+            "#8f00ff"
+        ],
+        "sensitivity": "5",
+        "dotSize": "20",
+        "dotModifier": "3",
+        "ringCount": "20",
+        "ringDistance": 30,
+        "alternateRings": true,
+        "rotationSpeed": 1
+    },
+    {
+        "gradientColours": [
+            "#a1e2f7",
+            "#44c1e9",
+            "#4ced5c",
+            "#228b1a",
+            "#fc0f0f",
+            "#fc8800"
+        ],
+        "sensitivity": "6",
+        "dotSize": 30,
+        "dotModifier": "10",
+        "ringCount": "10",
+        "ringDistance": "54",
+        "alternateRings": false,
+        "rotationSpeed": "2"
+    },
+    {
+        "gradientColours": [
+            "#f50000",
+            "#ff2e00",
+            "#ff5c00",
+            "#0047ff",
+            "#0582f5",
+            "#f5b17f"
+        ],
+        "sensitivity": "6",
+        "dotSize": 30,
+        "dotModifier": 1,
+        "ringCount": "21",
+        "ringDistance": 38,
+        "alternateRings": true,
+        "rotationSpeed": "1"
+    },
+    {
+        "gradientColours": [
+            "#00af3c",
+            "#5c3c8f",
+            "#8c01a3",
+            "#038b00",
+            "#ce84e8",
+            "#ffd645"
+        ],
+        "sensitivity": "6",
+        "dotSize": "50",
+        "dotModifier": "4",
+        "ringCount": "6",
+        "ringDistance": "69",
+        "alternateRings": false,
+        "rotationSpeed": 2
+    },
+    {
+        "gradientColours": [
+            "#3f2caf",
+            "#e9446a",
+            "#edc988",
+            "#607d8b",
+            "#597787"
+        ],
+        "sensitivity": "6",
+        "dotSize": 30,
+        "dotModifier": 5,
+        "ringCount": 13,
+        "ringDistance": 58,
+        "alternateRings": false,
+        "rotationSpeed": 1
+    }
+]
