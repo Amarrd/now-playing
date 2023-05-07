@@ -12,15 +12,17 @@
 <body onload="myBundle.startVisualiser()">
 	<canvas id='myCanvas' onclick="myBundle.canvasClicked()"></canvas>
 	<div class="currentSong" id="current-song">
-		<p class="albumYear" id="albumYear" ></p>
+		<p class="albumYear" id="albumYear"></p>
 	</div>
+	<div id="snackbarTop"></div>
 	<div class="profiles" id="profiles"></div>
 	<div class="controls-container" id="controls-container">
 		<div class="controls-child visualiser" id="controls">
 		</div>
 		<div class="controls-child global" id="global-controls">
 			<label class="profileTransition" for="profileTransition" id="profileTransitionLabel">transition (s)
-				<input type="number" id="profileTransition" name="profileTransition" min="0" max="360" value=0 onchange="myBundle.toggleTransition()"> 
+				<input type="number" id="profileTransition" name="profileTransition" min="0" max="360" value=0
+					onchange="myBundle.toggleTransition()">
 			</label>
 			<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
 				<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify

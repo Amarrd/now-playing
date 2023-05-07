@@ -13,16 +13,17 @@ var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var currentVisualiser;
 var identifyFunction;
 var visualisers = [CircleVisualiser, FlowVisualiser];
-var visualiserIndex = 0;
+var visualiserIndex = Number(localStorage.getItem('currentVisualiser')) || 0;
 var initialised = false;
 
 function startVisualiser() {
+	utils.createProfileTitle();
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise);
+	utils.createVisualiserTitle(currentVisualiser)
 	if (!initialised) {
 		addSwitchButtons();
 		initialised = true;
 	}
-	utils.createProfileTitle();
-	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); 
 	let container = document.querySelector('#controls-container');
 	container.style.opacity = 1;
 	let height = (window.innerHeight - container.offsetHeight) / 2;
@@ -31,7 +32,7 @@ function startVisualiser() {
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
 		document.querySelector('#autoToggleLabel').style.display = 'none';
-		document.querySelector('#updateButton').innerHTML = 'Input ACR credentials';
+		document.querySelector('#updateButton').innerHTML = 'input ACR credentials';
 	}
 }
 
@@ -206,27 +207,34 @@ function addSwitchButtons() {
 	leftButton.setAttribute("type", "button");
 	leftButton.setAttribute("value", "left");
 	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
-	leftButton.innerHTML = "&#8592;"; 
+	leftButton.innerHTML = "&#8592;";
+	leftButton.style.fontSize = '22px'
+	leftButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	leftButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
 
 	var rightButton = document.createElement("button");
 	rightButton.id = "rightSwitch";
 	rightButton.setAttribute("type", "button");
 	rightButton.setAttribute("value", "right");
 	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
-	rightButton.innerHTML = "&#8594;"; 
+	rightButton.innerHTML = "&#8594;";
+	rightButton.style.fontSize = '22px'
+	rightButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	rightButton.style.color = currentVisualiser.getProfileHue()
+	rightButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
 
 	document.body.appendChild(leftButton);
 	document.body.appendChild(rightButton);
 
 	leftButton.style.position = "fixed";
-	leftButton.style.top = "0";
-	leftButton.style.left = "0";
+	leftButton.style.top = "10px";
+	leftButton.style.left = "20px";
 	leftButton.style.opacity = 1;
-	leftButton.style.display = "block"; 
+	leftButton.style.display = "block";
 
 	rightButton.style.position = "fixed";
-	rightButton.style.top = "0";
-	rightButton.style.right = "0";
+	rightButton.style.top = "10px";
+	rightButton.style.right = "20px";
 	rightButton.style.opacity = 1;
 	rightButton.style.display = "block";
 }
@@ -235,12 +243,16 @@ function leftFunction() {
 	utils.teardown(currentVisualiser);
 	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
 	startVisualiser();
+	utils.createVisualiserTitle(currentVisualiser);
+	localStorage.setItem("currentVisualiser", visualiserIndex);
 }
 
 function rightFunction() {
 	utils.teardown(currentVisualiser);
 	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
 	startVisualiser();
+	utils.createVisualiserTitle(currentVisualiser);
+	localStorage.setItem("currentVisualiser", visualiserIndex);
 }
 
 function submitCredentials() {

@@ -6,7 +6,7 @@ class Visualiser {
 
     constructor(audioPromise) {
         // Common properties
-        this.name = 'flow';
+        this.name = 'flow field';
         this.profiles = require("./flowDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -21,8 +21,8 @@ class Visualiser {
         this.setupControls();
 
         // Common setup
-        utils.setOptions(this);
         utils.setupProfiles(this);
+        utils.setOptions(this);
         utils.updateColours(this);
 
         // Specific properties 

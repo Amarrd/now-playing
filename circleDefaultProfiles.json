@@ -1,11 +1,12 @@
 [
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 6,
         "ringCount": 5,
         "ringDistance": 30,
@@ -14,11 +15,12 @@
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 44,
@@ -27,11 +29,12 @@
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 15,
         "ringDistance": 44,
@@ -40,11 +43,12 @@
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 9,
         "ringDistance": 69,
@@ -53,11 +57,12 @@
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 6,
         "ringCount": 13,
         "ringDistance": 44,
@@ -66,11 +71,12 @@
     },
     {
         "gradientColours": [
-            "#3F2CAF", 
-            "#e9446a", 
-            "#edc988", 
+            "#3F2CAF",
+            "#e9446a",
+            "#edc988",
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,

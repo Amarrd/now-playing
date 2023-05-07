@@ -110,8 +110,10 @@ button {
     background-color: black;
     color: white;
     border: none;
+    border-width: thin;
     border-radius: 5px;
-    padding: 15px
+    padding: 15px;
+    font-size: 16px;
 }
 
 input {
@@ -218,6 +220,77 @@ input[type='checkbox'] {
 
     to {
         bottom: 0;
+        opacity: 0;
+    }
+}
+
+#snackbarTop {
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-align: center;
+    border-radius: 16px;
+    padding: 14px;
+    position: fixed;
+    z-index: 1;
+    left: 47%;
+    top: 40px;
+    font-family: ‘Roboto’, sans-serif;
+    font-size: 22px;
+    z-index: 1;
+}
+
+#snackbarTop.show {
+    visibility: visible;
+    -webkit-animation: fadeinTop 0.5s, fadeoutTop 0.5s 3.75s;
+    animation: fadeinTop 0.5s, fadeoutTop 0.5s 3.75s;
+}
+
+
+@-webkit-keyframes fadeinTop {
+    from {
+        top: 0;
+        opacity: 0;
+    }
+
+    to {
+        top: 40px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadeinTop {
+    from {
+        top: 0;
+        opacity: 0;
+    }
+
+    to {
+        top: 40px;
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeoutTop {
+    from {
+        top: 40px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeoutTop {
+    from {
+        top: 40px;
+        opacity: 1;
+    }
+
+    to {
+        top: 0;
         opacity: 0;
     }
 }

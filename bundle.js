@@ -26611,6 +26611,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 6,
         "ringCount": 5,
         "ringDistance": 30,
@@ -26624,6 +26625,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 44,
@@ -26637,6 +26639,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 15,
         "ringDistance": 44,
@@ -26650,6 +26653,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 2,
         "ringCount": 9,
         "ringDistance": 69,
@@ -26663,6 +26667,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 6,
         "ringCount": 13,
         "ringDistance": 44,
@@ -26676,6 +26681,7 @@ module.exports=[
             "#edc988", 
             "#607D8B"
         ],
+        "dotSize": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,
@@ -26692,7 +26698,7 @@ const iro = require('@jaames/iro');
 
 class Visualiser {
     constructor(audioPromise) {
-        this.name = 'circle';
+        this.name = 'circles';
         this.profiles = require("./circleDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -26706,7 +26712,7 @@ class Visualiser {
         this.directionModifier = 1;
         this.totalDots = 0;
         this.baseDotSize = 5;
-        this.maxDotSize = 30;
+        //this.maxDotSize = 30;
         this.dotSizes = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
@@ -26718,8 +26724,8 @@ class Visualiser {
         this.setupControls();
 
         // Common setup
-        utils.setOptions(this);
         utils.setupProfiles(this);
+        utils.setOptions(this);
         this.gradientArray = new Gradient()
             .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
             .setMidpoint(500)
@@ -26777,7 +26783,7 @@ class Visualiser {
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileNumber - 1].dotSize * ringNumber*0.5, true))
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
@@ -26816,6 +26822,7 @@ class Visualiser {
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
+        utils.createNumberInput('dot size', 'dotSize', 10, 50)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
@@ -26872,7 +26879,7 @@ class Visualiser {
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
-            color: this.profiles[this.profileNumber - 1].gradientColours[0],
+            color: this.profiles[this.profileNumber-1].gradientColours[0],
             borderWidth: 1,
             borderColor: "grey",
             layout: [
@@ -27291,7 +27298,7 @@ class Visualiser {
 
     constructor(audioPromise) {
         // Common properties
-        this.name = 'flow';
+        this.name = 'flow field';
         this.profiles = require("./flowDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -27306,8 +27313,8 @@ class Visualiser {
         this.setupControls();
 
         // Common setup
-        utils.setOptions(this);
         utils.setupProfiles(this);
+        utils.setOptions(this);
         utils.updateColours(this);
 
         // Specific properties 
@@ -27467,16 +27474,17 @@ var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var currentVisualiser;
 var identifyFunction;
 var visualisers = [CircleVisualiser, FlowVisualiser];
-var visualiserIndex = 0;
+var visualiserIndex = Number(localStorage.getItem('currentVisualiser')) || 0;
 var initialised = false;
 
 function startVisualiser() {
+	utils.createProfileTitle();
+	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); 
+	utils.createVisualiserTitle(currentVisualiser)
 	if (!initialised) {
 		addSwitchButtons();
 		initialised = true;
 	}
-	utils.createProfileTitle();
-	currentVisualiser = new visualisers[visualiserIndex].Visualiser(audioPromise); 
 	let container = document.querySelector('#controls-container');
 	container.style.opacity = 1;
 	let height = (window.innerHeight - container.offsetHeight) / 2;
@@ -27485,7 +27493,7 @@ function startVisualiser() {
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
 		document.querySelector('#autoToggleLabel').style.display = 'none';
-		document.querySelector('#updateButton').innerHTML = 'Input ACR credentials';
+		document.querySelector('#updateButton').innerHTML = 'input ACR credentials';
 	}
 }
 
@@ -27661,6 +27669,9 @@ function addSwitchButtons() {
 	leftButton.setAttribute("value", "left");
 	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
 	leftButton.innerHTML = "&#8592;"; 
+	leftButton.style.fontSize = '22px'
+	leftButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	leftButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
 
 	var rightButton = document.createElement("button");
 	rightButton.id = "rightSwitch";
@@ -27668,19 +27679,23 @@ function addSwitchButtons() {
 	rightButton.setAttribute("value", "right");
 	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
 	rightButton.innerHTML = "&#8594;"; 
+	rightButton.style.fontSize = '22px'
+	rightButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	rightButton.style.color = currentVisualiser.getProfileHue()
+	rightButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
 
 	document.body.appendChild(leftButton);
 	document.body.appendChild(rightButton);
 
 	leftButton.style.position = "fixed";
-	leftButton.style.top = "0";
-	leftButton.style.left = "0";
+	leftButton.style.top = "10px";
+	leftButton.style.left = "20px";
 	leftButton.style.opacity = 1;
 	leftButton.style.display = "block"; 
 
 	rightButton.style.position = "fixed";
-	rightButton.style.top = "0";
-	rightButton.style.right = "0";
+	rightButton.style.top = "10px";
+	rightButton.style.right = "20px";
 	rightButton.style.opacity = 1;
 	rightButton.style.display = "block";
 }
@@ -27689,12 +27704,16 @@ function leftFunction() {
 	utils.teardown(currentVisualiser);
 	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
 	startVisualiser();
+	utils.createVisualiserTitle(currentVisualiser);
+	localStorage.setItem("currentVisualiser", visualiserIndex);
 }
 
 function rightFunction() {
 	utils.teardown(currentVisualiser);
 	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
 	startVisualiser();
+	utils.createVisualiserTitle(currentVisualiser);
+	localStorage.setItem("currentVisualiser", visualiserIndex);
 }
 
 function submitCredentials() {
@@ -27907,6 +27926,11 @@ updateColours = function (visualiser) {
   document.querySelector('#resetProfile').style.backgroundColor = profileColour;
   document.querySelector('#profile-' + visualiser.profileNumber + '-button').style.backgroundColor = profileColour;
 
+  if (document.querySelector('#rightSwitch')) {
+    document.querySelector('#leftSwitch').style.color = controlColour;
+    document.querySelector('#rightSwitch').style.color = controlColour;
+  }
+
   let controlsToUpdate = ['#controls', '#global-controls']
 
   controlsToUpdate.forEach(controls => {
@@ -27944,9 +27968,18 @@ resetProfile = function (visualiser) {
   createSnackBar(visualiser, 'reset');
 }
 
+createVisualiserTitle = function (visualiser) {
+  let snackbar = document.querySelector('#snackbarTop');
+  let hue = visualiser.getProfileHue();
+  snackbar.innerHTML = visualiser.name;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.className = 'show';
+  setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 4000);
+}
+
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
-  let hue = Number(visualiser.profiles[visualiser.profileNumber - 1].hue) + Number(visualiser.profiles[visualiser.profileNumber - 1].hueShift) / 2;
+  let hue = visualiser.getProfileHue();
   snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
@@ -27992,7 +28025,7 @@ teardown = function (visualiser) {
 
 module.exports = {
   map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
-  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
+  updateColours, createVisualiserTitle, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
 }
 
 

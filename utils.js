@@ -162,6 +162,11 @@ updateColours = function (visualiser) {
   document.querySelector('#resetProfile').style.backgroundColor = profileColour;
   document.querySelector('#profile-' + visualiser.profileNumber + '-button').style.backgroundColor = profileColour;
 
+  if (document.querySelector('#rightSwitch')) {
+    document.querySelector('#leftSwitch').style.color = controlColour;
+    document.querySelector('#rightSwitch').style.color = controlColour;
+  }
+
   let controlsToUpdate = ['#controls', '#global-controls']
 
   controlsToUpdate.forEach(controls => {
@@ -199,9 +204,18 @@ resetProfile = function (visualiser) {
   createSnackBar(visualiser, 'reset');
 }
 
+createVisualiserTitle = function (visualiser) {
+  let snackbar = document.querySelector('#snackbarTop');
+  let hue = visualiser.getProfileHue();
+  snackbar.innerHTML = visualiser.name;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.className = 'show';
+  setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 4000);
+}
+
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
-  let hue = Number(visualiser.profiles[visualiser.profileNumber - 1].hue) + Number(visualiser.profiles[visualiser.profileNumber - 1].hueShift) / 2;
+  let hue = visualiser.getProfileHue();
   snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
@@ -247,6 +261,6 @@ teardown = function (visualiser) {
 
 module.exports = {
   map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
-  updateColours, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
+  updateColours, createVisualiserTitle, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
 }
 

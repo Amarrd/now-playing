@@ -6,7 +6,7 @@ const iro = require('@jaames/iro');
 
 class Visualiser {
     constructor(audioPromise) {
-        this.name = 'circle';
+        this.name = 'circles';
         this.profiles = require("./circleDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -20,7 +20,6 @@ class Visualiser {
         this.directionModifier = 1;
         this.totalDots = 0;
         this.baseDotSize = 5;
-        this.maxDotSize = 30;
         this.dotSizes = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
@@ -32,8 +31,8 @@ class Visualiser {
         this.setupControls();
 
         // Common setup
-        utils.setOptions(this);
         utils.setupProfiles(this);
+        utils.setOptions(this);
         this.gradientArray = new Gradient()
             .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
             .setMidpoint(500)
@@ -91,7 +90,7 @@ class Visualiser {
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.maxDotSize * ringNumber, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileNumber - 1].dotSize * ringNumber * 0.5, true))
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
@@ -130,6 +129,7 @@ class Visualiser {
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
+        utils.createNumberInput('dot size', 'dotSize', 10, 50)
         utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('ring count', 'ringCount', 1, 30)
         utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
