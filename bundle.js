@@ -27612,11 +27612,6 @@ function canvasClicked() {
 }
 
 document.onkeyup = function (e) {
-	if (e.key === "c") {
-		fade('#controls-container');
-		fade('#profiles');
-		fade('#credentialsPrompt')
-	}
 	if (e.key === "s") {
 		fade('#current-song');
 	}
