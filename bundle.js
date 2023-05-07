@@ -26705,7 +26705,7 @@ class Visualiser {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.profileNumber = 1;
+        this.profileIndex = 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
 
@@ -26726,7 +26726,7 @@ class Visualiser {
         utils.setupProfiles(this);
         utils.setOptions(this);
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
             .getColors();
         this.updateControls();
@@ -26768,13 +26768,13 @@ class Visualiser {
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2); //+ 0.3;
             let currDot = 0;
 
-            for (let ringNumber = 1; ringNumber <= this.profiles[this.profileNumber - 1].ringCount; ringNumber++) {
-                let dotsForRing = ringNumber * this.profiles[this.profileNumber - 1].dotModifier;
-                let ringRadius = ringNumber * this.profiles[this.profileNumber - 1].ringDistance;
+            for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
+                let dotsForRing = ringNumber * this.profiles[this.profileIndex].dotModifier;
+                let ringRadius = ringNumber * this.profiles[this.profileIndex].ringDistance;
 
                 for (let angleIncrement = 0; angleIncrement < dotsForRing; angleIncrement++) {
-                    this.directionModifier = this.profiles[this.profileNumber - 1].alternateRings ? (-2 * (ringNumber % 2) + 1) : 1;
-                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileNumber - 1].rotationSpeed - 2 * Math.PI / dotsForRing;
+                    this.directionModifier = this.profiles[this.profileIndex].alternateRings ? (-2 * (ringNumber % 2) + 1) : 1;
+                    let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileIndex].rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
                     let noiseInp = currDot + this.frameCount / 100
@@ -26782,7 +26782,7 @@ class Visualiser {
                     let adjustedNoise = noiseVal * volume;
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileNumber - 1].dotSize * ringNumber * 0.5, true))
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, 0.5, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true))
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, 0.5, 0, this.gradientArray.length - 1, true) * utils.map(adjustedNoise, 0, 1, 0.75, 1.25, true))
 
                     if (dotSize < currentDotSize) {
@@ -26878,7 +26878,7 @@ class Visualiser {
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
-            color: this.profiles[this.profileNumber - 1].gradientColours[0],
+            color: this.profiles[this.profileIndex].gradientColours[0],
             borderWidth: 1,
             borderColor: "grey",
             layout: [
@@ -26921,7 +26921,7 @@ class Visualiser {
             button.id = 'colour-' + colourNumber + '-button';
             button.setAttribute('index', i);
             button.textContent = " ";
-            button.style.backgroundColor = this.profiles[this.profileNumber - 1].gradientColours[i] || 'rgba(0, 0, 0, 0)';
+            button.style.backgroundColor = this.profiles[this.profileIndex].gradientColours[i] || 'rgba(0, 0, 0, 0)';
             button.style.margin = '5px';
             button.style.height = '50px';
             button.style.width = '50px';
@@ -26944,12 +26944,12 @@ class Visualiser {
     }
 
     closeColourDialogue() {
-        this.profiles[this.profileNumber - 1].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
             .map(button => new iro.Color(button.style.backgroundColor).hexString)
             .filter(colour => colour != "#000000");
 
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
             .getColors();
 
@@ -26970,12 +26970,12 @@ class Visualiser {
         colour.setAttribute('currentColour', 'true');
         colour.style.border = '3px solid #e7e7e7'
 
-        this.profiles[this.profileNumber - 1].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
             .map(button => new iro.Color(button.style.backgroundColor).hexString)
             .filter(colour => colour != "#000000");
 
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
             .getColors();
 
@@ -27000,7 +27000,7 @@ class Visualiser {
 
     updateControls() {
         this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
             .getColors();
         utils.updateColours(this);
@@ -27016,7 +27016,7 @@ class Visualiser {
             return iroColour.hue;
         } else {
             let gradientArray = new Gradient()
-                .setColorGradient(...this.profiles[this.profileNumber - 1].gradientColours)
+                .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
                 .setMidpoint(500)
                 .getColors();
             let iroColour = new iro.Color(gradientArray[250])
@@ -27026,8 +27026,8 @@ class Visualiser {
 
     recalcTotal() {
         this.totalDots = 0;
-        for (let i = 1; i <= this.profiles[this.profileNumber - 1].ringCount; i++) {
-            this.totalDots += i * this.profiles[this.profileNumber - 1].dotModifier;
+        for (let i = 1; i <= this.profiles[this.profileIndex].ringCount; i++) {
+            this.totalDots += i * this.profiles[this.profileIndex].dotModifier;
         }
     }
 }
@@ -27304,7 +27304,7 @@ class Visualiser {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.profileNumber = 1;
+        this.profileIndex = 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
         this.themeHue;
@@ -27321,7 +27321,7 @@ class Visualiser {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-        this.effect = new Effect.FlowEffect(this.canvas, this.profiles[this.profileNumber - 1]);
+        this.effect = new Effect.FlowEffect(this.canvas, this.profiles[this.profileIndex]);
         this.effect.render(this.ctx, 1);
         this.animate();
         utils.toggleProfileTransition(this, document.querySelector('#profileTransition').value);
@@ -27333,7 +27333,7 @@ class Visualiser {
             this.ctx.lineJoin = "round";
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone);
-            this.effect.updateEffect(false, normVolume, this.profiles[this.profileNumber - 1]);
+            this.effect.updateEffect(false, normVolume, this.profiles[this.profileIndex]);
             this.effect.render(this.ctx, normVolume);
         }
         if (this.active) {
@@ -27351,7 +27351,7 @@ class Visualiser {
         if (volume < this.maxV * 0.2) {
             this.maxV = volume;
         }
-        let adjVolume = Math.floor(volume * this.profiles[this.profileNumber - 1].volume) / 10;
+        let adjVolume = Math.floor(volume * this.profiles[this.profileIndex].volume) / 10;
         let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         return normVolume || 0;
@@ -27382,7 +27382,7 @@ class Visualiser {
     }
 
     getProfileHue(index) {
-        let i = index || this.profileNumber - 1;
+        let i = index || this.profileIndex;
         return Number(this.profiles[i].hue) + Number(this.profiles[i].hueShift) / 2;
     }
 }
@@ -27789,13 +27789,12 @@ setupProfiles = function (visualiser) {
 
   let profileContainer = document.querySelector('#profiles');
   profileContainer.style.opacity = 1;
-  for (let i = 0; i < visualiser.profiles.length; i++) {
+  for (let profileIndex = 0; profileIndex < visualiser.profiles.length; profileIndex++) {
     let button = document.createElement('button');
-    let profileHue = visualiser.getProfileHue(i);
+    let profileHue = visualiser.getProfileHue(profileIndex);
     let profileColour = `hsl( ${profileHue}, 100%, 30%, 0.7)`;
-    let profileNumber = i + 1;
-    button.id = 'profile-' + profileNumber + '-button';
-    button.textContent = profileNumber;
+    button.id = 'profile-' + Number(profileIndex + 1) + '-button';
+    button.textContent = Number(profileIndex + 1);
     button.style.backgroundColor = profileColour;
     button.setAttribute('onclick', 'myBundle.changeProfile(this.textContent)')
     profileContainer.appendChild(button);
@@ -27819,7 +27818,6 @@ setupProfiles = function (visualiser) {
 
   let height = (window.innerHeight - profileContainer.offsetHeight) / 2;
   profileContainer.style.top = height + 'px'
-  // visualiser.profileNumber = 1;
 }
 
 createNumberInput = function (label, id, min, max) {
@@ -27865,15 +27863,15 @@ createSelectInput = function (label, id, options) {
 }
 
 changeProfile = function (visualiser, index) {
-  visualiser.profileNumber = index + 1;
-  console.log('changed to profile ' + visualiser.profileNumber);
+  visualiser.profileIndex = index;
+  console.log('changed to profile ' + Number(visualiser.profileIndex + 1));
   setOptions(visualiser)
   updateColours(visualiser);
   if (visualiser.name === 'flow' && visualiser.effect) {
-    let previousParticleCount = visualiser.profiles[visualiser.profileNumber - 1].particles;
-    let particleDiff = previousParticleCount - visualiser.profiles[visualiser.profileNumber - 1].particles;
+    let previousParticleCount = visualiser.profiles[visualiser.profileIndex].particles;
+    let particleDiff = previousParticleCount - visualiser.profiles[visualiser.profileIndex].particles;
     visualiser.effect.clearParticles(particleDiff);
-    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileNumber - 1], particleDiff)
+    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileIndex], particleDiff)
   }
   toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   visualiser.updateControls();
@@ -27886,28 +27884,28 @@ createProfileTitle = function () {
 }
 
 setOptions = function (visualiser) {
-  document.querySelector('#controls-title').innerHTML = 'profile ' + visualiser.profileNumber;
-  Object.keys(visualiser.profiles[visualiser.profileNumber - 1]).forEach(key => {
+  document.querySelector('#controls-title').innerHTML = 'profile ' + Number(visualiser.profileIndex + 1);
+  Object.keys(visualiser.profiles[visualiser.profileIndex]).forEach(key => {
     let control = document.querySelector(`#${key}`);
     if (!control) {
       return;
     }
     if (control.type === 'checkbox') {
-      control.checked = visualiser.profiles[visualiser.profileNumber - 1][key];
+      control.checked = visualiser.profiles[visualiser.profileIndex][key];
     } else {
-      control.value = visualiser.profiles[visualiser.profileNumber - 1][key];
+      control.value = visualiser.profiles[visualiser.profileIndex][key];
     }
   });
 }
 
 changeOption = function (visualiser, option) {
   if (visualiser.name === 'flow' && option.id === 'particles') {
-    let particleDiff = visualiser.profiles[visualiser.profileNumber - 1][option.id] - option.value;
-    visualiser.profiles[visualiser.profileNumber - 1][option.id] = option.value;
+    let particleDiff = visualiser.profiles[visualiser.profileIndex][option.id] - option.value;
+    visualiser.profiles[visualiser.profileIndex][option.id] = option.value;
     visualiser.effect.clearParticles(particleDiff);
-    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileNumber - 1], particleDiff)
+    visualiser.effect.updateEffect(true, 0, visualiser.profiles[visualiser.profileIndex], particleDiff)
   } else {
-    visualiser.profiles[visualiser.profileNumber - 1][option.id] = option.type === 'checkbox' ? option.checked : option.value;
+    visualiser.profiles[visualiser.profileIndex][option.id] = option.type === 'checkbox' ? option.checked : option.value;
   }
   visualiser.updateControls();
   updateColours(visualiser);
@@ -27923,11 +27921,17 @@ updateColours = function (visualiser) {
   document.querySelector('#updateButton').style.color = controlColour;
   document.querySelector('#saveProfile').style.backgroundColor = profileColour;
   document.querySelector('#resetProfile').style.backgroundColor = profileColour;
-  document.querySelector('#profile-' + visualiser.profileNumber + '-button').style.backgroundColor = profileColour;
+  document.querySelector('#profile-' + Number(visualiser.profileIndex + 1) + '-button').style.backgroundColor = profileColour;
 
   if (document.querySelector('#rightSwitch')) {
     document.querySelector('#leftSwitch').style.color = controlColour;
     document.querySelector('#rightSwitch').style.color = controlColour;
+  }
+
+  if (document.querySelector('#colourPrompt')) {
+    document.querySelector('#colourPrompt').style.color = controlColour;
+    document.querySelector('#clearColour').style.color = controlColour;
+    document.querySelector('#closeColour').style.color = controlColour;
   }
 
   let controlsToUpdate = ['#controls', '#global-controls']
@@ -27950,20 +27954,20 @@ updateColours = function (visualiser) {
 }
 
 saveProfile = function (visualiser) {
-  let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
-  let profile = JSON.stringify(visualiser.profiles[visualiser.profileNumber - 1]);
+  let itemName = visualiser.name + '_profile_' + Number(visualiser.profileIndex + 1);
+  let profile = JSON.stringify(visualiser.profiles[visualiser.profileIndex]);
   localStorage.setItem(itemName, profile);
-  console.log('Saved profile ' + visualiser.profileNumber);
+  console.log('Saved profile ' + visualiser.profileIndex);
   console.log(profile);
   createSnackBar(visualiser, 'saved');
 }
 
 resetProfile = function (visualiser) {
-  visualiser.profiles[visualiser.profileNumber - 1] = JSON.parse(JSON.stringify(visualiser.defaultProfiles[visualiser.profileNumber - 1]));
-  changeProfile(visualiser, visualiser.profileNumber - 1);
-  let itemName = visualiser.name + '_profile_' + visualiser.profileNumber;
+  visualiser.profiles[visualiser.profileIndex] = JSON.parse(JSON.stringify(visualiser.defaultProfiles[visualiser.profileIndex]));
+  changeProfile(visualiser, visualiser.profileIndex);
+  let itemName = visualiser.name + '_profile_' + Number(visualiser.profileIndex + 1);
   localStorage.removeItem(itemName);
-  console.log('Reset profile ' + visualiser.profileNumber);
+  console.log('Reset profile ' + visualiser.profileIndex);
   createSnackBar(visualiser, 'reset');
 }
 
@@ -27979,7 +27983,7 @@ createVisualiserTitle = function (visualiser) {
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = visualiser.getProfileHue();
-  snackbar.innerHTML = 'profile ' + visualiser.profileNumber + ' ' + action;
+  snackbar.innerHTML = 'profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
@@ -27991,18 +27995,16 @@ toggleProfileTransition = function (visualiser, value) {
   if (visualiser.transitionInterval > 0) {
     console.log('triggering profile transitions every ' + visualiser.transitionInterval + 'ms');
     visualiser.intervalFunction = setInterval(() => transitionProfile(visualiser, visualiser.transitionInterval), visualiser.transitionInterval);
-  } else {
-    console.log('stopping profile transitions');
   }
 }
 
 transitionProfile = function (visualiser, currentInterval) {
   if (visualiser.transitionInterval > 0 && currentInterval === visualiser.transitionInterval) {
     let index;
-    if (visualiser.profileNumber === visualiser.defaultProfiles.length) {
+    if (visualiser.profileIndex === visualiser.defaultProfiles.length) {
       index = 0;
     } else {
-      index = visualiser.profileNumber;
+      index = visualiser.profileIndex;
     }
     changeProfile(visualiser, index);
   }

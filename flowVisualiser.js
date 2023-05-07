@@ -13,7 +13,7 @@ class Visualiser {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.profileNumber = 1;
+        this.profileIndex = 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
         this.themeHue;
@@ -30,7 +30,7 @@ class Visualiser {
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
         this.intervalFunction;
-        this.effect = new Effect.FlowEffect(this.canvas, this.profiles[this.profileNumber - 1]);
+        this.effect = new Effect.FlowEffect(this.canvas, this.profiles[this.profileIndex]);
         this.effect.render(this.ctx, 1);
         this.animate();
         utils.toggleProfileTransition(this, document.querySelector('#profileTransition').value);
@@ -42,7 +42,7 @@ class Visualiser {
             this.ctx.lineJoin = "round";
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             let normVolume = this.getNormalisedVolume(this.microphone);
-            this.effect.updateEffect(false, normVolume, this.profiles[this.profileNumber - 1]);
+            this.effect.updateEffect(false, normVolume, this.profiles[this.profileIndex]);
             this.effect.render(this.ctx, normVolume);
         }
         if (this.active) {
@@ -60,7 +60,7 @@ class Visualiser {
         if (volume < this.maxV * 0.2) {
             this.maxV = volume;
         }
-        let adjVolume = Math.floor(volume * this.profiles[this.profileNumber - 1].volume) / 10;
+        let adjVolume = Math.floor(volume * this.profiles[this.profileIndex].volume) / 10;
         let adjMaxV = this.maxV * 1.2
         let normVolume = (adjVolume - minV) / (adjMaxV - minV);
         return normVolume || 0;
@@ -91,7 +91,7 @@ class Visualiser {
     }
 
     getProfileHue(index) {
-        let i = index || this.profileNumber - 1;
+        let i = index || this.profileIndex;
         return Number(this.profiles[i].hue) + Number(this.profiles[i].hueShift) / 2;
     }
 }
