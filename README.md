@@ -1,8 +1,8 @@
 # now-playing
 
-An extendable visualiser that can optionally provide song information via an integration with ACRCloud.
+A visualiser framework that enables profile and control functionality on top of javascripts canvas API. It can optionally provide song information via an integration with ACRCloud.
 
-Currently includes flow field and circle-based visualisers
+Visualiser types can be cyclec through using the arrows on the top left and right of the window.
 
 Profiles can be edited and saved, with an option to restore to the default. 
 
