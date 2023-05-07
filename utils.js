@@ -112,6 +112,7 @@ changeProfile = function (visualiser, index) {
   }
   toggleProfileTransition(visualiser, document.querySelector('#profileTransition').value)
   visualiser.updateControls();
+  localStorage.setItem(`${visualiser.name}-profileIndex`, visualiser.profileIndex)
 }
 
 createProfileTitle = function () {
@@ -238,10 +239,10 @@ toggleProfileTransition = function (visualiser, value) {
 transitionProfile = function (visualiser, currentInterval) {
   if (visualiser.transitionInterval > 0 && currentInterval === visualiser.transitionInterval) {
     let index;
-    if (visualiser.profileIndex === visualiser.defaultProfiles.length) {
+    if (visualiser.profileIndex === visualiser.defaultProfiles.length-1) {
       index = 0;
     } else {
-      index = visualiser.profileIndex;
+      index = visualiser.profileIndex + 1;
     }
     changeProfile(visualiser, index);
   }
@@ -253,6 +254,8 @@ teardown = function (visualiser) {
   visualiser.ctx.clearRect(0, 0, visualiser.canvas.width, visualiser.canvas.height);
   visualiser.ctx.restore();
   visualiser.active = false;
+
+  toggleProfileTransition(visualiser, 0);
 
   let profileContainer = document.querySelector('#profiles');
   profileContainer.replaceChildren();

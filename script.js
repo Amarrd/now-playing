@@ -12,7 +12,7 @@ var autoMode = false;
 var audioPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 var currentVisualiser;
 var identifyFunction;
-var visualisers = [CircleVisualiser, FlowVisualiser];
+var visualisers = [FlowVisualiser, CircleVisualiser];
 var visualiserIndex = Number(localStorage.getItem('currentVisualiser')) || 0;
 var initialised = false;
 

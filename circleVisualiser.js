@@ -13,7 +13,7 @@ class Visualiser {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.profileIndex = 0;
+        this.profileIndex = Number(localStorage.getItem(`${this.name}-profileIndex`)) || 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
 
