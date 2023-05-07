@@ -104,7 +104,7 @@ changeProfile = function (visualiser, index) {
   console.log('changed to profile ' + Number(visualiser.profileIndex + 1));
   setOptions(visualiser)
   updateColours(visualiser);
-  if (visualiser.name === 'flow' && visualiser.effect) {
+  if (visualiser.name === 'flow field' && visualiser.effect) {
     let previousParticleCount = visualiser.profiles[visualiser.profileIndex].particles;
     let particleDiff = previousParticleCount - visualiser.profiles[visualiser.profileIndex].particles;
     visualiser.effect.clearParticles(particleDiff);
@@ -136,7 +136,7 @@ setOptions = function (visualiser) {
 }
 
 changeOption = function (visualiser, option) {
-  if (visualiser.name === 'flow' && option.id === 'particles') {
+  if (visualiser.name === 'flow field' && option.id === 'particles') {
     let particleDiff = visualiser.profiles[visualiser.profileIndex][option.id] - option.value;
     visualiser.profiles[visualiser.profileIndex][option.id] = option.value;
     visualiser.effect.clearParticles(particleDiff);

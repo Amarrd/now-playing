@@ -26606,73 +26606,55 @@ module.exports = {main};
 module.exports=[
     {
         "gradientColours": [
-            "#3F2CAF",
-            "#e9446a",
-            "#edc988",
-            "#607D8B"
+            "#5b3ffc",
+            "#44a4e9",
+            "#200eed",
+            "#07448b",
+            "#ca0cfa",
+            "#edbbfa"
         ],
+        "dotSize":  30,
+        "dotModifier": 2,
+        "ringCount": 10,
+        "ringDistance": 50,
+        "alternateRings": true,
+        "rotationSpeed": 1
+    },
+    {
+        "gradientColours":["#9eff00","#ff003b","#f79f00","#3300ff","#8f00ff"],
         "dotSize": 30,
-        "dotModifier": 6,
-        "ringCount": 5,
+        "dotModifier": 2,
+        "ringCount": 20,
         "ringDistance": 30,
         "alternateRings": true,
         "rotationSpeed": 1
     },
     {
-        "gradientColours": [
-            "#3F2CAF",
-            "#e9446a",
-            "#edc988",
-            "#607D8B"
-        ],
+        "gradientColours":["#a7f7a1","#5be944","#4ced5c","#228b1a","#fc0f0f","#fc8800"],
         "dotSize": 30,
-        "dotModifier": 5,
-        "ringCount": 13,
-        "ringDistance": 44,
+        "dotModifier": 2,
+        "ringCount": 17,
+        "ringDistance": 30,
         "alternateRings": true,
         "rotationSpeed": 1
     },
     {
-        "gradientColours": [
-            "#3F2CAF",
-            "#e9446a",
-            "#edc988",
-            "#607D8B"
-        ],
+        "gradientColours":["#f50000","#ff2e00","#ff5c00","#0047ff","#0582f5","#00f5e6"],
         "dotSize": 30,
-        "dotModifier": 2,
-        "ringCount": 15,
-        "ringDistance": 44,
+        "dotModifier": 1,
+        "ringCount": 23,
+        "ringDistance": 38,
         "alternateRings": true,
         "rotationSpeed": 1
     },
     {
-        "gradientColours": [
-            "#3F2CAF",
-            "#e9446a",
-            "#edc988",
-            "#607D8B"
-        ],
+        "gradientColours":["#00af3c","#e90036","#02ed5f","#6e008b","#008b1f","#dbff00"],
         "dotSize": 30,
-        "dotModifier": 2,
-        "ringCount": 9,
-        "ringDistance": 69,
+        "dotModifier": 3,
+        "ringCount": 8,
+        "ringDistance": 50,
         "alternateRings": false,
-        "rotationSpeed": 1
-    },
-    {
-        "gradientColours": [
-            "#3F2CAF",
-            "#e9446a",
-            "#edc988",
-            "#607D8B"
-        ],
-        "dotSize": 30,
-        "dotModifier": 6,
-        "ringCount": 13,
-        "ringDistance": 44,
-        "alternateRings": true,
-        "rotationSpeed": 1
+        "rotationSpeed": 2
     },
     {
         "gradientColours": [
@@ -27867,7 +27849,7 @@ changeProfile = function (visualiser, index) {
   console.log('changed to profile ' + Number(visualiser.profileIndex + 1));
   setOptions(visualiser)
   updateColours(visualiser);
-  if (visualiser.name === 'flow' && visualiser.effect) {
+  if (visualiser.name === 'flow field' && visualiser.effect) {
     let previousParticleCount = visualiser.profiles[visualiser.profileIndex].particles;
     let particleDiff = previousParticleCount - visualiser.profiles[visualiser.profileIndex].particles;
     visualiser.effect.clearParticles(particleDiff);
@@ -27899,7 +27881,7 @@ setOptions = function (visualiser) {
 }
 
 changeOption = function (visualiser, option) {
-  if (visualiser.name === 'flow' && option.id === 'particles') {
+  if (visualiser.name === 'flow field' && option.id === 'particles') {
     let particleDiff = visualiser.profiles[visualiser.profileIndex][option.id] - option.value;
     visualiser.profiles[visualiser.profileIndex][option.id] = option.value;
     visualiser.effect.clearParticles(particleDiff);
