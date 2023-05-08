@@ -126,11 +126,11 @@ class Visualiser {
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
-        utils.createNumberInput('Sensitivity', 'sensitivity', 0, 10);
-        utils.createNumberInput('Dot Size', 'dotSize', 10, 50)
-        utils.createNumberInput('Dot Multiplier', 'dotModifier', 1, 30)
         utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
         utils.createNumberInput('Ring Distance', 'ringDistance', 30, 100)
+        utils.createNumberInput('Dot Multiplier', 'dotModifier', 1, 30)
+        utils.createNumberInput('Dot Size', 'dotSize', 10, 50)
+        utils.createNumberInput('Sensitivity', 'sensitivity', 0, 10);
         utils.createNumberInput('Rotation Speed', 'rotationSpeed', -20, 20)
 
         let alternateLabel = document.createElement('label');
