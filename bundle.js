@@ -26739,8 +26739,6 @@ class Visualiser {
         this.currentColour = 0;
 
         this.setupControls();
-
-        // Common setup
         utils.setupProfiles(this);
         utils.setOptions(this);
         this.gradientArray = new Gradient()
@@ -26949,10 +26947,9 @@ class Visualiser {
             button.style.margin = '5px';
             button.style.height = '50px';
             button.style.width = '50px';
-            button.style.border = '2px solid #e7e7e7'
             button.setAttribute('onclick', 'myBundle.colourClicked(this)');
             button.setAttribute('currentColour', i === 0 ? 'true' : 'false');
-            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #e7e7e7';
+            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #999997';
             gradientButtons.appendChild(button);
         }
 
@@ -26972,6 +26969,11 @@ class Visualiser {
             .map(button => new iro.Color(button.style.backgroundColor).hexString)
             .filter(colour => colour != "#000000");
 
+        if (this.profiles[this.profileIndex].gradientColours.length < 2) {
+            utils.createErrorSnackBar('At least two colours are required')
+            return;
+        }
+
         this.gradientArray = new Gradient()
             .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
@@ -26985,7 +26987,7 @@ class Visualiser {
     colourClicked(colour) {
         document.querySelector('#gradientButtons').childNodes.forEach(button => {
             button.setAttribute('currentColour', 'false');
-            button.style.border = '2px solid #e7e7e7'
+            button.style.border = '2px solid #999997'
         })
         if (colour.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
             this.sliderPicker.color.rgbString = colour.style.backgroundColor;
@@ -27320,7 +27322,6 @@ const utils = require('./utils')
 class Visualiser {
 
     constructor(audioPromise) {
-        // Common properties
         this.name = 'Flow Field';
         this.profiles = require("./flowDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
@@ -27334,13 +27335,10 @@ class Visualiser {
         this.themeHue;
 
         this.setupControls();
-
-        // Common setup
         utils.setupProfiles(this);
         utils.setOptions(this);
         utils.updateColours(this);
 
-        // Specific properties 
         this.maxV = 0;
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;
@@ -28005,17 +28003,33 @@ createVisualiserTitle = function (visualiser) {
   let snackbar = document.querySelector('#snackbarTop');
   let hue = visualiser.getProfileHue();
   snackbar.innerHTML = visualiser.name;
-  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.style.left = width + 'px';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 4000);
 }
 
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = visualiser.getProfileHue();
-  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
-  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
+  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.style.left = width + 'px';
+  setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
+}
+
+createErrorSnackBar = function (error) {
+  let snackbar = document.querySelector('#snackbar');
+  snackbar.className = 'show';
+  snackbar.innerHTML = error;
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.left = width + 'px';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
 }
 
@@ -28057,7 +28071,7 @@ teardown = function (visualiser) {
 }
 
 module.exports = {
-  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
+  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, createErrorSnackBar, setOptions, changeOption,
   updateColours, createVisualiserTitle, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
 }
 

@@ -5,7 +5,6 @@ const utils = require('./utils')
 class Visualiser {
 
     constructor(audioPromise) {
-        // Common properties
         this.name = 'Flow Field';
         this.profiles = require("./flowDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
@@ -19,13 +18,10 @@ class Visualiser {
         this.themeHue;
 
         this.setupControls();
-
-        // Common setup
         utils.setupProfiles(this);
         utils.setOptions(this);
         utils.updateColours(this);
 
-        // Specific properties 
         this.maxV = 0;
         this.ctx.lineWidth = 1;
         this.transitionInterval = 0;

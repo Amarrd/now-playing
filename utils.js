@@ -216,17 +216,33 @@ createVisualiserTitle = function (visualiser) {
   let snackbar = document.querySelector('#snackbarTop');
   let hue = visualiser.getProfileHue();
   snackbar.innerHTML = visualiser.name;
-  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.style.left = width + 'px';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 4000);
 }
 
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = visualiser.getProfileHue();
-  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
-  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
+  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
+  snackbar.style.left = width + 'px';
+  setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
+}
+
+createErrorSnackBar = function (error) {
+  let snackbar = document.querySelector('#snackbar');
+  snackbar.className = 'show';
+  snackbar.innerHTML = error;
+
+  let width = (window.innerWidth - snackbar.offsetWidth) / 2;
+  snackbar.style.left = width + 'px';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);
 }
 
@@ -268,7 +284,7 @@ teardown = function (visualiser) {
 }
 
 module.exports = {
-  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, setOptions, changeOption,
+  map, loadProfiles, setupProfiles, changeProfile, createProfileTitle, createErrorSnackBar, setOptions, changeOption,
   updateColours, createVisualiserTitle, createNumberInput, createSelectInput, saveProfile, resetProfile, toggleProfileTransition, teardown
 }
 

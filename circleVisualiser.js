@@ -27,8 +27,6 @@ class Visualiser {
         this.currentColour = 0;
 
         this.setupControls();
-
-        // Common setup
         utils.setupProfiles(this);
         utils.setOptions(this);
         this.gradientArray = new Gradient()
@@ -237,10 +235,9 @@ class Visualiser {
             button.style.margin = '5px';
             button.style.height = '50px';
             button.style.width = '50px';
-            button.style.border = '2px solid #e7e7e7'
             button.setAttribute('onclick', 'myBundle.colourClicked(this)');
             button.setAttribute('currentColour', i === 0 ? 'true' : 'false');
-            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #e7e7e7';
+            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #999997';
             gradientButtons.appendChild(button);
         }
 
@@ -260,6 +257,11 @@ class Visualiser {
             .map(button => new iro.Color(button.style.backgroundColor).hexString)
             .filter(colour => colour != "#000000");
 
+        if (this.profiles[this.profileIndex].gradientColours.length < 2) {
+            utils.createErrorSnackBar('At least two colours are required')
+            return;
+        }
+
         this.gradientArray = new Gradient()
             .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
             .setMidpoint(500)
@@ -273,7 +275,7 @@ class Visualiser {
     colourClicked(colour) {
         document.querySelector('#gradientButtons').childNodes.forEach(button => {
             button.setAttribute('currentColour', 'false');
-            button.style.border = '2px solid #e7e7e7'
+            button.style.border = '2px solid #999997'
         })
         if (colour.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
             this.sliderPicker.color.rgbString = colour.style.backgroundColor;
