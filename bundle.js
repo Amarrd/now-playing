@@ -27382,22 +27382,22 @@ class Visualiser {
 
     setupControls() {
         let directions = {
-            up: 'up',
-            down: 'down',
-            left: 'left',
-            right: 'right',
+            up: 'Up',
+            down: 'Down',
+            left: 'Left',
+            right: 'Right',
         }
 
-        utils.createNumberInput('hue', 'hue', 1, 360)
-        utils.createNumberInput('hue shift', 'hueShift', 1, 360)
-        utils.createNumberInput('volume', 'volume', 1, 200)
-        utils.createNumberInput('curve', 'curve', 0, 100)
-        utils.createNumberInput('zoom', 'zoom', 0, 100)
-        utils.createNumberInput('particles', 'particles', 1, 3000)
-        utils.createNumberInput('line width', 'lineWidth', 1, 10)
-        utils.createNumberInput('horizontal scroll', 'xAdjustment', -10, 10)
-        utils.createNumberInput('vertical scroll', 'yAdjustment', -10, 10)
-        utils.createSelectInput('direction', 'direction', directions)
+        utils.createNumberInput('Hue', 'hue', 1, 360)
+        utils.createNumberInput('Hue Shift', 'hueShift', 1, 360)
+        utils.createNumberInput('Sensitivity', 'volume', 1, 200)
+        utils.createNumberInput('Curve', 'curve', 0, 100)
+        utils.createNumberInput('Zoom', 'zoom', 0, 100)
+        utils.createNumberInput('Particles', 'particles', 1, 3000)
+        utils.createNumberInput('Line Width', 'lineWidth', 1, 10)
+        utils.createNumberInput('Horizontal Scroll', 'xAdjustment', -10, 10)
+        utils.createNumberInput('Vertical scroll', 'yAdjustment', -10, 10)
+        utils.createSelectInput('Direction', 'direction', directions)
     }
 
     updateControls() {
