@@ -26378,6 +26378,7 @@ function createCredentialsDialogue() {
 	let submit = document.createElement('button');
 	let cancel = document.createElement('button');
 	let blockingDiv = document.createElement('div');
+	let title = document.createElement('h4');
 	const colour = document.querySelector('#controls').style.color;
 
 	blockingDiv.id = 'blockingDiv';
@@ -26386,9 +26387,10 @@ function createCredentialsDialogue() {
 
 	prompt.className = 'credentialsPrompt';
 	prompt.id = 'credentialsPrompt';
-	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
 	prompt.style.opacity = 1
+	title.innerHTML = 'Enter ACRCloud Credentials';
+	title.style.textAlign = 'center';
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
 	keyInput.style.color = colour;
@@ -26407,6 +26409,8 @@ function createCredentialsDialogue() {
 
 	buttons.appendChild(submit);
 	buttons.appendChild(cancel);
+	prompt.appendChild(title);
+	prompt.appendChild(document.createElement('br'));
 	prompt.appendChild(keyInput);
 	prompt.appendChild(secretInput);
 	prompt.appendChild(buttons);
@@ -26713,7 +26717,7 @@ const iro = require('@jaames/iro');
 
 class Visualiser {
     constructor(audioPromise) {
-        this.name = 'circles';
+        this.name = 'Circles';
         this.profiles = require("./circleDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -26831,19 +26835,19 @@ class Visualiser {
         let controls = document.querySelector('#controls');
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
-        openColour.innerHTML = 'configure gradient'
+        openColour.innerHTML = 'Configure Gradient'
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
-        utils.createNumberInput('sensitivity', 'sensitivity', 0, 10);
-        utils.createNumberInput('dot size', 'dotSize', 10, 50)
-        utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
-        utils.createNumberInput('ring count', 'ringCount', 1, 30)
-        utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
-        utils.createNumberInput('rotation speed', 'rotationSpeed', -20, 20)
+        utils.createNumberInput('Sensitivity', 'sensitivity', 0, 10);
+        utils.createNumberInput('Dot Size', 'dotSize', 10, 50)
+        utils.createNumberInput('Dot Multiplier', 'dotModifier', 1, 30)
+        utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
+        utils.createNumberInput('Ring Distance', 'ringDistance', 30, 100)
+        utils.createNumberInput('Rotation Speed', 'rotationSpeed', -20, 20)
 
         let alternateLabel = document.createElement('label');
-        alternateLabel.innerHTML = 'alternate rings ';
+        alternateLabel.innerHTML = 'Alternate Rings ';
         alternateLabel.htmlFor = 'alternateRings';
 
         let alternateInput = document.createElement('input');
@@ -26862,6 +26866,7 @@ class Visualiser {
         let buttons = document.createElement('div');
         let close = document.createElement('button');
         let clear = document.createElement('button');
+        let title = document.createElement('h4');
         const colour = document.querySelector('#controls').style.color;
 
         blockingDiv.id = 'blockingDiv';
@@ -26870,32 +26875,35 @@ class Visualiser {
 
         prompt.className = 'credentialsPrompt';
         prompt.id = 'colourPrompt';
-        prompt.innerHTML = 'gradient colours';
         prompt.style.color = colour;
         prompt.style.opacity = 1;
-        prompt.style.margin = '20px'
 
-        clear.innerHTML = 'clear';
+        title.innerHTML = 'Gradient Creator';
+        title.style.textAlign = 'center';
+
+        clear.innerHTML = 'Clear';
         clear.id = 'clearColour';
         clear.style.color = colour;
         clear.style.float = 'left';
-        clear.style.marginLeft = '20px'
+        clear.style.marginLeft = '20px';
         clear.setAttribute('onclick', 'myBundle.clearColour()');
 
-        close.innerHTML = 'close';
+        close.innerHTML = 'Close';
         close.id = 'closeColour';
         close.style.color = colour;
-        close.style.float = 'right'
-        close.style.marginRight = '20px'
+        close.style.float = 'right';
+        close.style.marginRight = '20px';
         close.setAttribute('onclick', 'myBundle.closeColours()');
 
         document.body.appendChild(prompt);
+        prompt.appendChild(title);
+        prompt.appendChild(document.createElement('br'));
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
             color: this.profiles[this.profileIndex].gradientColours[0],
-            borderWidth: 1,
-            borderColor: "grey",
+            borderWidth: 3,
+            borderColor: "black",
             layout: [
                 {
                     component: iro.ui.Slider,
@@ -26925,7 +26933,7 @@ class Visualiser {
                 return;
             }
             colourButton.style.backgroundColor = colour.hexString;
-        })
+        });
 
         let gradientButtons = document.createElement('div');
         gradientButtons.className = 'gradientButtons';
@@ -27053,7 +27061,7 @@ module.exports=[
     {
         "hue": 10,
         "hueShift": 20,
-        "volume": 70,
+        "volume": 80,
         "curve": 10,
         "zoom": 7,
         "particles": 2000,
@@ -27065,7 +27073,7 @@ module.exports=[
     {
         "hue": 40,
         "hueShift": -160,
-        "volume": 70,
+        "volume": 80,
         "curve": 30,
         "zoom": 10,
         "particles": 2000,
@@ -27077,7 +27085,7 @@ module.exports=[
     {
         "hue": 90,
         "hueShift": 120,
-        "volume": 50,
+        "volume": 80,
         "curve": 20,
         "zoom": 30,
         "particles": 1000,
@@ -27089,7 +27097,7 @@ module.exports=[
     {
         "hue": 180,
         "hueShift": 40,
-        "volume": 50,
+        "volume": 80,
         "curve": 5,
         "zoom": 10,
         "particles": 750,
@@ -27101,7 +27109,7 @@ module.exports=[
     {
         "hue": 220,
         "hueShift": 60,
-        "volume": 70,
+        "volume": 80,
         "curve": 70,
         "zoom": 10,
         "particles": 2000,
@@ -27113,7 +27121,7 @@ module.exports=[
     {
         "hue": 300,
         "hueShift": 60,
-        "volume": 70,
+        "volume": 80,
         "curve": 4,
         "zoom": 20,
         "particles": 750,
@@ -27312,7 +27320,7 @@ class Visualiser {
 
     constructor(audioPromise) {
         // Common properties
-        this.name = 'flow field';
+        this.name = 'Flow Field';
         this.profiles = require("./flowDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -27508,7 +27516,7 @@ function startVisualiser() {
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
 		document.querySelector('#autoToggleLabel').style.display = 'none';
-		document.querySelector('#updateButton').innerHTML = 'input ACR credentials';
+		document.querySelector('#updateButton').innerHTML = 'Input ACR Credentials';
 	}
 }
 
@@ -27902,7 +27910,7 @@ createProfileTitle = function () {
 }
 
 setOptions = function (visualiser) {
-  document.querySelector('#controls-title').innerHTML = 'profile ' + Number(visualiser.profileIndex + 1);
+  document.querySelector('#controls-title').innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1);
   Object.keys(visualiser.profiles[visualiser.profileIndex]).forEach(key => {
     let control = document.querySelector(`#${key}`);
     if (!control) {
@@ -27977,7 +27985,7 @@ saveProfile = function (visualiser) {
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileIndex);
   console.log(profile);
-  createSnackBar(visualiser, 'saved');
+  createSnackBar(visualiser, 'Saved');
 }
 
 resetProfile = function (visualiser) {
@@ -27986,7 +27994,7 @@ resetProfile = function (visualiser) {
   let itemName = visualiser.name + '_profile_' + Number(visualiser.profileIndex + 1);
   localStorage.removeItem(itemName);
   console.log('Reset profile ' + visualiser.profileIndex);
-  createSnackBar(visualiser, 'reset');
+  createSnackBar(visualiser, 'Reset');
 }
 
 createVisualiserTitle = function (visualiser) {
@@ -28001,7 +28009,7 @@ createVisualiserTitle = function (visualiser) {
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = visualiser.getProfileHue();
-  snackbar.innerHTML = 'profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
+  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);

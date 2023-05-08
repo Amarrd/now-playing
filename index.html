@@ -20,15 +20,15 @@
 		<div class="controls-child visualiser" id="controls">
 		</div>
 		<div class="controls-child global" id="global-controls">
-			<label class="profileTransition" for="profileTransition" id="profileTransitionLabel">transition (s)
+			<label class="profileTransition" for="profileTransition" id="profileTransitionLabel">Transition (s)
 				<input type="number" id="profileTransition" name="profileTransition" min="0" max="360" value=0
 					onchange="myBundle.toggleTransition()">
 			</label>
 			<label class="autoToggle" for="autoToggle" id="autoToggleLabel">
-				<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> auto identify
+				<input type="checkbox" id="autoToggle" name="autoToggle" onclick="myBundle.toggleAuto()"> Auto Identify
 				<span class="checkmark"></span>
 			</label>
-			<button id="updateButton" onclick="myBundle.updateSong()">identify song</button>
+			<button id="updateButton" onclick="myBundle.updateSong()">Identify Song</button>
 		</div>
 	</div>
 	<div id="snackbar"></div>

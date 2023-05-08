@@ -122,7 +122,7 @@ createProfileTitle = function () {
 }
 
 setOptions = function (visualiser) {
-  document.querySelector('#controls-title').innerHTML = 'profile ' + Number(visualiser.profileIndex + 1);
+  document.querySelector('#controls-title').innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1);
   Object.keys(visualiser.profiles[visualiser.profileIndex]).forEach(key => {
     let control = document.querySelector(`#${key}`);
     if (!control) {
@@ -197,7 +197,7 @@ saveProfile = function (visualiser) {
   localStorage.setItem(itemName, profile);
   console.log('Saved profile ' + visualiser.profileIndex);
   console.log(profile);
-  createSnackBar(visualiser, 'saved');
+  createSnackBar(visualiser, 'Saved');
 }
 
 resetProfile = function (visualiser) {
@@ -206,7 +206,7 @@ resetProfile = function (visualiser) {
   let itemName = visualiser.name + '_profile_' + Number(visualiser.profileIndex + 1);
   localStorage.removeItem(itemName);
   console.log('Reset profile ' + visualiser.profileIndex);
-  createSnackBar(visualiser, 'reset');
+  createSnackBar(visualiser, 'Reset');
 }
 
 createVisualiserTitle = function (visualiser) {
@@ -221,7 +221,7 @@ createVisualiserTitle = function (visualiser) {
 createSnackBar = function (visualiser, action) {
   let snackbar = document.querySelector('#snackbar');
   let hue = visualiser.getProfileHue();
-  snackbar.innerHTML = 'profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
+  snackbar.innerHTML = 'Profile ' + Number(visualiser.profileIndex + 1) + ' ' + action;
   snackbar.style.color = `hsl( ${hue}, 100%, 80%)`
   snackbar.className = 'show';
   setTimeout(() => snackbar.className = snackbar.className.replace('show', ''), 3000);

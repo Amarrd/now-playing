@@ -33,7 +33,7 @@ function startVisualiser() {
 	if (acrCloud.credentialsRequired()) {
 		document.querySelector('#autoToggle').style.display = 'none';
 		document.querySelector('#autoToggleLabel').style.display = 'none';
-		document.querySelector('#updateButton').innerHTML = 'input ACR credentials';
+		document.querySelector('#updateButton').innerHTML = 'Input ACR Credentials';
 	}
 }
 

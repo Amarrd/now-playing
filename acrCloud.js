@@ -25,6 +25,7 @@ function createCredentialsDialogue() {
 	let submit = document.createElement('button');
 	let cancel = document.createElement('button');
 	let blockingDiv = document.createElement('div');
+	let title = document.createElement('h4');
 	const colour = document.querySelector('#controls').style.color;
 
 	blockingDiv.id = 'blockingDiv';
@@ -33,9 +34,10 @@ function createCredentialsDialogue() {
 
 	prompt.className = 'credentialsPrompt';
 	prompt.id = 'credentialsPrompt';
-	prompt.innerHTML = 'Enter ACRCloud Credentials';
 	prompt.style.color = colour;
 	prompt.style.opacity = 1
+	title.innerHTML = 'Enter ACRCloud Credentials';
+	title.style.textAlign = 'center';
 	keyInput.id = 'keyInput';
 	keyInput.placeholder = 'Access Key';
 	keyInput.style.color = colour;
@@ -54,6 +56,8 @@ function createCredentialsDialogue() {
 
 	buttons.appendChild(submit);
 	buttons.appendChild(cancel);
+	prompt.appendChild(title);
+	prompt.appendChild(document.createElement('br'));
 	prompt.appendChild(keyInput);
 	prompt.appendChild(secretInput);
 	prompt.appendChild(buttons);

@@ -2,7 +2,7 @@
     {
         "hue": 10,
         "hueShift": 20,
-        "volume": 70,
+        "volume": 80,
         "curve": 10,
         "zoom": 7,
         "particles": 2000,
@@ -14,7 +14,7 @@
     {
         "hue": 40,
         "hueShift": -160,
-        "volume": 70,
+        "volume": 80,
         "curve": 30,
         "zoom": 10,
         "particles": 2000,
@@ -26,7 +26,7 @@
     {
         "hue": 90,
         "hueShift": 120,
-        "volume": 50,
+        "volume": 80,
         "curve": 20,
         "zoom": 30,
         "particles": 1000,
@@ -38,7 +38,7 @@
     {
         "hue": 180,
         "hueShift": 40,
-        "volume": 50,
+        "volume": 80,
         "curve": 5,
         "zoom": 10,
         "particles": 750,
@@ -50,7 +50,7 @@
     {
         "hue": 220,
         "hueShift": 60,
-        "volume": 70,
+        "volume": 80,
         "curve": 70,
         "zoom": 10,
         "particles": 2000,
@@ -62,7 +62,7 @@
     {
         "hue": 300,
         "hueShift": 60,
-        "volume": 70,
+        "volume": 80,
         "curve": 4,
         "zoom": 20,
         "particles": 750,

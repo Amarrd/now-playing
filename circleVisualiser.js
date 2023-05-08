@@ -5,7 +5,7 @@ const iro = require('@jaames/iro');
 
 class Visualiser {
     constructor(audioPromise) {
-        this.name = 'circles';
+        this.name = 'Circles';
         this.profiles = require("./circleDefaultProfiles.json")
         this.defaultProfiles = JSON.parse(JSON.stringify(this.profiles));
         this.canvas = document.querySelector('#myCanvas');
@@ -123,19 +123,19 @@ class Visualiser {
         let controls = document.querySelector('#controls');
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
-        openColour.innerHTML = 'configure gradient'
+        openColour.innerHTML = 'Configure Gradient'
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
-        utils.createNumberInput('sensitivity', 'sensitivity', 0, 10);
-        utils.createNumberInput('dot size', 'dotSize', 10, 50)
-        utils.createNumberInput('dot multiplier', 'dotModifier', 1, 30)
-        utils.createNumberInput('ring count', 'ringCount', 1, 30)
-        utils.createNumberInput('ring distance', 'ringDistance', 30, 100)
-        utils.createNumberInput('rotation speed', 'rotationSpeed', -20, 20)
+        utils.createNumberInput('Sensitivity', 'sensitivity', 0, 10);
+        utils.createNumberInput('Dot Size', 'dotSize', 10, 50)
+        utils.createNumberInput('Dot Multiplier', 'dotModifier', 1, 30)
+        utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
+        utils.createNumberInput('Ring Distance', 'ringDistance', 30, 100)
+        utils.createNumberInput('Rotation Speed', 'rotationSpeed', -20, 20)
 
         let alternateLabel = document.createElement('label');
-        alternateLabel.innerHTML = 'alternate rings ';
+        alternateLabel.innerHTML = 'Alternate Rings ';
         alternateLabel.htmlFor = 'alternateRings';
 
         let alternateInput = document.createElement('input');
@@ -154,6 +154,7 @@ class Visualiser {
         let buttons = document.createElement('div');
         let close = document.createElement('button');
         let clear = document.createElement('button');
+        let title = document.createElement('h4');
         const colour = document.querySelector('#controls').style.color;
 
         blockingDiv.id = 'blockingDiv';
@@ -162,32 +163,35 @@ class Visualiser {
 
         prompt.className = 'credentialsPrompt';
         prompt.id = 'colourPrompt';
-        prompt.innerHTML = 'gradient colours';
         prompt.style.color = colour;
         prompt.style.opacity = 1;
-        prompt.style.margin = '20px'
 
-        clear.innerHTML = 'clear';
+        title.innerHTML = 'Gradient Creator';
+        title.style.textAlign = 'center';
+
+        clear.innerHTML = 'Clear';
         clear.id = 'clearColour';
         clear.style.color = colour;
         clear.style.float = 'left';
-        clear.style.marginLeft = '20px'
+        clear.style.marginLeft = '20px';
         clear.setAttribute('onclick', 'myBundle.clearColour()');
 
-        close.innerHTML = 'close';
+        close.innerHTML = 'Close';
         close.id = 'closeColour';
         close.style.color = colour;
-        close.style.float = 'right'
-        close.style.marginRight = '20px'
+        close.style.float = 'right';
+        close.style.marginRight = '20px';
         close.setAttribute('onclick', 'myBundle.closeColours()');
 
         document.body.appendChild(prompt);
+        prompt.appendChild(title);
+        prompt.appendChild(document.createElement('br'));
 
         this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
             width: 350,
             color: this.profiles[this.profileIndex].gradientColours[0],
-            borderWidth: 1,
-            borderColor: "grey",
+            borderWidth: 3,
+            borderColor: "black",
             layout: [
                 {
                     component: iro.ui.Slider,
@@ -217,7 +221,7 @@ class Visualiser {
                 return;
             }
             colourButton.style.backgroundColor = colour.hexString;
-        })
+        });
 
         let gradientButtons = document.createElement('div');
         gradientButtons.className = 'gradientButtons';
