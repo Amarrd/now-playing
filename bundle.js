@@ -26836,6 +26836,7 @@ class Visualiser {
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
         openColour.innerHTML = 'Configure Gradient'
+        openColour.className = 'controlButtons';
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 
@@ -27904,9 +27905,10 @@ changeProfile = function (visualiser, index) {
 }
 
 createProfileTitle = function () {
-  let optionsTitle = document.createElement('h4');
+  let optionsTitle = document.createElement('h3');
   optionsTitle.id = 'controls-title';
   document.querySelector('#controls').appendChild(optionsTitle);
+  document.querySelector('#controls').appendChild(document.createElement('br'));
 }
 
 setOptions = function (visualiser) {

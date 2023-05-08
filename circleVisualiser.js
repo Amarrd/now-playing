@@ -124,6 +124,7 @@ class Visualiser {
         let openColour = document.createElement('button');
         openColour.id = 'addColours'
         openColour.innerHTML = 'Configure Gradient'
+        openColour.className = 'controlButtons';
         openColour.setAttribute('onclick', 'myBundle.addColours()');
         controls.appendChild(openColour);
 

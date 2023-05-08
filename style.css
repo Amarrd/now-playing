@@ -51,11 +51,6 @@ div.currentSong {
     display:block
   }
 
-.gradientButtons {
-    display: 'inline-flex';
-    padding: 5px
-}
-
 .controls-container {
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.5);
@@ -107,6 +102,12 @@ select {
     margin-left: 10px;
 }
 
+br {
+    display: block; 
+    content: ""; 
+    margin-top: 10px; 
+}
+
 button {
     background-color: black;
     color: white;
@@ -115,6 +116,16 @@ button {
     border-radius: 5px;
     padding: 15px;
     font-size: 16px;
+}
+
+.gradientButtons {
+    display: 'inline-flex';
+    padding: 5px;
+}
+
+.controlButtons {
+    border: solid;
+    padding: 5px;
 }
 
 input {
@@ -235,10 +246,10 @@ input[type='checkbox'] {
     padding: 14px;
     position: fixed;
     z-index: 1;
-    left: 47%;
+    left: 45%;
     top: 40px;
     font-family: ‘Roboto’, sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
     z-index: 1;
 }
