@@ -1,7 +1,8 @@
-const Microphone = require("./microphone");
+const Microphone = require('./microphone');
 const utils = require('./utils');
 const Gradient = require('javascript-color-gradient');
 const iro = require('@jaames/iro');
+const colourPicker = require('./colourPicker')
 
 class Visualiser {
     constructor(audioPromise) {
@@ -71,7 +72,6 @@ class Visualiser {
             let samples = this.microphone.getSamplesFor(this.totalDots);
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2);
             let sensitivity = utils.map(this.profiles[this.profileIndex].sensitivity, 0, 10, 1, 0.1, true);
-            console.log(sensitivity);
             let currDot = 0;
 
             for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
@@ -83,7 +83,7 @@ class Visualiser {
                     let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileIndex].rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
-                    
+
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
                     let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
@@ -123,7 +123,7 @@ class Visualiser {
         openColour.id = 'addColours'
         openColour.innerHTML = 'Configure Gradient'
         openColour.className = 'controlButtons';
-        openColour.setAttribute('onclick', 'myBundle.addColours()');
+        openColour.setAttribute('onclick', 'myBundle.createColourGradientPicker()');
         controls.appendChild(openColour);
 
         utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
@@ -145,171 +145,6 @@ class Visualiser {
 
         alternateLabel.appendChild(alternateInput);
         controls.appendChild(alternateLabel);
-    }
-
-    createColourDialogue() {
-        let blockingDiv = document.createElement('div');
-        let prompt = document.createElement('div');
-        let buttons = document.createElement('div');
-        let close = document.createElement('button');
-        let clear = document.createElement('button');
-        let title = document.createElement('h4');
-        const colour = document.querySelector('#controls').style.color;
-
-        blockingDiv.id = 'blockingDiv';
-        blockingDiv.className = 'blockingDiv';
-        document.body.appendChild(blockingDiv);
-
-        prompt.className = 'credentialsPrompt';
-        prompt.id = 'colourPrompt';
-        prompt.style.color = colour;
-        prompt.style.opacity = 1;
-
-        title.innerHTML = 'Gradient Creator';
-        title.style.textAlign = 'center';
-
-        clear.innerHTML = 'Clear';
-        clear.id = 'clearColour';
-        clear.style.color = colour;
-        clear.style.float = 'left';
-        clear.style.marginLeft = '20px';
-        clear.setAttribute('onclick', 'myBundle.clearColour()');
-
-        close.innerHTML = 'Close';
-        close.id = 'closeColour';
-        close.style.color = colour;
-        close.style.float = 'right';
-        close.style.marginRight = '20px';
-        close.setAttribute('onclick', 'myBundle.closeColours()');
-
-        document.body.appendChild(prompt);
-        prompt.appendChild(title);
-        prompt.appendChild(document.createElement('br'));
-
-        this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
-            width: 350,
-            color: this.profiles[this.profileIndex].gradientColours[0],
-            borderWidth: 3,
-            borderColor: "black",
-            layout: [
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'hue'
-                    }
-                },
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'saturation'
-                    }
-                },
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'value'
-                    }
-                },
-            ]
-        });
-
-        this.sliderPicker.on('color:change', function (colour) {
-            let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes)
-                .find(button => button.getAttribute('currentColour') === 'true')
-            if (!colourButton) {
-                return;
-            }
-            colourButton.style.backgroundColor = colour.hexString;
-        });
-
-        let gradientButtons = document.createElement('div');
-        gradientButtons.className = 'gradientButtons';
-        gradientButtons.id = 'gradientButtons';
-        for (let i = 0; i < 6; i++) {
-            let button = document.createElement('button');
-            let colourNumber = i + 1;
-            button.id = 'colour-' + colourNumber + '-button';
-            button.setAttribute('index', i);
-            button.textContent = " ";
-            button.style.backgroundColor = this.profiles[this.profileIndex].gradientColours[i] || 'rgba(0, 0, 0, 0)';
-            button.style.margin = '5px';
-            button.style.height = '50px';
-            button.style.width = '50px';
-            button.setAttribute('onclick', 'myBundle.colourClicked(this)');
-            button.setAttribute('currentColour', i === 0 ? 'true' : 'false');
-            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #999997';
-            gradientButtons.appendChild(button);
-        }
-
-        prompt.appendChild(gradientButtons);
-        buttons.appendChild(clear);
-        buttons.appendChild(close);
-        prompt.appendChild(buttons);
-
-        let height = (window.innerHeight - prompt.offsetHeight) / 2;
-        let width = (window.innerWidth - prompt.offsetWidth) / 2;
-        prompt.style.top = height + 'px';
-        prompt.style.left = width + 'px';
-    }
-
-    closeColourDialogue() {
-        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-            .map(button => new iro.Color(button.style.backgroundColor).hexString)
-            .filter(colour => colour != "#000000");
-
-        if (this.profiles[this.profileIndex].gradientColours.length < 2) {
-            utils.createErrorSnackBar('At least two colours are required')
-            return;
-        }
-
-        this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
-            .setMidpoint(500)
-            .getColors();
-
-        utils.updateColours(this);
-        document.body.removeChild(document.querySelector('#colourPrompt'))
-        document.body.removeChild(document.querySelector('#blockingDiv'))
-    }
-
-    colourClicked(colour) {
-        document.querySelector('#gradientButtons').childNodes.forEach(button => {
-            button.setAttribute('currentColour', 'false');
-            button.style.border = '2px solid #999997'
-        })
-        if (colour.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-            this.sliderPicker.color.rgbString = colour.style.backgroundColor;
-        }
-        this.currentColour = colour.getAttribute('index');
-        colour.setAttribute('currentColour', 'true');
-        colour.style.border = '3px solid #e7e7e7'
-
-        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-            .map(button => new iro.Color(button.style.backgroundColor).hexString)
-            .filter(colour => colour != "#000000");
-
-        this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
-            .setMidpoint(500)
-            .getColors();
-
-        utils.updateColours(this);
-    }
-
-    clearColour() {
-        document.querySelector('#gradientButtons').childNodes.forEach(colour => {
-            if (colour.getAttribute('currentColour') === 'true') {
-                colour.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-            }
-        })
-    }
-
-    colourPickerChanged() {
-        let colourButton = document.querySelector(`colour-${this.currentColour}-button`);
-        if (!colourButton) {
-            return;
-        }
-        colourButton.style.backgroundColor = this.sliderPicker.color.hexString;
     }
 
     updateControls() {

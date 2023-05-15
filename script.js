@@ -3,8 +3,8 @@ const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
 const CircleVisualiser = require('./circleVisualiser')
 const BarVisualiser = require('./barVisualiser')
+const colourPicker = require('./colourPicker');
 const utils = require('./utils');
-const saveAs = require('file-saver')
 
 const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
@@ -176,7 +176,7 @@ document.onkeyup = function (e) {
 		fade('#current-song');
 	}
 	if (e.shiftKey && e.key === 'S') {
-		var blob = new Blob([JSON.stringify(currentVisualiser.profiles)], {type: 'application/json'});
+		var blob = new Blob([JSON.stringify(currentVisualiser.profiles)], { type: 'application/json' });
 		saveToFile(blob, currentVisualiser.name + ' profiles', '.json')
 	}
 
@@ -203,58 +203,40 @@ function fade(elementId) {
 }
 
 function addSwitchButtons() {
-
-	var leftButton = document.createElement("button");
-	leftButton.id = "leftSwitch";
-	leftButton.setAttribute("type", "button");
-	leftButton.setAttribute("value", "left");
-	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
-	leftButton.innerHTML = "&#8592;";
-	leftButton.style.fontSize = '22px'
-	leftButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
-	leftButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
-
-	var rightButton = document.createElement("button");
-	rightButton.id = "rightSwitch";
-	rightButton.setAttribute("type", "button");
-	rightButton.setAttribute("value", "right");
-	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
-	rightButton.innerHTML = "&#8594;";
-	rightButton.style.fontSize = '22px'
-	rightButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
-	rightButton.style.color = currentVisualiser.getProfileHue()
-	rightButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
-
-	document.body.appendChild(leftButton);
-	document.body.appendChild(rightButton);
-
-	leftButton.style.position = "fixed";
-	leftButton.style.top = "10px";
-	leftButton.style.left = "20px";
-	leftButton.style.opacity = 1;
-	leftButton.style.display = "block";
-
-	rightButton.style.position = "fixed";
-	rightButton.style.top = "10px";
-	rightButton.style.right = "20px";
-	rightButton.style.opacity = 1;
-	rightButton.style.display = "block";
+	addSwitchButton('left');
+	addSwitchButton('right');
 }
 
-function leftFunction() {
-	utils.teardown(currentVisualiser);
-	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
-	startVisualiser();
-	utils.createVisualiserTitle(currentVisualiser);
-	localStorage.setItem("currentVisualiser", visualiserIndex);
+function addSwitchButton(direction) {
+	var button = document.createElement('button');
+	button.id = direction + 'Switch';
+	button.setAttribute('type', 'button');
+	button.setAttribute('value', 'left');
+	button.setAttribute('onclick', 'myBundle.switchVisualiser(this.id)');
+	button.innerHTML = direction === 'left' ? '&#8592;' : '&#8594;';
+	button.style.fontSize = '22px'
+	button.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	button.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
+
+	document.body.appendChild(button);
+
+	button.style.position = 'fixed';
+	button.style.top = '10px';
+	button.style.setProperty(direction, '20px');
+	button.style.opacity = 1;
+	button.style.display = 'block';
 }
 
-function rightFunction() {
+function switchVisualiser(id) {
 	utils.teardown(currentVisualiser);
-	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	if (id.includes('left')) {
+		visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
+	} else {
+		visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	}
 	startVisualiser();
 	utils.createVisualiserTitle(currentVisualiser);
-	localStorage.setItem("currentVisualiser", visualiserIndex);
+	localStorage.setItem('currentVisualiser', visualiserIndex);
 }
 
 function submitCredentials() {
@@ -281,23 +263,37 @@ function resetProfile() {
 	utils.resetProfile(currentVisualiser);
 }
 
-function addColours() {
-	currentVisualiser.createColourDialogue();
+function createColourGradientPicker() {
+	colourPicker.createColourGradientPicker(currentVisualiser);
 }
 
-function closeColours() {
-	currentVisualiser.closeColourDialogue();
+function closeColourGradientPicker() {
+	colourPicker.closeColourGradientPicker(currentVisualiser);
 }
 
-function clearColour() {
-	currentVisualiser.clearColour();
+function createHuePicker() {
+	colourPicker.createHuePicker(currentVisualiser);
 }
 
-function colourClicked(colour) {
-	currentVisualiser.colourClicked(colour);
+function closeHuePicker() {
+	colourPicker.closeHuePicker(currentVisualiser);
+}
+
+function clearGradientColour() {
+	colourPicker.clearGradientColour();
+}
+
+function gradientColourClicked(colour) {
+	colourPicker.gradientColourClicked(currentVisualiser, colour);
+}
+
+function hueColourClicked(colour) {
+	colourPicker.hueColourClicked(currentVisualiser, colour);
 }
 
 module.exports = {
 	startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile,
-	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction, addColours, closeColours, clearColour, colourClicked
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, switchVisualiser,
+	createColourGradientPicker, closeColourGradientPicker, clearGradientColour, gradientColourClicked,
+	createHuePicker, hueColourClicked, closeHuePicker
 }

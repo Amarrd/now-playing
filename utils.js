@@ -169,9 +169,14 @@ updateColours = function (visualiser) {
     document.querySelector('#rightSwitch').style.color = controlColour;
   }
 
-  if (document.querySelector('#colourPrompt')) {
-    document.querySelector('#colourPrompt').style.color = controlColour;
+  if (document.querySelector('#gradientPicker')) {
+    document.querySelector('#gradientPicker').style.color = controlColour;
     document.querySelector('#clearColour').style.color = controlColour;
+    document.querySelector('#closeColour').style.color = controlColour;
+  }
+
+  if (document.querySelector('#huePicker')) {
+    document.querySelector('#huePicker').style.color = controlColour;
     document.querySelector('#closeColour').style.color = controlColour;
   }
 

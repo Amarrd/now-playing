@@ -26606,7 +26606,7 @@ function main(audioPromise) {
 
 
 module.exports = {main};
-},{"./microphone":196}],190:[function(require,module,exports){
+},{"./microphone":197}],190:[function(require,module,exports){
 module.exports=[
     {
         "gradientColours": [
@@ -26710,10 +26710,11 @@ module.exports=[
     }
 ]
 },{}],191:[function(require,module,exports){
-const Microphone = require("./microphone");
+const Microphone = require('./microphone');
 const utils = require('./utils');
 const Gradient = require('javascript-color-gradient');
 const iro = require('@jaames/iro');
+const colourPicker = require('./colourPicker')
 
 class Visualiser {
     constructor(audioPromise) {
@@ -26783,7 +26784,6 @@ class Visualiser {
             let samples = this.microphone.getSamplesFor(this.totalDots);
             let volume = utils.map(this.microphone.getVolume(), 0, 0.5, 1, 2);
             let sensitivity = utils.map(this.profiles[this.profileIndex].sensitivity, 0, 10, 1, 0.1, true);
-            console.log(sensitivity);
             let currDot = 0;
 
             for (let ringNumber = 1; ringNumber <= this.profiles[this.profileIndex].ringCount; ringNumber++) {
@@ -26795,7 +26795,7 @@ class Visualiser {
                     let angle = (this.frameCount / (Math.max(angleIncrement, 0.001) * 750)) * this.directionModifier * -this.profiles[this.profileIndex].rotationSpeed - 2 * Math.PI / dotsForRing;
                     let x = ringRadius * Math.sin(angle * Math.max(angleIncrement, 0.001));
                     let y = ringRadius * Math.cos(angle * Math.max(angleIncrement, 0.001));
-                    
+
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
                     let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
@@ -26835,7 +26835,7 @@ class Visualiser {
         openColour.id = 'addColours'
         openColour.innerHTML = 'Configure Gradient'
         openColour.className = 'controlButtons';
-        openColour.setAttribute('onclick', 'myBundle.addColours()');
+        openColour.setAttribute('onclick', 'myBundle.createColourGradientPicker()');
         controls.appendChild(openColour);
 
         utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
@@ -26857,171 +26857,6 @@ class Visualiser {
 
         alternateLabel.appendChild(alternateInput);
         controls.appendChild(alternateLabel);
-    }
-
-    createColourDialogue() {
-        let blockingDiv = document.createElement('div');
-        let prompt = document.createElement('div');
-        let buttons = document.createElement('div');
-        let close = document.createElement('button');
-        let clear = document.createElement('button');
-        let title = document.createElement('h4');
-        const colour = document.querySelector('#controls').style.color;
-
-        blockingDiv.id = 'blockingDiv';
-        blockingDiv.className = 'blockingDiv';
-        document.body.appendChild(blockingDiv);
-
-        prompt.className = 'credentialsPrompt';
-        prompt.id = 'colourPrompt';
-        prompt.style.color = colour;
-        prompt.style.opacity = 1;
-
-        title.innerHTML = 'Gradient Creator';
-        title.style.textAlign = 'center';
-
-        clear.innerHTML = 'Clear';
-        clear.id = 'clearColour';
-        clear.style.color = colour;
-        clear.style.float = 'left';
-        clear.style.marginLeft = '20px';
-        clear.setAttribute('onclick', 'myBundle.clearColour()');
-
-        close.innerHTML = 'Close';
-        close.id = 'closeColour';
-        close.style.color = colour;
-        close.style.float = 'right';
-        close.style.marginRight = '20px';
-        close.setAttribute('onclick', 'myBundle.closeColours()');
-
-        document.body.appendChild(prompt);
-        prompt.appendChild(title);
-        prompt.appendChild(document.createElement('br'));
-
-        this.sliderPicker = new iro.ColorPicker("#colourPrompt", {
-            width: 350,
-            color: this.profiles[this.profileIndex].gradientColours[0],
-            borderWidth: 3,
-            borderColor: "black",
-            layout: [
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'hue'
-                    }
-                },
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'saturation'
-                    }
-                },
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'value'
-                    }
-                },
-            ]
-        });
-
-        this.sliderPicker.on('color:change', function (colour) {
-            let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes)
-                .find(button => button.getAttribute('currentColour') === 'true')
-            if (!colourButton) {
-                return;
-            }
-            colourButton.style.backgroundColor = colour.hexString;
-        });
-
-        let gradientButtons = document.createElement('div');
-        gradientButtons.className = 'gradientButtons';
-        gradientButtons.id = 'gradientButtons';
-        for (let i = 0; i < 6; i++) {
-            let button = document.createElement('button');
-            let colourNumber = i + 1;
-            button.id = 'colour-' + colourNumber + '-button';
-            button.setAttribute('index', i);
-            button.textContent = " ";
-            button.style.backgroundColor = this.profiles[this.profileIndex].gradientColours[i] || 'rgba(0, 0, 0, 0)';
-            button.style.margin = '5px';
-            button.style.height = '50px';
-            button.style.width = '50px';
-            button.setAttribute('onclick', 'myBundle.colourClicked(this)');
-            button.setAttribute('currentColour', i === 0 ? 'true' : 'false');
-            button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #999997';
-            gradientButtons.appendChild(button);
-        }
-
-        prompt.appendChild(gradientButtons);
-        buttons.appendChild(clear);
-        buttons.appendChild(close);
-        prompt.appendChild(buttons);
-
-        let height = (window.innerHeight - prompt.offsetHeight) / 2;
-        let width = (window.innerWidth - prompt.offsetWidth) / 2;
-        prompt.style.top = height + 'px';
-        prompt.style.left = width + 'px';
-    }
-
-    closeColourDialogue() {
-        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-            .map(button => new iro.Color(button.style.backgroundColor).hexString)
-            .filter(colour => colour != "#000000");
-
-        if (this.profiles[this.profileIndex].gradientColours.length < 2) {
-            utils.createErrorSnackBar('At least two colours are required')
-            return;
-        }
-
-        this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
-            .setMidpoint(500)
-            .getColors();
-
-        utils.updateColours(this);
-        document.body.removeChild(document.querySelector('#colourPrompt'))
-        document.body.removeChild(document.querySelector('#blockingDiv'))
-    }
-
-    colourClicked(colour) {
-        document.querySelector('#gradientButtons').childNodes.forEach(button => {
-            button.setAttribute('currentColour', 'false');
-            button.style.border = '2px solid #999997'
-        })
-        if (colour.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-            this.sliderPicker.color.rgbString = colour.style.backgroundColor;
-        }
-        this.currentColour = colour.getAttribute('index');
-        colour.setAttribute('currentColour', 'true');
-        colour.style.border = '3px solid #e7e7e7'
-
-        this.profiles[this.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
-            .map(button => new iro.Color(button.style.backgroundColor).hexString)
-            .filter(colour => colour != "#000000");
-
-        this.gradientArray = new Gradient()
-            .setColorGradient(...this.profiles[this.profileIndex].gradientColours)
-            .setMidpoint(500)
-            .getColors();
-
-        utils.updateColours(this);
-    }
-
-    clearColour() {
-        document.querySelector('#gradientButtons').childNodes.forEach(colour => {
-            if (colour.getAttribute('currentColour') === 'true') {
-                colour.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-            }
-        })
-    }
-
-    colourPickerChanged() {
-        let colourButton = document.querySelector(`colour-${this.currentColour}-button`);
-        if (!colourButton) {
-            return;
-        }
-        colourButton.style.backgroundColor = this.sliderPicker.color.hexString;
     }
 
     updateControls() {
@@ -27059,7 +26894,276 @@ class Visualiser {
 }
 
 module.exports = { Visualiser };
-},{"./circleDefaultProfiles.json":190,"./microphone":196,"./utils":198,"@jaames/iro":199,"javascript-color-gradient":205}],192:[function(require,module,exports){
+},{"./circleDefaultProfiles.json":190,"./colourPicker":192,"./microphone":197,"./utils":199,"@jaames/iro":200,"javascript-color-gradient":205}],192:[function(require,module,exports){
+const Gradient = require('javascript-color-gradient');
+const iro = require('@jaames/iro');
+const utils = require('./utils');
+
+createColourGradientPicker = function (visualiser) {
+    let blockingDiv = document.createElement('div');
+    let prompt = document.createElement('div');
+    let buttons = document.createElement('div');
+    let close = document.createElement('button');
+    let clear = document.createElement('button');
+    let title = document.createElement('h4');
+    const colour = document.querySelector('#controls').style.color;
+
+    blockingDiv.id = 'blockingDiv';
+    blockingDiv.className = 'blockingDiv';
+    document.body.appendChild(blockingDiv);
+
+    prompt.className = 'credentialsPrompt';
+    prompt.id = 'gradientPicker';
+    prompt.style.color = colour;
+    prompt.style.opacity = 1;
+
+    title.innerHTML = 'Gradient Creator';
+    title.style.textAlign = 'center';
+
+    clear.innerHTML = 'Clear';
+    clear.id = 'clearColour';
+    clear.style.color = colour;
+    clear.style.float = 'left';
+    clear.style.marginLeft = '20px';
+    clear.setAttribute('onclick', 'myBundle.clearGradientColour()');
+
+    close.innerHTML = 'Close';
+    close.id = 'closeColour';
+    close.style.color = colour;
+    close.style.float = 'right';
+    close.style.marginRight = '20px';
+    close.setAttribute('onclick', 'myBundle.closeColourGradientPicker()');
+
+    document.body.appendChild(prompt);
+    prompt.appendChild(title);
+    prompt.appendChild(document.createElement('br'));
+
+    visualiser.sliderPicker = new iro.ColorPicker("#gradientPicker", {
+        width: 350,
+        color: visualiser.profiles[visualiser.profileIndex].gradientColours[0],
+        borderWidth: 3,
+        borderColor: "black",
+        layout: [
+            {
+                component: iro.ui.Slider,
+                options: {
+                    sliderType: 'hue'
+                }
+            },
+            {
+                component: iro.ui.Slider,
+                options: {
+                    sliderType: 'saturation'
+                }
+            },
+            {
+                component: iro.ui.Slider,
+                options: {
+                    sliderType: 'value'
+                }
+            },
+        ]
+    });
+
+    visualiser.sliderPicker.on('color:change', function (colour) {
+        let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes)
+            .find(button => button.getAttribute('currentColour') === 'true')
+        if (!colourButton) {
+            return;
+        }
+        colourButton.style.backgroundColor = colour.hexString;
+        colourButton.onclick(colourButton);
+    });
+
+    let gradientButtons = document.createElement('div');
+    gradientButtons.className = 'gradientButtons';
+    gradientButtons.id = 'gradientButtons';
+    for (let i = 0; i < 6; i++) {
+        let button = document.createElement('button');
+        let colourNumber = i + 1;
+        button.id = 'colour-' + colourNumber + '-button';
+        button.setAttribute('index', i);
+        button.textContent = " ";
+        button.style.backgroundColor = visualiser.profiles[visualiser.profileIndex].gradientColours[i] || 'rgba(0, 0, 0, 0)';
+        button.style.margin = '5px';
+        button.style.height = '50px';
+        button.style.width = '50px';
+        button.setAttribute('onclick', 'myBundle.gradientColourClicked(this)');
+        button.setAttribute('currentColour', i === 0 ? 'true' : 'false');
+        button.style.border = i === 0 ? '3px solid #e7e7e7' : '2px solid #999997';
+        gradientButtons.appendChild(button);
+    }
+
+    prompt.appendChild(gradientButtons);
+    buttons.appendChild(clear);
+    buttons.appendChild(close);
+    prompt.appendChild(buttons);
+
+    let height = (window.innerHeight - prompt.offsetHeight) / 2;
+    let width = (window.innerWidth - prompt.offsetWidth) / 2;
+    prompt.style.top = height + 'px';
+    prompt.style.left = width + 'px';
+}
+
+
+createHuePicker = function (visualiser) {
+    let blockingDiv = document.createElement('div');
+    let prompt = document.createElement('div');
+    let buttons = document.createElement('div');
+    let close = document.createElement('button');
+    let title = document.createElement('h4');
+    const colour = document.querySelector('#controls').style.color;
+
+    blockingDiv.id = 'blockingDiv';
+    blockingDiv.className = 'blockingDiv';
+    document.body.appendChild(blockingDiv);
+
+    prompt.className = 'credentialsPrompt';
+    prompt.id = 'huePicker';
+    prompt.style.color = colour;
+    prompt.style.opacity = 1;
+
+    title.innerHTML = 'Hue Picker';
+    title.style.textAlign = 'center';
+
+    close.innerHTML = 'Close';
+    close.id = 'closeColour';
+    close.style.color = colour;
+    close.style.float = 'right';
+    close.style.marginRight = '20px';
+    close.setAttribute('onclick', 'myBundle.closeHuePicker()');
+
+    document.body.appendChild(prompt);
+    prompt.appendChild(title);
+    prompt.appendChild(document.createElement('br'));
+
+
+    visualiser.sliderPicker = new iro.ColorPicker("#huePicker", {
+        width: 350,
+        color: `hsl(${visualiser.profiles[visualiser.profileIndex].hue}, 50%, 100%)`,
+        borderWidth: 3,
+        borderColor: "black",
+        layout: [
+            {
+                component: iro.ui.Slider,
+                options: {
+                    sliderType: 'hue'
+                }
+            }
+        ]
+    });
+
+    visualiser.sliderPicker.on('color:change', function (colour) {
+        let colourButton = Array.from(document.querySelector('#gradientButtons').childNodes)
+            .find(button => button.getAttribute('currentColour') === 'true')
+        if (!colourButton) {
+            return;
+        }
+        colourButton.style.backgroundColor = `hsl(${colour.hue}, 100%, 50%)`;
+        colourButton.setAttribute('hue', colour.hue)
+        colourButton.onclick(colourButton);
+    });
+
+    let gradientButtons = document.createElement('div');
+    gradientButtons.className = 'gradientButtons';
+    gradientButtons.id = 'gradientButtons';
+    gradientButtons.style.alignSelf = 'center'
+    let button = document.createElement('button');
+    let colourNumber = 1;
+    button.id = 'colour-' + colourNumber + '-button';
+    button.setAttribute('index', 0);
+    button.textContent = " ";
+    button.style.backgroundColor = `hsl(${visualiser.profiles[visualiser.profileIndex].hue},100%,50%)`|| 'rgba(0, 0, 0, 0)';
+    button.style.margin = '5px';
+    button.style.height = '50px';
+    button.style.width = '50px';
+
+    button.setAttribute('onclick', 'myBundle.hueColourClicked(this)');
+    button.setAttribute('currentColour', 'true');
+    button.style.border = '3px solid #e7e7e7';
+    gradientButtons.appendChild(button);
+
+    prompt.appendChild(gradientButtons);
+    buttons.appendChild(close);
+    prompt.appendChild(buttons);
+
+    let height = (window.innerHeight - prompt.offsetHeight) / 2;
+    let width = (window.innerWidth - prompt.offsetWidth) / 2;
+    prompt.style.top = height + 'px';
+    prompt.style.left = width + 'px';
+}
+
+
+gradientColourClicked = function (visualiser, colour) {
+    document.querySelector('#gradientButtons').childNodes.forEach(button => {
+        button.setAttribute('currentColour', 'false');
+        button.style.border = '2px solid #999997'
+    })
+    if (colour.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+        visualiser.sliderPicker.color.rgbString = colour.style.backgroundColor;
+    }
+    visualiser.currentColour = colour.getAttribute('index');
+    colour.setAttribute('currentColour', 'true');
+    colour.style.border = '3px solid #e7e7e7'
+
+    visualiser.profiles[visualiser.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+        .map(button => new iro.Color(button.style.backgroundColor).hexString)
+        .filter(colour => colour != "#000000");
+
+    visualiser.gradientArray = new Gradient()
+        .setColorGradient(...visualiser.profiles[visualiser.profileIndex].gradientColours)
+        .setMidpoint(500)
+        .getColors();
+
+    utils.updateColours(visualiser);
+}
+
+
+hueColourClicked = function (visualiser, colourButton) {
+    visualiser.profiles[visualiser.profileIndex].hue = Math.round(colourButton.getAttribute('hue'));
+    utils.setOptions(visualiser)
+    utils.updateColours(visualiser);
+}
+
+clearGradientColour = function () {
+    document.querySelector('#gradientButtons').childNodes.forEach(colour => {
+        if (colour.getAttribute('currentColour') === 'true') {
+            colour.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+    })
+}
+
+closeColourGradientPicker = function (visualiser) {
+    visualiser.profiles[visualiser.profileIndex].gradientColours = Array.from(document.querySelector('#gradientButtons').childNodes)
+        .map(button => new iro.Color(button.style.backgroundColor).hexString)
+        .filter(colour => colour != "#000000");
+
+    if (visualiser.profiles[visualiser.profileIndex].gradientColours.length < 2) {
+        utils.createErrorSnackBar('At least two colours are required')
+        return;
+    }
+
+    visualiser.gradientArray = new Gradient()
+        .setColorGradient(...visualiser.profiles[visualiser.profileIndex].gradientColours)
+        .setMidpoint(500)
+        .getColors();
+
+    utils.updateColours(visualiser);
+    document.body.removeChild(document.querySelector('#gradientPicker'))
+    document.body.removeChild(document.querySelector('#blockingDiv'))
+}
+
+closeHuePicker = function (visualiser) {
+    document.body.removeChild(document.querySelector('#huePicker'))
+    document.body.removeChild(document.querySelector('#blockingDiv'))
+}
+
+module.exports = {
+    createColourGradientPicker, gradientColourClicked, clearGradientColour, closeColourGradientPicker,
+    createHuePicker, hueColourClicked, closeHuePicker
+}
+
+},{"./utils":199,"@jaames/iro":200,"javascript-color-gradient":205}],193:[function(require,module,exports){
 module.exports=[
     {
         "hue": 10,
@@ -27134,7 +27238,7 @@ module.exports=[
         "direction": "up"
     }
 ]
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 const Particle = require('./flowParticle')
 
 class FlowEffect {
@@ -27221,7 +27325,7 @@ class FlowEffect {
 }
 
 module.exports = { FlowEffect }
-},{"./flowParticle":194}],194:[function(require,module,exports){
+},{"./flowParticle":195}],195:[function(require,module,exports){
 class FlowParticle {
 
     constructor(effect) {
@@ -27314,7 +27418,7 @@ class FlowParticle {
 }
 
 module.exports = { FlowParticle }
-},{}],195:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 const Microphone = require("./microphone");
 const Effect = require("./flowEffect");
 const utils = require('./utils')
@@ -27332,6 +27436,7 @@ class Visualiser {
         this.profileIndex = Number(localStorage.getItem(`${this.name}-profileIndex`)) || 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
+        this.sliderPicker;
         this.themeHue;
 
         this.setupControls();
@@ -27387,7 +27492,13 @@ class Visualiser {
             right: 'Right',
         }
 
-        utils.createNumberInput('Hue', 'hue', 1, 360)
+        let openColour = document.createElement('button');
+        openColour.id = 'addColours'
+        openColour.innerHTML = 'Change Hue'
+        openColour.className = 'controlButtons';
+        openColour.setAttribute('onclick', 'myBundle.createHuePicker()');
+        controls.appendChild(openColour);
+
         utils.createNumberInput('Hue Shift', 'hueShift', 1, 360)
         utils.createNumberInput('Sensitivity', 'volume', 1, 200)
         utils.createNumberInput('Curve', 'curve', 0, 100)
@@ -27404,13 +27515,13 @@ class Visualiser {
     }
 
     getProfileHue(index) {
-        let i = index || this.profileIndex;
+        let i = index >= 0 ? index : this.profileIndex;
         return Number(this.profiles[i].hue) + Number(this.profiles[i].hueShift) / 2;
     }
 }
 
 module.exports = { Visualiser };
-},{"./flowDefaultProfiles.json":192,"./flowEffect":193,"./microphone":196,"./utils":198}],196:[function(require,module,exports){
+},{"./flowDefaultProfiles.json":193,"./flowEffect":194,"./microphone":197,"./utils":199}],197:[function(require,module,exports){
 class Microphone {
     constructor(audioPromise) {
         this.initialised = false;
@@ -27479,14 +27590,14 @@ class Microphone {
 }
 
 module.exports = { Microphone }
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 const audioEncoder = require('audio-encoder');
 const acrCloud = require('./acrCloud')
 const FlowVisualiser = require('./flowVisualiser')
 const CircleVisualiser = require('./circleVisualiser')
 const BarVisualiser = require('./barVisualiser')
+const colourPicker = require('./colourPicker');
 const utils = require('./utils');
-const saveAs = require('file-saver')
 
 const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
@@ -27658,7 +27769,7 @@ document.onkeyup = function (e) {
 		fade('#current-song');
 	}
 	if (e.shiftKey && e.key === 'S') {
-		var blob = new Blob([JSON.stringify(currentVisualiser.profiles)], {type: 'application/json'});
+		var blob = new Blob([JSON.stringify(currentVisualiser.profiles)], { type: 'application/json' });
 		saveToFile(blob, currentVisualiser.name + ' profiles', '.json')
 	}
 
@@ -27685,58 +27796,40 @@ function fade(elementId) {
 }
 
 function addSwitchButtons() {
-
-	var leftButton = document.createElement("button");
-	leftButton.id = "leftSwitch";
-	leftButton.setAttribute("type", "button");
-	leftButton.setAttribute("value", "left");
-	leftButton.setAttribute("onclick", "myBundle.leftFunction()");
-	leftButton.innerHTML = "&#8592;";
-	leftButton.style.fontSize = '22px'
-	leftButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
-	leftButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
-
-	var rightButton = document.createElement("button");
-	rightButton.id = "rightSwitch";
-	rightButton.setAttribute("type", "button");
-	rightButton.setAttribute("value", "right");
-	rightButton.setAttribute("onclick", "myBundle.rightFunction()");
-	rightButton.innerHTML = "&#8594;";
-	rightButton.style.fontSize = '22px'
-	rightButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
-	rightButton.style.color = currentVisualiser.getProfileHue()
-	rightButton.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
-
-	document.body.appendChild(leftButton);
-	document.body.appendChild(rightButton);
-
-	leftButton.style.position = "fixed";
-	leftButton.style.top = "10px";
-	leftButton.style.left = "20px";
-	leftButton.style.opacity = 1;
-	leftButton.style.display = "block";
-
-	rightButton.style.position = "fixed";
-	rightButton.style.top = "10px";
-	rightButton.style.right = "20px";
-	rightButton.style.opacity = 1;
-	rightButton.style.display = "block";
+	addSwitchButton('left');
+	addSwitchButton('right');
 }
 
-function leftFunction() {
-	utils.teardown(currentVisualiser);
-	visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
-	startVisualiser();
-	utils.createVisualiserTitle(currentVisualiser);
-	localStorage.setItem("currentVisualiser", visualiserIndex);
+function addSwitchButton(direction) {
+	var button = document.createElement('button');
+	button.id = direction + 'Switch';
+	button.setAttribute('type', 'button');
+	button.setAttribute('value', 'left');
+	button.setAttribute('onclick', 'myBundle.switchVisualiser(this.id)');
+	button.innerHTML = direction === 'left' ? '&#8592;' : '&#8594;';
+	button.style.fontSize = '22px'
+	button.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+	button.style.color = `hsl(${currentVisualiser.getProfileHue()}, 100%, 80%)`
+
+	document.body.appendChild(button);
+
+	button.style.position = 'fixed';
+	button.style.top = '10px';
+	button.style.setProperty(direction, '20px');
+	button.style.opacity = 1;
+	button.style.display = 'block';
 }
 
-function rightFunction() {
+function switchVisualiser(id) {
 	utils.teardown(currentVisualiser);
-	visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	if (id.includes('left')) {
+		visualiserIndex = visualiserIndex === 0 ? visualisers.length - 1 : visualiserIndex - 1;
+	} else {
+		visualiserIndex = visualiserIndex === visualisers.length - 1 ? visualiserIndex = 0 : visualiserIndex + 1;
+	}
 	startVisualiser();
 	utils.createVisualiserTitle(currentVisualiser);
-	localStorage.setItem("currentVisualiser", visualiserIndex);
+	localStorage.setItem('currentVisualiser', visualiserIndex);
 }
 
 function submitCredentials() {
@@ -27763,28 +27856,42 @@ function resetProfile() {
 	utils.resetProfile(currentVisualiser);
 }
 
-function addColours() {
-	currentVisualiser.createColourDialogue();
+function createColourGradientPicker() {
+	colourPicker.createColourGradientPicker(currentVisualiser);
 }
 
-function closeColours() {
-	currentVisualiser.closeColourDialogue();
+function closeColourGradientPicker() {
+	colourPicker.closeColourGradientPicker(currentVisualiser);
 }
 
-function clearColour() {
-	currentVisualiser.clearColour();
+function createHuePicker() {
+	colourPicker.createHuePicker(currentVisualiser);
 }
 
-function colourClicked(colour) {
-	currentVisualiser.colourClicked(colour);
+function closeHuePicker() {
+	colourPicker.closeHuePicker(currentVisualiser);
+}
+
+function clearGradientColour() {
+	colourPicker.clearGradientColour();
+}
+
+function gradientColourClicked(colour) {
+	colourPicker.gradientColourClicked(currentVisualiser, colour);
+}
+
+function hueColourClicked(colour) {
+	colourPicker.hueColourClicked(currentVisualiser, colour);
 }
 
 module.exports = {
 	startVisualiser, updateSong, changeProfile, saveProfile, toggleTransition, resetProfile,
-	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, leftFunction, rightFunction, addColours, closeColours, clearColour, colourClicked
+	changeOption, toggleAuto, submitCredentials, cancelCredentials, canvasClicked, switchVisualiser,
+	createColourGradientPicker, closeColourGradientPicker, clearGradientColour, gradientColourClicked,
+	createHuePicker, hueColourClicked, closeHuePicker
 }
 
-},{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./flowVisualiser":195,"./utils":198,"audio-encoder":202,"file-saver":203}],198:[function(require,module,exports){
+},{"./acrCloud":187,"./barVisualiser":189,"./circleVisualiser":191,"./colourPicker":192,"./flowVisualiser":196,"./utils":199,"audio-encoder":203}],199:[function(require,module,exports){
 const iro = require('@jaames/iro');
 
 map = function (n, start1, stop1, start2, stop2, withinBounds) {
@@ -27956,9 +28063,14 @@ updateColours = function (visualiser) {
     document.querySelector('#rightSwitch').style.color = controlColour;
   }
 
-  if (document.querySelector('#colourPrompt')) {
-    document.querySelector('#colourPrompt').style.color = controlColour;
+  if (document.querySelector('#gradientPicker')) {
+    document.querySelector('#gradientPicker').style.color = controlColour;
     document.querySelector('#clearColour').style.color = controlColour;
+    document.querySelector('#closeColour').style.color = controlColour;
+  }
+
+  if (document.querySelector('#huePicker')) {
+    document.querySelector('#huePicker').style.color = controlColour;
     document.querySelector('#closeColour').style.color = controlColour;
   }
 
@@ -28076,7 +28188,7 @@ module.exports = {
 }
 
 
-},{"@jaames/iro":199}],199:[function(require,module,exports){
+},{"@jaames/iro":200}],200:[function(require,module,exports){
 /*!
  * iro.js v5.5.2
  * 2016-2021 James Daniel
@@ -29865,7 +29977,7 @@ module.exports = {
 
 }));
 
-},{}],200:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 var lamejs = require('lamejs');
 
 var MAX_AMPLITUDE = 0x7FFF;
@@ -29964,7 +30076,7 @@ function encodeMp3(audioBuffer, params, onProgress, cb) {
 
 module.exports = encodeMp3;
 
-},{"lamejs":240}],201:[function(require,module,exports){
+},{"lamejs":240}],202:[function(require,module,exports){
 var HEADER_LENGTH = 44;
 var MAX_AMPLITUDE = 0x7FFF;
 
@@ -30056,7 +30168,7 @@ function encodeWav(audioBuffer, cb) {
 
 module.exports = encodeWav;
 
-},{}],202:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 var encodeWav = require('./encodeWav');
 var encodeMp3 = require('./encodeMp3');
 
@@ -30075,13 +30187,7 @@ module.exports = function encode (audioBuffer, encoding, onProgress, onComplete)
 	return encodeMp3(audioBuffer, { bitrate: encoding }, onProgress, onComplete);
 };
 
-},{"./encodeMp3":200,"./encodeWav":201}],203:[function(require,module,exports){
-(function (global){(function (){
-(function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(a,b,c){var d=new XMLHttpRequest;d.open("GET",a),d.responseType="blob",d.onload=function(){g(d.response,b,c)},d.onerror=function(){console.error("could not download file")},d.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.navigator&&/Macintosh/.test(navigator.userAgent)&&/AppleWebKit/.test(navigator.userAgent)&&!/Safari/.test(navigator.userAgent),g=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype&&!a?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(b,d,e,g){if(g=g||open("","_blank"),g&&(g.document.title=g.document.body.innerText="downloading..."),"string"==typeof b)return c(b,d,e);var h="application/octet-stream"===b.type,i=/constructor/i.test(f.HTMLElement)||f.safari,j=/CriOS\/[\d]+/.test(navigator.userAgent);if((j||h&&i||a)&&"undefined"!=typeof FileReader){var k=new FileReader;k.onloadend=function(){var a=k.result;a=j?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),g?g.location.href=a:location=a,g=null},k.readAsDataURL(b)}else{var l=f.URL||f.webkitURL,m=l.createObjectURL(b);g?g.location=m:location.href=m,g=null,setTimeout(function(){l.revokeObjectURL(m)},4E4)}});f.saveAs=g.saveAs=g,"undefined"!=typeof module&&(module.exports=g)});
-
-
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],204:[function(require,module,exports){
+},{"./encodeMp3":201,"./encodeWav":202}],204:[function(require,module,exports){
 /* eslint-env browser */
 module.exports = typeof self == 'object' ? self.FormData : window.FormData;
 
@@ -46453,5 +46559,5 @@ WavHeader.readHeader = function (dataView) {
 module.exports.Mp3Encoder = Mp3Encoder;
 module.exports.WavHeader = WavHeader;
 
-},{"./BitStream.js":207,"./Encoder.js":211,"./GainAnalysis.js":213,"./Lame.js":219,"./MPEGMode.js":222,"./Presets.js":226,"./Quantize.js":228,"./QuantizePVT.js":229,"./Reservoir.js":231,"./Takehiro.js":234,"./VBRTag.js":237,"./Version.js":238,"./common.js":239}]},{},[197])(197)
+},{"./BitStream.js":207,"./Encoder.js":211,"./GainAnalysis.js":213,"./Lame.js":219,"./MPEGMode.js":222,"./Presets.js":226,"./Quantize.js":228,"./QuantizePVT.js":229,"./Reservoir.js":231,"./Takehiro.js":234,"./VBRTag.js":237,"./Version.js":238,"./common.js":239}]},{},[198])(198)
 });

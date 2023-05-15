@@ -15,6 +15,7 @@ class Visualiser {
         this.profileIndex = Number(localStorage.getItem(`${this.name}-profileIndex`)) || 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
+        this.sliderPicker;
         this.themeHue;
 
         this.setupControls();
@@ -70,7 +71,13 @@ class Visualiser {
             right: 'Right',
         }
 
-        utils.createNumberInput('Hue', 'hue', 1, 360)
+        let openColour = document.createElement('button');
+        openColour.id = 'addColours'
+        openColour.innerHTML = 'Change Hue'
+        openColour.className = 'controlButtons';
+        openColour.setAttribute('onclick', 'myBundle.createHuePicker()');
+        controls.appendChild(openColour);
+
         utils.createNumberInput('Hue Shift', 'hueShift', 1, 360)
         utils.createNumberInput('Sensitivity', 'volume', 1, 200)
         utils.createNumberInput('Curve', 'curve', 0, 100)
@@ -87,7 +94,7 @@ class Visualiser {
     }
 
     getProfileHue(index) {
-        let i = index || this.profileIndex;
+        let i = index >= 0 ? index : this.profileIndex;
         return Number(this.profiles[i].hue) + Number(this.profiles[i].hueShift) / 2;
     }
 }
