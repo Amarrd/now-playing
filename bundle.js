@@ -27605,7 +27605,7 @@ const BarVisualiser = require('./barVisualiser')
 const colourPicker = require('./colourPicker');
 const utils = require('./utils');
 
-const testResponse = false; //'{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
+const testResponse = '{"cost_time":0.70500016212463,"status":{"msg":"Success","version":"1.0","code":0},"metadata":{"timestamp_utc":"2023-03-08 23:04:46","music":[{"artists":[{"name":"Young Fathers"}],"db_begin_time_offset_ms":113240,"db_end_time_offset_ms":117220,"sample_begin_time_offset_ms":0,"acrid":"8f9a903f10da4955f56e60762a456aa4","external_ids":{"isrc":"GBCFB1700586","upc":"5054429132328"},"external_metadata":{"spotify":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"7DuqRin3gs4XTeZ4SwpSVM"}},"deezer":{"artists":[{"name":"Young Fathers"}],"album":{"name":"In My View"},"track":{"name":"In My View","id":"450956802"}}},"result_from":3,"album":{"name":"In My View"},"sample_end_time_offset_ms":4660,"score":88,"title":"In My View","label":"Ninja Tune","play_offset_ms":117220,"release_date":"2018-01-18","duration_ms":195220}]},"result_type":0}'
 const debugRecording = false;
 
 var autoMode = false;
@@ -27712,12 +27712,10 @@ function processResponse(response) {
 	var albumYear = document.querySelector('#albumYear');
 	var delay;
 	if (jsonObject.status.code === 0) {
-		var artist = getArtist(jsonObject);
-		var title = jsonObject.metadata.music[0].title;
-		var album = jsonObject.metadata.music[0].album.name;
+		let details = getDetails(jsonObject);
 		var releaseDate = jsonObject.metadata.music[0].release_date.split('-')[0];
-		currentSong.textContent = artist + ' - ' + title;
-		albumYear.textContent = album + ', ' + releaseDate;
+		currentSong.textContent = details[0] + ' - ' + details[1];
+		albumYear.textContent = details[2] + ', ' + releaseDate;
 		albumYear.style.fontStyle = 'italic';
 		albumYear.style.fontSize = '28px';
 		currentSong.appendChild(albumYear);
@@ -27739,15 +27737,26 @@ function processResponse(response) {
 	}
 }
 
-function getArtist(jsonObject) {
+
+function getDetails(jsonObject) {
 	if (jsonObject.metadata.music[0].external_metadata.spotify) {
-		return jsonObject.metadata.music[0].external_metadata.spotify.artists[0].name
+		let artist = jsonObject.metadata.music[0].external_metadata.spotify.artists[0].name
+		let track = jsonObject.metadata.music[0].external_metadata.spotify.track.name
+		let album = jsonObject.metadata.music[0].external_metadata.spotify.album.name
+		return [artist, track, album];
 	}
 	if (jsonObject.metadata.music[0].external_metadata.deezer) {
-		return jsonObject.metadata.music[0].external_metadata.deezer.artists[0].name
+		let artist = jsonObject.metadata.music[0].external_metadata.deezer.artists[0].name
+		let track = jsonObject.metadata.music[0].external_metadata.deezer.track.name
+		let album = jsonObject.metadata.music[0].external_metadata.deezer.album.name
+		return [artist, track, album];
 	}
-	return jsonObject.metadata.music[0].artists[0].name;
+	let artist = jsonObject.metadata.music[0].artists[0].name;
+	let track =  jsonObject.metadata.music[0].title;
+	let album = jsonObject.metadata.music[0].album.name;
+	return [artist, track, album];
 }
+
 
 function saveToFile(toDownload, name, extension) {
 	var url = URL.createObjectURL(toDownload);
