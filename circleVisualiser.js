@@ -84,7 +84,7 @@ class Visualiser {
 
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotCountAdjustment = utils.map(ringNumber, 1, this.profiles[this.profileIndex].ringCount, 1, this.profiles[this.profileIndex].ringCount/2, true);
+                    let dotCountAdjustment = utils.map(ringNumber, 1, this.profiles[this.profileIndex].ringCount, 1, this.profiles[this.profileIndex].ringCount/4, true);
                     let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.profiles[this.profileIndex].dotMin, this.profiles[this.profileIndex].dotGrowth * dotCountAdjustment, true) * volume)
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true))
 
