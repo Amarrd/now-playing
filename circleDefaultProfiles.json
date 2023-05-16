@@ -9,7 +9,8 @@
             "#edbbfa"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 2,
         "ringCount": 10,
         "ringDistance": 50,
@@ -25,7 +26,8 @@
             "#8f00ff"
         ],
         "sensitivity": "5",
-        "dotSize": "20",
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "3",
         "ringCount": "20",
         "ringDistance": 30,
@@ -42,7 +44,8 @@
             "#fc8800"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "10",
         "ringCount": "10",
         "ringDistance": "54",
@@ -59,7 +62,8 @@
             "#f5b17f"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 1,
         "ringCount": "21",
         "ringDistance": 38,
@@ -76,7 +80,8 @@
             "#ffd645"
         ],
         "sensitivity": "6",
-        "dotSize": "50",
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "4",
         "ringCount": "6",
         "ringDistance": "69",
@@ -92,7 +97,8 @@
             "#597787"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,

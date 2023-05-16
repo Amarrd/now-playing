@@ -26618,7 +26618,8 @@ module.exports=[
             "#edbbfa"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 2,
         "ringCount": 10,
         "ringDistance": 50,
@@ -26634,7 +26635,8 @@ module.exports=[
             "#8f00ff"
         ],
         "sensitivity": "5",
-        "dotSize": "20",
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "3",
         "ringCount": "20",
         "ringDistance": 30,
@@ -26651,7 +26653,8 @@ module.exports=[
             "#fc8800"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "10",
         "ringCount": "10",
         "ringDistance": "54",
@@ -26668,7 +26671,8 @@ module.exports=[
             "#f5b17f"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 1,
         "ringCount": "21",
         "ringDistance": 38,
@@ -26685,7 +26689,8 @@ module.exports=[
             "#ffd645"
         ],
         "sensitivity": "6",
-        "dotSize": "50",
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": "4",
         "ringCount": "6",
         "ringDistance": "69",
@@ -26701,7 +26706,8 @@ module.exports=[
             "#597787"
         ],
         "sensitivity": "6",
-        "dotSize": 30,
+        "dotMin": 5,
+        "dotGrowth": 30,
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,
@@ -26728,10 +26734,8 @@ class Visualiser {
         this.profileIndex = Number(localStorage.getItem(`${this.name}-profileIndex`)) || 0;
         this.microphone = new Microphone.Microphone(audioPromise);
         this.active = true;
-
         this.directionModifier = 1;
         this.totalDots = 0;
-        this.baseDotSize = 5;
         this.dotSizes = [];
         this.gradientIndexes = [];
         this.frameCount = 0;
@@ -26798,11 +26802,12 @@ class Visualiser {
 
                     let currentDotSize = this.dotSizes[currDot] || 0;
                     let currentGradientIndex = this.gradientIndexes[currDot] || 0;
-                    let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.baseDotSize, this.profiles[this.profileIndex].dotSize * ringNumber * 0.5, true) * volume)
+                    let dotCountAdjustment = utils.map(ringNumber, 1, this.profiles[this.profileIndex].ringCount, 1, this.profiles[this.profileIndex].ringCount/2, true);
+                    let dotSize = Math.round(utils.map(samples[currDot], 0, sensitivity, this.profiles[this.profileIndex].dotMin, this.profiles[this.profileIndex].dotGrowth * dotCountAdjustment, true) * volume)
                     let gradientIndex = Math.round(utils.map(samples[currDot], 0, sensitivity, 0, this.gradientArray.length - 1, true))
 
                     if (dotSize < currentDotSize) {
-                        dotSize = Math.max(currentDotSize * 0.98, this.baseDotSize);
+                        dotSize = Math.max(currentDotSize * 0.98, this.profiles[this.profileIndex].dotMin);
                     }
 
                     if (gradientIndex < currentGradientIndex) {
@@ -26841,7 +26846,8 @@ class Visualiser {
         utils.createNumberInput('Ring Count', 'ringCount', 1, 30)
         utils.createNumberInput('Ring Distance', 'ringDistance', 30, 100)
         utils.createNumberInput('Dot Multiplier', 'dotModifier', 1, 30)
-        utils.createNumberInput('Dot Size', 'dotSize', 10, 50)
+        utils.createNumberInput('Dot Min', 'dotMin', 5, 100)
+        utils.createNumberInput('Dot Growth', 'dotGrowth', 5, 100)
         utils.createNumberInput('Sensitivity', 'sensitivity', 0, 10);
         utils.createNumberInput('Rotation Speed', 'rotationSpeed', -20, 20)
 
