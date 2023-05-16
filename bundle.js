@@ -26619,7 +26619,7 @@ module.exports=[
         ],
         "sensitivity": "6",
         "dotMin": 5,
-        "dotGrowth": 30,
+        "dotGrowth": "40",
         "dotModifier": 2,
         "ringCount": 10,
         "ringDistance": 50,
@@ -26628,19 +26628,20 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#9eff00",
-            "#ff003b",
-            "#f79f00",
-            "#3300ff",
-            "#8f00ff"
+            "#ff9900",
+            "#ff5c00",
+            "#0028f7",
+            "#ff6b00",
+            "#bd00ff",
+            "#ff0000"
         ],
-        "sensitivity": "5",
-        "dotMin": 5,
-        "dotGrowth": 30,
+        "sensitivity": "6",
+        "dotMin": "5",
+        "dotGrowth": "30",
         "dotModifier": "3",
-        "ringCount": "20",
-        "ringDistance": 30,
-        "alternateRings": true,
+        "ringCount": "23",
+        "ringDistance": "38",
+        "alternateRings": false,
         "rotationSpeed": 1
     },
     {
@@ -26663,19 +26664,19 @@ module.exports=[
     },
     {
         "gradientColours": [
-            "#f50000",
-            "#ff2e00",
-            "#ff5c00",
-            "#0047ff",
-            "#0582f5",
-            "#f5b17f"
+            "#f5dd89",
+            "#1400ff",
+            "#ffe4cc",
+            "#ff0000",
+            "#212333",
+            "#69e7f5"
         ],
-        "sensitivity": "6",
+        "sensitivity": "5",
         "dotMin": 5,
         "dotGrowth": 30,
-        "dotModifier": 1,
-        "ringCount": "21",
-        "ringDistance": 38,
+        "dotModifier": "1",
+        "ringCount": "19",
+        "ringDistance": "43",
         "alternateRings": true,
         "rotationSpeed": "1"
     },
@@ -26689,8 +26690,8 @@ module.exports=[
             "#ffd645"
         ],
         "sensitivity": "6",
-        "dotMin": 5,
-        "dotGrowth": 30,
+        "dotMin": "0",
+        "dotGrowth": "50",
         "dotModifier": "4",
         "ringCount": "6",
         "ringDistance": "69",
@@ -26702,12 +26703,11 @@ module.exports=[
             "#3f2caf",
             "#e9446a",
             "#edc988",
-            "#607d8b",
-            "#597787"
+            "#607d8b"
         ],
         "sensitivity": "6",
         "dotMin": 5,
-        "dotGrowth": 30,
+        "dotGrowth": "25",
         "dotModifier": 5,
         "ringCount": 13,
         "ringDistance": 58,
