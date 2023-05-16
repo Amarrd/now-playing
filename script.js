@@ -113,7 +113,7 @@ function processResponse(response) {
 	var albumYear = document.querySelector('#albumYear');
 	var delay;
 	if (jsonObject.status.code === 0) {
-		var artist = jsonObject.metadata.music[0].artists[0].name;
+		var artist = getArtist(jsonObject);
 		var title = jsonObject.metadata.music[0].title;
 		var album = jsonObject.metadata.music[0].album.name;
 		var releaseDate = jsonObject.metadata.music[0].release_date.split('-')[0];
@@ -138,6 +138,16 @@ function processResponse(response) {
 			identifyFunction = setTimeout(() => updateSong(), delay);
 		}
 	}
+}
+
+function getArtist(jsonObject) {
+	if (jsonObject.metadata.music[0].external_metadata.spotify) {
+		return jsonObject.metadata.music[0].external_metadata.spotify.artists[0].name
+	}
+	if (jsonObject.metadata.music[0].external_metadata.deezer) {
+		return jsonObject.metadata.music[0].external_metadata.deezer.artists[0].name
+	}
+	return jsonObject.metadata.music[0].artists[0].name;
 }
 
 function saveToFile(toDownload, name, extension) {
